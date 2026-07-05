@@ -2,8 +2,8 @@
 """CLI entrypoint for `make n8n-sync` — imports/updates + activates n8n/workflows/*.json via
 n8n's Public REST API. Synced in dependency order so each workflow's real n8n-assigned ID can be
 patched into whichever other committed JSON references it as a placeholder (the real ID isn't
-known until n8n creates the workflow): WF-3 and WF-4 have no dependencies; WF-2 references WF-3;
-WF-1 references both WF-2 and WF-3."""
+known until n8n creates the workflow): WF-3, WF-4, and WF-5 have no dependencies; WF-2 references
+WF-3; WF-1 references both WF-2 and WF-3."""
 
 import json
 import os
@@ -82,6 +82,11 @@ def main() -> int:
         )
         print(wf4_result)
 
+        wf5_result = _sync_one(
+            client, (WORKFLOWS_DIR / "wf5_daily_digest.json").read_text(encoding="utf-8")
+        )
+        print(wf5_result)
+
         wf2_raw = (WORKFLOWS_DIR / "wf2_draft_answer.json").read_text(encoding="utf-8")
         wf2_raw = wf2_raw.replace("WF3_WORKFLOW_ID_PLACEHOLDER", wf3_result["id"])
         wf2_result = _sync_one(client, wf2_raw)
@@ -93,7 +98,7 @@ def main() -> int:
         wf1_result = _sync_one(client, wf1_raw)
         print(wf1_result)
 
-    results = [wf1_result, wf2_result, wf3_result, wf4_result]
+    results = [wf1_result, wf2_result, wf3_result, wf4_result, wf5_result]
     if not all(r["active"] for r in results):
         print("One or more workflows failed to activate.", file=sys.stderr)
         return 1

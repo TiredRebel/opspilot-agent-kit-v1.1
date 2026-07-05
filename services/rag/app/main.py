@@ -166,26 +166,70 @@ async def summarize(payload: SummarizeRequest) -> SummarizeResponse:
 
 
 @router.get("/stats", response_model=StatsResponse)
-async def stats() -> StatsResponse:
+async def stats(hours: int | None = None) -> StatsResponse:
     pool = await db.get_pool()
 
-    status_rows = await pool.fetch("SELECT status, COUNT(*) AS count FROM tickets GROUP BY status")
+    tickets_since = "created_at >= now() - ($1 * interval '1 hour')"
+    calls_since = "created_at >= now() - ($1 * interval '1 hour')"
+    ticket_args = [hours] if hours is not None else []
+    call_args = [hours] if hours is not None else []
+    tickets_where = f"WHERE {tickets_since}" if hours is not None else ""
+    calls_where = f"WHERE {calls_since}" if hours is not None else ""
+
+    status_rows = await pool.fetch(
+        f"SELECT status, COUNT(*) AS count FROM tickets {tickets_where} GROUP BY status",
+        *ticket_args,
+    )
     tickets_by_status = {row["status"]: row["count"] for row in status_rows}
     total_tickets = sum(tickets_by_status.values())
 
-    auto_resolved = await pool.fetchval("SELECT COUNT(*) FROM tickets WHERE auto_resolved IS TRUE")
+    category_rows = await pool.fetch(
+        f"""
+        SELECT category, COUNT(*) AS count FROM tickets
+        {tickets_where}{" AND" if tickets_where else "WHERE"} category IS NOT NULL
+        GROUP BY category
+        """,
+        *ticket_args,
+    )
+    tickets_by_category = {row["category"]: row["count"] for row in category_rows}
+
+    priority_rows = await pool.fetch(
+        f"""
+        SELECT priority, COUNT(*) AS count FROM tickets
+        {tickets_where}{" AND" if tickets_where else "WHERE"} priority IS NOT NULL
+        GROUP BY priority
+        """,
+        *ticket_args,
+    )
+    tickets_by_priority = {row["priority"]: row["count"] for row in priority_rows}
+
+    auto_resolved = await pool.fetchval(
+        f"SELECT COUNT(*) FROM tickets {tickets_where}"
+        f"{' AND' if tickets_where else 'WHERE'} auto_resolved IS TRUE",
+        *ticket_args,
+    )
     auto_resolution_rate = (auto_resolved / total_tickets) if total_tickets else 0.0
 
     avg_confidence = await pool.fetchval(
-        "SELECT AVG(confidence) FROM tickets WHERE confidence IS NOT NULL"
+        f"SELECT AVG(confidence) FROM tickets {tickets_where}"
+        f"{' AND' if tickets_where else 'WHERE'} confidence IS NOT NULL",
+        *ticket_args,
     )
-    total_cost_usd = await pool.fetchval("SELECT COALESCE(SUM(cost_usd), 0) FROM llm_calls")
+    total_cost_usd = await pool.fetchval(
+        f"SELECT COALESCE(SUM(cost_usd), 0) FROM llm_calls {calls_where}", *call_args
+    )
     p95_latency_ms = await pool.fetchval(
-        "SELECT percentile_cont(0.95) WITHIN GROUP (ORDER BY latency_ms) FROM llm_calls"
+        f"""
+        SELECT percentile_cont(0.95) WITHIN GROUP (ORDER BY latency_ms)
+        FROM llm_calls {calls_where}
+        """,
+        *call_args,
     )
 
     return StatsResponse(
         tickets_by_status=tickets_by_status,
+        tickets_by_category=tickets_by_category,
+        tickets_by_priority=tickets_by_priority,
         auto_resolution_rate=auto_resolution_rate,
         avg_confidence=float(avg_confidence) if avg_confidence is not None else None,
         total_cost_usd=float(total_cost_usd),

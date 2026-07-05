@@ -196,3 +196,107 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
   `make n8n-sync` (now handles all 4 files), then fix the 5 remaining `PLACEHOLDER_OPS_CHAT_ID`
   spots (WF-1's "Is Ops Reply" IF + urgent-alert node, WF-3's 2 ops-message nodes, WF-4's reminder
   node) before attempting P3-4's E2E (M2–M5)
+
+## [2026-07-06 01:15] build | human+Claude | n8n outage resolved + Phase 3 live E2E (P2-5, P3-1..P3-4)
+- Completed: root-caused and fixed the n8n Postgres auth crash-loop; recreated both n8n credentials;
+  synced and activated all 4 workflows; found and fixed 3 real bugs surfaced only by live execution;
+  fixed the bot's Group Privacy Mode blocking group replies; live-verified P2-5 and P3-1..P3-4 end
+  to end via real Telegram interactions (button taps, native reply gesture) and a real SLA cron tick
+- Root cause of the crash-loop: the *running* `n8n-n8n-1` container's `DB_POSTGRESDB_PASSWORD` had
+  silently diverged from `.env`'s current value — same length (10 chars, coincidence), different
+  actual bytes, confirmed only by hashing both values (never printing either) rather than trusting a
+  length check (gotcha #29). Fixed via a direct `ALTER USER n8n WITH PASSWORD ...` against the live
+  Postgres role using the password already loaded in the container's own memory — deliberately chose
+  this over recreating the container, since recreation is what caused the original encryption-key
+  rotation (gotcha #21) and would have risked repeating it
+- Both `Postgres - OpsPilot` and `Telegram - OpsPilot` credentials were confirmed genuinely
+  undecryptable post-rotation (not a false alarm): of all 4 workflows, only WF-1's Telegram Trigger
+  actually exercises credential decryption *at activation time* (registering the webhook needs the
+  bot token) — WF-2/WF-3/WF-4's triggers (Execute Workflow Trigger, Schedule Trigger) don't touch
+  credentials until actual execution, so their clean activations were never proof the credentials
+  were healthy. Recreated both fresh via the API once this was understood; all 4 workflows then
+  synced and activated cleanly
+- Three bugs found and fixed, none caught by structural JSON/connection-graph validation — all three
+  only surfaced once real executions ran:
+  1. A literal newline byte (not an escaped `\n`) inside a quoted JS string in WF-3's "Send Ops
+     Message" `text` expression — invalid JavaScript, surfaced as "invalid syntax" deep in a
+     Telegram-node stack trace (gotcha #25)
+  2. The `[ticket:<uuid>]` footer was being silently stripped by Telegram's default Markdown parse
+     mode (interpreted as an incomplete `[text](url)` link) — broke the edit-reply regex silently,
+     no error anywhere (gotcha #26). Fixed by switching to a bracket-free `TICKET-ID:<uuid>` marker
+     in both WF-3's footer-builder and WF-1's regex
+  3. WF-1's "Is Ops Reply" IF condition compared Telegram's numeric `chat.id` against a string
+     literal under `typeValidation: "strict"`, throwing a hard runtime type error instead of
+     coercing (gotcha #27) — fixed by wrapping the leftValue in `String(...)`
+- The bot's Telegram Group Privacy Mode (default ON) was blocking all ordinary group messages and
+  replies from ever reaching n8n's webhook — only commands and `callback_query` updates were
+  exempt, which is exactly why button clicks always worked reliably in testing but plain replies
+  produced zero executions with no error anywhere (gotcha #28). Diagnosed by testing a `/test`
+  command (always exempt) and confirming it *did* trigger an execution while plain text/replies
+  didn't; fixed by the user disabling Group Privacy via BotFather
+- Live E2E verified: ticket→`needs_human` routing (confidence 0.45 under the fake provider, correct
+  gate behavior); ops message posts with all 3 buttons and correct `callback_data`; Approve/Edit/
+  Reject button clicks all route to the correct branch (confirmed via `lastNodeExecuted` in n8n's
+  execution API); a real Telegram reply (native reply gesture, not just quoted text — an earlier
+  attempt using literal text without the reply gesture produced no `reply_to_message` at all) is
+  correctly captured, ticket-id extracted, operator message inserted; SLA watchdog fired on its real
+  15-minute cron tick, produced exactly one grouped reminder for a backdated ticket, and set
+  `last_reminder_at` so the next tick will correctly skip it
+- Caveat carried forward: Approve/Edit-reply/Reject's *customer-facing* send was only exercised
+  against synthetic webform-sourced test tickets (no real Telegram chat to reply to) — the send
+  correctly fails "chat not found" and the DB update is correctly skipped when it does (by design),
+  but a fully real customer-DM-sourced E2E hasn't been run yet. Flagged in PROGRESS.md Blockers
+- Gotchas added: #25 (raw newline in a JS expression string), #26 (Telegram Markdown strips
+  unmatched brackets), #27 (strict-mode IF doesn't coerce number→string), #28 (Group Privacy Mode
+  blocks ordinary group messages, not callbacks), #29 (compare container env values by hash, not
+  just length), #30 (rapid reactivation hits Telegram's own rate limit, not a real config error)
+- Handoff / next: run a fully real E2E (customer DMs the bot → escalates → operator
+  approves/edits/rejects → customer actually receives the reply) before treating P3-4 as closed for
+  a live demo. Otherwise Phase 3 is done — Phase 4 (digest + Notion) is next per PROGRESS.md
+
+## [2026-07-06 01:45] build | Claude Code | Phase 4 — Digest & Notion (P4-1..P4-3)
+- Completed: P4-1 extended `GET /stats` with an optional `hours` query param (all aggregates scope
+  to `created_at >= now() - N hours`; no param = unchanged all-time behavior) plus
+  `tickets_by_category`/`tickets_by_priority` fields; P4-2/P4-3 authored and **live E2E-verified**
+  `n8n/workflows/wf5_daily_digest.json` (Schedule Trigger 09:00 Europe/Kyiv + a parallel Webhook
+  Trigger for on-demand testing → `/stats?hours=24` → `/summarize` → fan out to Telegram + Notion)
+- Files touched: `services/rag/app/{main,schemas}.py`, `services/rag/tests/{conftest,test_stats}.py`,
+  `n8n/workflows/wf5_daily_digest.json` (new), `scripts/n8n_sync.py`, `.env` (NOTION_API_KEY,
+  NOTION_PAGE_ID — human-provided, never committed), `PROGRESS.md`, `wiki/map.md`, `wiki/gotchas.md`
+- Decisions: extended `/stats` rather than duplicating aggregation SQL in an n8n Postgres node (per
+  the phase prompt's explicit preference) — new `hours` param is opt-in so the existing all-time
+  behavior and its test stay unchanged. Added a parallel Webhook Trigger alongside the Schedule
+  Trigger (mirrors WF-1's existing dual-trigger pattern) specifically so the whole flow could be
+  self-tested via curl during the build rather than waiting for the real 09:00 cron tick.
+  "Append To Notion" uses `authentication: "predefinedCredentialType"` +
+  `nodeCredentialType: "notionApi"` (confirmed shape by reading `HttpRequestV3.node.ts`) rather than
+  a generic header-auth credential, so n8n handles the Notion auth header the same way its own
+  dedicated Notion node would, while still using a plain HTTP Request node per the phase prompt
+- **Incident, found and fixed mid-P4-1**: running `uv run pytest` to verify the `/stats` extension
+  silently truncated the *live dev database* — all Phase 2/3 E2E test tickets and the entire
+  ingested KB seed were wiped. Root cause: `_clean_tables` in `conftest.py` truncates every app
+  table before/after each test, but the old `_localhost_database_url()` only rewrote the DB
+  *hostname* for running pytest outside Docker (gotcha #11), not the database name — so tests ran
+  directly against the same live `opspilot` database the running `rag-api`/n8n use. Fixed (user
+  explicitly asked for the fix, not just a re-seed workaround) with a session-scoped autouse
+  fixture that creates/resets a dedicated `<POSTGRES_DB>_test` database, reapplies
+  `db/init/01_schema.sql` fresh each session, and points `settings.database_url` at it — derived
+  from the existing `POSTGRES_DB`/`POSTGRES_USER`, no new env var. Re-seeded the KB via
+  `scripts/ingest.py` afterward. See gotcha #31.
+- **Bug found and fixed**: Notion's "Append block children" endpoint requires HTTP `PATCH`, not
+  `POST` — used POST throughout initial testing (including a plain `curl -X POST` reproduction,
+  which ruled out an n8n-specific bug before I even opened Notion's docs) and got a misleadingly-
+  named `"code":"invalid_request_url"` error that says nothing about the method. Confirmed the
+  correct verb via Notion's official API reference and fixed the workflow node. See gotcha #32.
+- Verified live end-to-end via the Webhook Trigger path (`POST /webhook/opspilot-digest`): response
+  showed both a `heading_2` block (today's date) and a `paragraph` block (the fake provider's
+  Ukrainian digest text) successfully appended to the real Notion page, and the parallel Telegram
+  branch's execution ran successfully (confirmed via n8n's execution API — `status: success`,
+  `Send Digest To Ops` present in `runData`)
+- Gotchas added: #31 (tests must use an isolated database, not just a rewritten hostname — a
+  shared-DB test suite can and did silently wipe live data), #32 (Notion's block-append endpoint is
+  PATCH, not POST — a misleading error message masked this)
+- Handoff / next: P4-4 (human E2E M6) — confirm the real 09:00 Europe/Kyiv Schedule Trigger tick
+  fires on its own (only the webhook test path was exercised this session) and do a visual check of
+  the Telegram message + Notion page formatting. Otherwise Phase 4 is done — Phase 5 (evals + CI) is
+  next per PROGRESS.md

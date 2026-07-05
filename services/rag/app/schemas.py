@@ -56,6 +56,8 @@ class SummarizeResponse(BaseModel):
 
 class StatsResponse(BaseModel):
     tickets_by_status: dict[str, int]
+    tickets_by_category: dict[str, int]
+    tickets_by_priority: dict[str, int]
     auto_resolution_rate: float
     avg_confidence: float | None
     total_cost_usd: float

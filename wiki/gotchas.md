@@ -135,3 +135,79 @@
     failure mode to debug than an upfront rejection. The safer, more standard idiom: coerce to a
     boolean in the expression itself and check that
     (`leftValue: "={{ !!$json.someField }}"`, `operator: {"type": "boolean", "operation": "true"}`).
+25. **A literal newline byte inside a quoted JS string in an n8n expression is invalid JavaScript —
+    and this only surfaces at execution time, never at import/activation.** Writing
+    `"text": "={{ 'foo' + '\n\n' + 'bar' }}"` in the committed JSON (where `\n` is JSON's own escape,
+    producing a real newline character once parsed) embeds a raw line break inside a single-quoted
+    JS string literal, which is a syntax error the moment the expression actually runs
+    ("invalid syntax", surfaced deep in a Telegram/Code node's stack trace, not at the workflow
+    JSON level). Fix: double-escape in the JSON source (`\\n`) so the parsed JS source text still
+    contains the two literal characters `\` and `n`, which JS then correctly interprets as an
+    escaped newline inside the string.
+26. **Telegram's default Markdown parse mode silently strips unmatched `[...]` as incomplete link
+    syntax.** A message text built as `'...' + '[ticket:' + id + ']'` renders with the brackets
+    (and sometimes surrounding text) removed, because Telegram's legacy Markdown parser interprets
+    `[text]` as the start of a `[text](url)` link and drops the bracket characters when no `(url)`
+    follows. This silently breaks anything downstream that regex-parses the message text back out
+    (e.g. an edit-reply ticket-id extractor) — the workflow won't error, it'll just never match.
+    Avoid embedding structured markers in Markdown-parsed Telegram text with square brackets; use a
+    bracket-free plain-text marker instead (e.g. `TICKET-ID:<uuid>` + a matching
+    `/TICKET-ID:([0-9a-fA-F-]+)/` regex), which is immune to parse-mode reinterpretation regardless
+    of what `parse_mode` ends up being.
+27. **n8n's IF node with `typeValidation: "strict"` and operator `type: "string"` does NOT
+    auto-coerce a number value — it throws a hard runtime error instead of silently failing or
+    coercing.** Comparing Telegram's `$json.message.chat.id` (always a JSON number) against a
+    string literal rightValue under strict validation fails with
+    `Wrong type: '-123456' is a number but was expecting a string [condition 0, item 0]`. This is a
+    different, more severe failure mode than gotcha #24 (which is about a *type/operation pair*
+    being invalid) — here the pairing is valid, but the *value's runtime type* doesn't match what
+    strict mode expects. Fix: coerce explicitly in the expression, e.g.
+    `leftValue: "={{ String($json.message.chat.id) }}"`, rather than relying on implicit coercion.
+28. **Telegram bots have Group Privacy Mode ON by default, which silently blocks n8n's Telegram
+    Trigger from ever receiving ordinary group messages or replies — only commands (`/foo`) and
+    `callback_query` updates (inline keyboard button presses) get through.** This is *not* a
+    webhook-registration problem — `getWebhookInfo` will correctly show `"message"` in
+    `allowed_updates`, and `pending_update_count` stays at 0 (Telegram isn't even attempting
+    delivery, so there's nothing queued or retried). The telltale symptom: button clicks reliably
+    produce n8n executions, but plain text messages and replies produce *zero* executions at all,
+    with no error anywhere. Any workflow design relying on capturing free-text operator replies in
+    a group (e.g. an edit-reply-capture flow) requires Privacy Mode disabled via BotFather:
+    `/mybots` → select the bot → **Bot Settings** → **Group Privacy** → **Turn off**. This is a
+    one-time human action outside any repo/API — record it as done, since it isn't discoverable
+    from the workflow JSON itself.
+29. **A running container's baked-in env var can silently diverge from what's in `.env` on disk,
+    even without any recreation — checking only the *length* of a value is not enough to catch
+    this.** During an extended n8n Postgres-auth crash-loop debugging session, the container's
+    `DB_POSTGRESDB_PASSWORD` matched the expected value's length (10 chars) by coincidence, which
+    briefly looked like proof the value matched. It didn't — a `sha256sum` comparison of the
+    container's actual env value against the expected literal (never printing either value)
+    revealed a real mismatch. When diagnosing "the same credential works manually but not from
+    inside the container," compare the actual byte-for-byte value (via a hash, to avoid printing
+    secrets), not just its length.
+30. **Reactivating a Telegram-Trigger workflow repeatedly in quick succession hits Telegram's own
+    rate limit on `setWebhook`-adjacent calls** — n8n's `/workflows/{id}/activate` starts failing
+    with `"The service is receiving too many requests from you"` (a plain 400, easy to mistake for
+    a real config problem). This is expected after several `make n8n-sync` + live-patch cycles done
+    back-to-back (each PUT+activate re-registers the webhook). Just wait ~10–30s and retry; no
+    config change needed.
+31. **`services/rag/tests/conftest.py`'s `_clean_tables` fixture truncates every app table before
+    and after each test — and until this session, that ran against the same live dev database the
+    running `rag-api`/n8n actually use, not an isolated test database.** The old
+    `_localhost_database_url()` only rewrote the DB *hostname* (`postgres` → `localhost`, for
+    running pytest outside Docker — see gotcha #11) while keeping the exact same `POSTGRES_DB`.
+    Running `make test`/`pytest` therefore silently wiped all live tickets and the ingested KB seed
+    — this actually happened once, discovered only because `/stats` came back empty right
+    afterward. Fixed with a session-scoped autouse fixture that creates (or drops+recreates) a
+    dedicated `<POSTGRES_DB>_test` database, reapplies `db/init/01_schema.sql` fresh, and points
+    `settings.database_url` at *that* — no new env var needed, derived from the existing
+    `POSTGRES_DB`/`POSTGRES_USER`. If you ever see `/stats` or `/kb/ingest` looking unexpectedly
+    empty right after running tests, re-seed (`uv run scripts/ingest.py`) rather than assuming data
+    corruption.
+32. **Notion's "Append block children" endpoint (`/v1/blocks/{id}/children`) requires HTTP
+    `PATCH`, not `POST`.** Using POST returns a 400 with `"code":"invalid_request_url"` and
+    message `"Invalid request URL."` — a genuinely misleading error, since it doesn't mention the
+    method at all and the exact same URL works fine for `GET` (list children). Confirmed by
+    reproducing the failure with plain `curl -X POST` (ruling out an n8n-specific bug) before
+    checking Notion's official API reference, which documents `PATCH` for this route. Also: an
+    n8n integration must have "insert content" capability granted (separate from just having the
+    target page shared with it via **`...`** → Connections) for this to succeed at all.
