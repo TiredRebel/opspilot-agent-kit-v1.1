@@ -27,3 +27,26 @@
    deliverables by running the underlying commands directly (`uv run ruff ...`, `uv run pytest ...`,
    `docker compose ...`) instead of `make <target>` during agent sessions on this machine. The
    Makefile itself is still correct and will work on Linux/the deploy VM/CI.
+10. **`kb/seed/` is not in the rag-api Docker image — it's a bind mount.** The Dockerfile only
+    `COPY`s `services/rag/app` and `services/rag/prompts`; `docker-compose.yml` mounts
+    `./kb:/app/kb:ro` on the `rag-api` service and sets `KB_SEED_DIR=/app/kb/seed` there.
+    `settings.kb_seed_dir` defaults to the relative `kb/seed` (works for `uv run` from the repo root
+    and for L2 pytest fixtures) — that default only resolves correctly in Docker because compose
+    overrides it. Also: `scripts/ingest.py` does **not** touch the DB directly — it just POSTs to the
+    running `rag-api`'s `/kb/ingest`, because `DATABASE_URL` in `.env` uses the container-internal
+    hostname `postgres`, which doesn't resolve from a host-run script.
+11. **Local pytest runs outside Docker, so `DATABASE_URL`'s `postgres` hostname doesn't resolve.**
+    `services/rag/tests/conftest.py` rewrites `settings.database_url` to `localhost:$POSTGRES_PORT`
+    for the whole test session. Don't "fix" this by changing `.env`'s `DATABASE_URL` — that value is
+    correct for the compose network; the test override is intentionally test-only.
+12. **`app.db`'s pool is a module-level singleton bound to whichever event loop creates it —
+    mixing pytest's own loop with `TestClient`'s dedicated worker-thread loop corrupts it**
+    (`RuntimeError: Event loop is closed` / `another operation is in progress`). Test fixtures must
+    (a) use their own standalone `asyncpg.connect()` for setup/assertions — never `db.get_pool()` —
+    and (b) reset `db._pool = None` before/after every test so the app always recreates its pool
+    fresh, bound to whatever loop that specific test happens to run on. See
+    `services/rag/tests/conftest.py`'s `_reset_app_pool` / `pool` fixtures.
+13. **`llm_calls.ticket_id` is a `UUID` column.** A `ClassifyRequest`/`QueryRequest.ticket_id` typed as
+    plain `str` lets a non-UUID value reach asyncpg and crash with an unhandled 500
+    (`asyncpg.exceptions.DataError`) instead of a clean 422. Both fields are typed `uuid.UUID` in
+    `app/schemas.py` so pydantic rejects bad input at the API boundary.

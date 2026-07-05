@@ -10,12 +10,12 @@
 - [x] P0-4 (Claude, 2026-07-05) kb/seed: 10 fake Acme Cloud Suite docs (UA+EN, internally consistent — verified via grep sweep).
 
 ## Phase 1 — RAG/LLM service
-- [ ] P1-1 llm.py provider layer: Claude primary, OpenAI fallback, fake provider, cost logging, budget guardrail
-- [ ] P1-2 POST /kb/ingest + scripts/ingest.py (chunk 500/50, embed, upsert)
-- [ ] P1-3 POST /classify (structured output, schema-validated, 1 retry)
-- [ ] P1-4 POST /query (top-5 pgvector, citations, confidence blend, 0.70 gate)
-- [ ] P1-5 POST /summarize, GET /health, GET /stats
-- [ ] P1-6 L1/L2 tests per docs/TESTPLAN.md
+- [x] P1-1 (Claude, 2026-07-05) llm.py provider layer: claude-haiku-4-5 primary, gpt-5.4-mini fallback on 5xx/timeout/connection errors, fake provider (also cost-logged), budget guardrail (BudgetExceeded → 429), per-attempt cost logging to llm_calls.
+- [x] P1-2 (Claude, 2026-07-05) POST /kb/ingest (idempotent re-ingest by title) + scripts/ingest.py (HTTP CLI wrapper for `make seed`); chunk ~500/50 words, embed via text-embedding-3-small, upsert kb_documents/kb_chunks.
+- [x] P1-3 (Claude, 2026-07-05) POST /classify — JSON-schema structured output, 1 retry on invalid parse, 422 on second failure. ticket_id is UUID-typed (bad input → clean 422, not a raw 500).
+- [x] P1-4 (Claude, 2026-07-05) POST /query — top-5 pgvector cosine search, [source: title#chunk] citations, confidence = 0.5*similarity + 0.5*self_check, gate boundary verified exactly at 0.70/0.699.
+- [x] P1-5 (Claude, 2026-07-05) POST /summarize (UA digest text), GET /stats (ticket/cost/latency aggregates).
+- [x] P1-6 (Claude, 2026-07-05) 17 L1/L2 tests, all green with LLM_PROVIDER=fake: chunking, classify-schema, confidence boundary, llm-fallback (5xx + 4xx), budget-guardrail, ingest/query roundtrip, idempotency, stats.
 
 ## Phase 2 — Intake & auto-answer
 - [ ] P2-1 [HUMAN] Create bot via BotFather; ops group; tokens/chat IDs into .env
