@@ -1,8 +1,10 @@
 # Gotchas (numbered, append-only)
 
-1. **n8n port collision.** An n8n container already runs on this machine (default 5678). The kit's
-   compose must either reuse it (point N8N_API_URL at it) or map the new instance to **5679**. Decide
-   at P0-1 and record in log.md. Never run two instances on one port.
+1. **n8n port collision — RESOLVED at P0-1.** An n8n container already runs on this machine
+   (`n8n-n8n-1`, default 5678). Decision: **reuse it** — this project's `docker-compose.yml` does
+   NOT run n8n at all; `.env.example` points `N8N_API_URL=http://localhost:5678` at the existing
+   instance. Its sidecar `n8n-postgres-1` is not published to the host, so it never collides with
+   this project's own Postgres on 5432. Never run two n8n instances on one port.
 2. **Telegram Trigger needs a public webhook URL.** Local dev: use a cloudflared quick tunnel (or
    n8n's dev tunnel) and set WEBHOOK_URL for n8n; on the VM the real domain replaces it. Do not try
    long-polling hacks.
@@ -17,3 +19,11 @@
    the human in the UI once — exported JSON must NOT contain credential secrets.
 7. **Windows line endings.** Enforce LF via .gitattributes at P0-3; CRLF in shell scripts breaks
    containers silently.
+8. **Port 8000 is often taken on this machine** (an unrelated Windows service binds it — not a
+   Docker container). `rag-api`'s compose mapping failed with "port not available" until
+   `RAG_API_PORT` was moved to **8010** in both `.env` and `.env.example`. Check `netstat -ano | grep :<port>`
+   before assuming a default port is free.
+9. **`make` is not installed in the Windows Git-Bash toolchain Claude Code runs in.** Verify P0/P1
+   deliverables by running the underlying commands directly (`uv run ruff ...`, `uv run pytest ...`,
+   `docker compose ...`) instead of `make <target>` during agent sessions on this machine. The
+   Makefile itself is still correct and will work on Linux/the deploy VM/CI.

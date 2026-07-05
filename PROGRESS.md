@@ -4,10 +4,10 @@
 **Rule:** claim a task by editing its line to `[~] (agent, YYYY-MM-DD)` in your first commit.
 
 ## Phase 0 — Foundation
-- [ ] P0-1 docker-compose (postgres/pgvector, rag-api stub, n8n) with healthchecks + pinned tags
-- [ ] P0-2 db/init/01_schema.sql per SPEC §3.3
-- [ ] P0-3 Makefile, .env.example, ruff+pytest config, .gitattributes (LF)
-- [ ] P0-4 kb/seed: 8–12 fake Acme docs (UA+EN, internally consistent)
+- [x] P0-1 (Claude, 2026-07-05) docker-compose (postgres/pgvector, rag-api stub) with healthchecks + pinned tags. n8n excluded — existing local instance (localhost:5678) reused instead, see gotcha #1 resolution in wiki/log.md.
+- [x] P0-2 (Claude, 2026-07-05) db/init/01_schema.sql per SPEC §3.3 — verified 5 tables + pgvector 0.8.4 on first postgres start.
+- [x] P0-3 (Claude, 2026-07-05) Makefile, .env.example, ruff+pytest config, .gitattributes (LF), .gitignore, uv-managed pyproject.toml.
+- [x] P0-4 (Claude, 2026-07-05) kb/seed: 10 fake Acme Cloud Suite docs (UA+EN, internally consistent — verified via grep sweep).
 
 ## Phase 1 — RAG/LLM service
 - [ ] P1-1 llm.py provider layer: Claude primary, OpenAI fallback, fake provider, cost logging, budget guardrail

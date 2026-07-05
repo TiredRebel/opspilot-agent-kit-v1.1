@@ -13,13 +13,14 @@ daily digest (Telegram + Notion) with USD spend. Spec: `docs/SPEC.md` (frozen).
 ## Component matrix
 | Component | Path | Status | Tests | Notes |
 |---|---|---|---|---|
-| Compose stack | docker-compose.yml | not built | — | postgres:pgvector-pg16, rag-api, n8n (port: see gotcha #1) |
-| DB schema | db/init/01_schema.sql | not built | — | FROZEN after P0-2; 4 tables + hnsw index |
-| Provider layer | services/rag/app/llm.py | not built | L1 | fallback, budget 429, cost rows |
+| Compose stack | docker-compose.yml | built (P0-1) | manual verify | postgres (pgvector/pgvector:pg16) + rag-api only; n8n NOT in compose — reuses existing local instance on :5678 (gotcha #1 resolved this way) |
+| DB schema | db/init/01_schema.sql | built (P0-2) | manual verify | FROZEN after P0-2; 5 tables (tickets, messages, kb_documents, kb_chunks, llm_calls) + hnsw index; pgvector 0.8.4 confirmed |
+| RAG service stub | services/rag/app/{main,db,settings}.py | stub built (P0-1) | L1 (test_health.py) | GET /health only (liveness + DB check); llm.py and other endpoints are P1 |
+| KB seed | kb/seed/*.md | built (P0-4) | manual consistency review | 10 fake "Acme Cloud Suite" docs, UA+EN, facts verified consistent via grep sweep; input for P1-2 ingest |
 | Ingest | /kb/ingest + scripts/ingest.py | not built | L2 roundtrip | 500/50 chunks, 1536-dim |
 | Classify | POST /classify | not built | L1 + evals | JSON-schema, 1 retry |
 | Query | POST /query | not built | L2 + evals | top-5, citations, confidence blend |
-| Stats/health | GET /stats, /health | not built | L2 | digest reads /stats |
+| Stats/health | GET /stats, /health | /health stub built (P0-1); /stats not built | L1 (test_health.py) | digest reads /stats (P1) |
 | WF-1 Intake | n8n/workflows/wf1_*.json | not built | M1 | idempotency: UNIQUE(source, external_ref) |
 | WF-2 Draft | n8n/workflows/wf2_*.json | not built | M1/M2 | gate at CONFIDENCE_THRESHOLD |
 | WF-3 HITL | n8n/workflows/wf3_*.json | not built | M2–M4 | callback_data ≤64 B; reply→ticket mapping is schema-free |
