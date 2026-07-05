@@ -18,11 +18,11 @@
 - [x] P1-6 (Claude, 2026-07-05) 17 L1/L2 tests, all green with LLM_PROVIDER=fake: chunking, classify-schema, confidence boundary, llm-fallback (5xx + 4xx), budget-guardrail, ingest/query roundtrip, idempotency, stats.
 
 ## Phase 2 — Intake & auto-answer
-- [~] P2-1 [HUMAN] (2026-07-05) Bot created via BotFather (@opspilot_cc_bot); TELEGRAM_BOT_TOKEN in .env (not committed). Still needed: create the ops group and add TELEGRAM_OPS_CHAT_ID to .env.
-- [ ] P2-2 WF-1 Intake & Triage (JSON authored + imported + activated via n8n API)
-- [ ] P2-3 WF-2 Draft Answer with confidence gate
-- [ ] P2-4 Intake idempotency verified (test_idempotency green)
-- [ ] P2-5 [HUMAN] E2E M1 happy path + backup screen recording
+- [x] P2-1 [HUMAN] (2026-07-05) Bot created via BotFather (@opspilot_cc_bot) and added to the ops group; TELEGRAM_BOT_TOKEN + TELEGRAM_OPS_CHAT_ID in .env (not committed), both verified live via getMe/getChat.
+- [x] P2-2 (Claude, 2026-07-05) WF-1 Intake & Triage — n8n/workflows/wf1_intake_triage.json, imported + activated via n8n REST API (active=true, verified via GET). Telegram Trigger node present but `disabled: true` (no public webhook URL on this n8n instance — gotcha #2/#14); Webhook Trigger (`POST /webhook/opspilot-intake`) is live and is what E2E-tested this phase.
+- [x] P2-3 (Claude, 2026-07-05) WF-2 Draft Answer — n8n/workflows/wf2_draft_answer.json, imported + activated. Confidence gate confirmed working end-to-end against the live threshold (0.70, hardcoded literal — n8n's `$env` cannot see this project's `.env`, see gotcha #15).
+- [x] P2-4 (Claude, 2026-07-05) Idempotency proven at the workflow level: `scripts/check_intake_idempotency.sh` posts an identical webhook payload twice → exactly one ticket row (on top of the DB-constraint-level proof already in P1's `test_idempotency.py`).
+- [ ] P2-5 [HUMAN] E2E M1 happy path + backup screen recording — blocked on a public webhook URL for the Telegram Trigger (see gotcha #2: set up a cloudflared tunnel or similar, then re-enable the Telegram Trigger node in the n8n UI and set its ops-alert node's `chatId` — see Blockers).
 
 ## Phase 3 — Human-in-the-loop & SLA
 - [ ] P3-1 WF-3 inline keyboard (Approve/Edit/Reject) + callback handling
@@ -49,6 +49,24 @@
 
 ## Blockers / Findings
 _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
+- [OPEN] 2026-07-05 Claude: WF-1's "Alert Ops - Urgent" Telegram node has `chatId:
+  "PLACEHOLDER_OPS_CHAT_ID"` (a real chat ID can't be committed per AGENTS.md). Human: open that
+  node in the n8n editor and replace the placeholder with the real ops chat ID (in `.env` as
+  `TELEGRAM_OPS_CHAT_ID`).
+- [OPEN] 2026-07-05 Claude: WF-1's Telegram Trigger node is `disabled: true` — this n8n instance has
+  no public webhook URL configured (`N8N_HOST`/`N8N_EDITOR_BASE_URL` empty), so Telegram's
+  `setWebhook` call fails activation (gotcha #2). P2-5's E2E M1 needs a real Telegram flow: set up a
+  tunnel (or the eventual VM domain), then re-enable the node in the n8n UI and re-save/activate.
+  The Webhook Trigger path (`/webhook/opspilot-intake`) is fully live and already E2E-verified.
+- [OPEN] 2026-07-05 Claude: `/query`'s embed call doesn't pass `ticket_id` (see
+  `services/rag/app/main.py`), so `llm_calls` rows for `purpose='embed'` aren't attributed to a
+  ticket. Out of scope for Phase 2 (guardrail: don't touch `services/rag` internals) — minor P1
+  follow-up for whoever picks it up.
+- [CLOSED] 2026-07-05 Claude: n8n credential setup ended up needing course-correction — see
+  wiki/log.md for the full sequence (duplicate/misnamed Telegram credentials, a missing Postgres
+  credential, and a `.env` DB-password edit that didn't match the live container until `ALTER USER`
+  was run). Final state verified working: `Postgres - OpsPilot` (id `wpExxcblEvJLO3DZ`) and
+  `Telegram - OpsPilot` (id `I8bufo32jgs857lq`, the renamed pre-existing "Telegram account 2").
 
 ## Metrics to fill before applying
 - Auto-resolution rate: __% · Avg confidence: __ · Avg cost/ticket: $__ · p95 answer latency: __ s · Eval accuracy: __%

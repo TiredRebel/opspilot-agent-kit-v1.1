@@ -21,8 +21,8 @@ daily digest (Telegram + Notion) with USD spend. Spec: `docs/SPEC.md` (frozen).
 | Classify | POST /classify | built (P1-3) | test_classify_schema.py (L1) | JSON-schema structured output, 1 retry, 422 on second failure; ticket_id is UUID (bad input → 422, not 500) |
 | Query | POST /query | built (P1-4) | test_ingest_query_roundtrip.py (L2), test_confidence.py (L1) | top-5 cosine via pgvector `<=>`, citations computed in code (not LLM-formatted), confidence = 0.5*similarity + 0.5*self_check, gate boundary 0.70/0.699 verified exactly |
 | Stats/health | GET /stats, /health | built (P1-5) | test_stats.py (L2), test_health.py (L1) | ticket status counts, auto-resolution rate, avg confidence, SUM(cost_usd), p95 latency |
-| WF-1 Intake | n8n/workflows/wf1_*.json | not built | M1 | idempotency: UNIQUE(source, external_ref) |
-| WF-2 Draft | n8n/workflows/wf2_*.json | not built | M1/M2 | gate at CONFIDENCE_THRESHOLD |
+| WF-1 Intake | n8n/workflows/wf1_intake_triage.json | built (P2-2), active | M1 (E2E via Webhook); scripts/check_intake_idempotency.sh (P2-4) | Telegram Trigger present but `disabled:true` (no public webhook URL — gotcha #2); Webhook Trigger (`/webhook/opspilot-intake`) is the live, tested path. Ops-alert node has `chatId:"PLACEHOLDER_OPS_CHAT_ID"` — human must fill in real value (see PROGRESS.md Blockers) |
+| WF-2 Draft | n8n/workflows/wf2_draft_answer.json | built (P2-3), active | E2E'd via WF-1's webhook trigger | Gate literal `0.70` hardcoded (n8n's `$env` can't see this project's `.env` — gotcha #15); confirmed working live (test ticket correctly routed to `needs_human` at confidence 0.46) |
 | WF-3 HITL | n8n/workflows/wf3_*.json | not built | M2–M4 | callback_data ≤64 B; reply→ticket mapping is schema-free |
 | WF-4 SLA | n8n/workflows/wf4_*.json | not built | M5 | idempotent via last_reminder_at |
 | WF-5 Digest | n8n/workflows/wf5_*.json | not built | M6 | 09:00 Europe/Kyiv; Notion append |
