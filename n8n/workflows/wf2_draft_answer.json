@@ -1,0 +1,222 @@
+{
+  "name": "WF-2 Draft Answer",
+  "nodes": [
+    {
+      "parameters": { "inputSource": "passthrough" },
+      "id": "4b508219-9607-4124-9639-8ac2fa3cd134",
+      "name": "Execute Workflow Trigger",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id AS ticket_id, source, external_ref, body FROM tickets WHERE id = $1",
+        "options": {
+          "queryReplacement": "={{ [$json.ticket_id] }}"
+        }
+      },
+      "id": "2f45a967-0753-47fa-97af-a43cc981cc1e",
+      "name": "Select Ticket",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [220, 0],
+      "credentials": {
+        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8010/query",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ question: $json.body, ticket_id: $json.ticket_id }) }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [{ "name": "Content-Type", "value": "application/json" }]
+        },
+        "options": { "timeout": 15000 }
+      },
+      "id": "ec05fb8c-47d3-4f56-80f1-bf46eaf72800",
+      "name": "Query RAG",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 0],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            {
+              "id": "cond-confidence-1",
+              "leftValue": "={{ $json.confidence }}",
+              "rightValue": 0.70,
+              "operator": { "type": "number", "operation": "gte" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "4a3136a8-c6c5-40d6-8b46-b8f07213900c",
+      "name": "Confidence Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [660, 0]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const source = $('Select Ticket').item.json.source;\nconst externalRef = $('Select Ticket').item.json.external_ref;\nlet chatId = null;\nif (source === 'telegram' && externalRef) {\n  chatId = externalRef.split(':')[0];\n}\nreturn {\n  chat_id: chatId,\n  source,\n  answer: $json.answer,\n  confidence: $json.confidence\n};"
+      },
+      "id": "d09881f7-ae5d-426c-a86c-607b4ad1feff",
+      "name": "Parse Chat Id",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [880, -120]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            {
+              "id": "cond-haschatid-1",
+              "leftValue": "={{ $json.chat_id }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "bbe8e5c9-d5f7-49c9-8bb6-f8eb948ef1a7",
+      "name": "Has Chat Id",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [1100, -120]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.answer }}",
+        "additionalFields": {}
+      },
+      "id": "dc13a42b-a536-4758-84ed-986f8411326b",
+      "name": "Reply To Customer",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [1320, -200],
+      "credentials": {
+        "telegramApi": { "id": null, "name": "Telegram - OpsPilot" }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE tickets SET status = 'answered', auto_resolved = true, confidence = $1, updated_at = NOW() WHERE id = $2",
+        "options": {
+          "queryReplacement": "={{ [$('Query RAG').item.json.confidence, $('Select Ticket').item.json.ticket_id] }}"
+        }
+      },
+      "id": "865bcfcd-0997-4cdf-a822-c44c708088d3",
+      "name": "Update Ticket Answered",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [1540, -120],
+      "credentials": {
+        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO messages (ticket_id, role, content) VALUES ($1, 'ai_draft', $2)",
+        "options": {
+          "queryReplacement": "={{ [$('Select Ticket').item.json.ticket_id, $('Query RAG').item.json.answer] }}"
+        }
+      },
+      "id": "fda4392c-0307-4b0b-b0f5-91e9d44c8a9c",
+      "name": "Insert AI Draft Message",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [1760, -120],
+      "credentials": {
+        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE tickets SET status = 'needs_human', confidence = $1, updated_at = NOW() WHERE id = $2",
+        "options": {
+          "queryReplacement": "={{ [$json.confidence, $('Select Ticket').item.json.ticket_id] }}"
+        }
+      },
+      "id": "ade0eaaf-f680-4bbd-bebf-8172024ef06b",
+      "name": "Update Ticket Needs Human",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [880, 160],
+      "credentials": {
+        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "9d027c73-65d7-4988-83e2-585687f16b5a",
+      "name": "WF-3 Placeholder",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [1100, 160]
+    }
+  ],
+  "connections": {
+    "Execute Workflow Trigger": {
+      "main": [[{ "node": "Select Ticket", "type": "main", "index": 0 }]]
+    },
+    "Select Ticket": {
+      "main": [[{ "node": "Query RAG", "type": "main", "index": 0 }]]
+    },
+    "Query RAG": {
+      "main": [[{ "node": "Confidence Gate", "type": "main", "index": 0 }]]
+    },
+    "Confidence Gate": {
+      "main": [
+        [{ "node": "Parse Chat Id", "type": "main", "index": 0 }],
+        [{ "node": "Update Ticket Needs Human", "type": "main", "index": 0 }]
+      ]
+    },
+    "Parse Chat Id": {
+      "main": [[{ "node": "Has Chat Id", "type": "main", "index": 0 }]]
+    },
+    "Has Chat Id": {
+      "main": [
+        [{ "node": "Reply To Customer", "type": "main", "index": 0 }],
+        [{ "node": "Update Ticket Answered", "type": "main", "index": 0 }]
+      ]
+    },
+    "Reply To Customer": {
+      "main": [[{ "node": "Update Ticket Answered", "type": "main", "index": 0 }]]
+    },
+    "Update Ticket Answered": {
+      "main": [[{ "node": "Insert AI Draft Message", "type": "main", "index": 0 }]]
+    },
+    "Update Ticket Needs Human": {
+      "main": [[{ "node": "WF-3 Placeholder", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

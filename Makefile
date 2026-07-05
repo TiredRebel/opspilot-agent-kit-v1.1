@@ -1,4 +1,4 @@
-.PHONY: up down seed lint test evals backup
+.PHONY: up down seed n8n-sync lint test evals backup
 
 up:
 	docker compose up -d
@@ -8,6 +8,9 @@ down:
 
 seed:
 	uv run scripts/ingest.py
+
+n8n-sync:
+	set -a; . ./.env; set +a; uv run scripts/n8n_sync.py
 
 lint:
 	uv run ruff format --check .
