@@ -12,6 +12,7 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     daily_budget_usd: float = 2.00
     confidence_threshold: float = 0.70
+    kb_seed_dir: str = "kb/seed"
 
 
 settings = Settings()

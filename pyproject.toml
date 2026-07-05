@@ -9,6 +9,8 @@ dependencies = [
     "asyncpg>=0.30",
     "pydantic>=2.9",
     "pydantic-settings>=2.6",
+    "anthropic>=0.40",
+    "openai>=1.55",
 ]
 
 [dependency-groups]
@@ -30,6 +32,7 @@ select = ["E", "F", "I", "UP", "B"]
 [tool.pytest.ini_options]
 testpaths = ["services/rag/tests"]
 pythonpath = ["services/rag"]
+asyncio_mode = "auto"
 markers = [
     "live: hits real LLM APIs, only runs when RUN_LIVE_TESTS=1",
     "evals: eval-harness tests (make evals)",
