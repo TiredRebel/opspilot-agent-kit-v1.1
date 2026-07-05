@@ -49,10 +49,14 @@
 
 ## Blockers / Findings
 _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
-- [OPEN] 2026-07-05 Claude: WF-1's "Alert Ops - Urgent" Telegram node has `chatId:
-  "PLACEHOLDER_OPS_CHAT_ID"` (a real chat ID can't be committed per AGENTS.md). Human: open that
-  node in the n8n editor and replace the placeholder with the real ops chat ID (in `.env` as
-  `TELEGRAM_OPS_CHAT_ID`).
+- [CLOSED] 2026-07-05 human: WF-1's "Alert Ops - Urgent" Telegram node's `chatId` set to the real
+  ops chat ID directly in the n8n editor (verified via `GET /api/v1/workflows/{id}` — live node now
+  shows `-5134402265`, not the placeholder). **Caveat carried forward:** the committed
+  `n8n/workflows/wf1_intake_triage.json` still has (and per AGENTS.md must keep)
+  `"PLACEHOLDER_OPS_CHAT_ID"` — if `make n8n-sync` is ever re-run to push a future edit to WF-1, the
+  `PUT` update will overwrite the whole node's parameters and silently revert `chatId` back to the
+  placeholder. Whoever re-syncs WF-1 next must re-apply this same one-time UI edit afterward (see
+  gotcha #20).
 - [OPEN] 2026-07-05 Claude: WF-1's Telegram Trigger node is `disabled: true` — this n8n instance has
   no public webhook URL configured (`N8N_HOST`/`N8N_EDITOR_BASE_URL` empty), so Telegram's
   `setWebhook` call fails activation (gotcha #2). P2-5's E2E M1 needs a real Telegram flow: set up a

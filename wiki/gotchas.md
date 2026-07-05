@@ -93,3 +93,12 @@
     `sshTunnel` entirely fails validation too ("requires property sshAuthenticateWith" etc). Minimal
     working `data`: `{host, database, user, password, port, ssl, allowUnauthorizedCerts,
     maxConnections, sshTunnel: false}`.
+20. **A placeholder-then-human-relink value (gotcha #17) only stays fixed until the next
+    `make n8n-sync` of that workflow.** `scripts/n8n_sync.py` does a full `PUT` on every re-sync,
+    which overwrites *all* node parameters from the committed JSON — including reverting any
+    literal a human has since patched live in the n8n editor (e.g. WF-1's ops-alert `chatId`, fixed
+    2026-07-05) back to its committed placeholder. There's no reconciliation between "live value a
+    human intentionally changed" and "committed placeholder" — deliberately not built, to avoid
+    committing the real value just to make the sync idempotent. Whoever re-syncs a workflow with a
+    known placeholder must re-apply the same one-time UI edit afterward; check `PROGRESS.md`
+    Blockers for the current list before assuming a re-sync is side-effect-free.

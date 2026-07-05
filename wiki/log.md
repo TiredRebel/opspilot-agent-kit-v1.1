@@ -117,3 +117,15 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
 - Handoff / next: Phase 3 (prompts/P3_hitl_sla.md) — WF-3 inline keyboard replaces the "WF-3
   Placeholder" NoOp in wf2_draft_answer.json; P2-5 (human E2E M1 with live Telegram) still needs a
   tunnel — see PROGRESS.md Blockers
+
+## [2026-07-05 21:30] build | human | Closed ops-alert chatId placeholder blocker
+- Completed: human set WF-1's "Alert Ops - Urgent" node's `chatId` to the real ops chat ID
+  directly in the n8n editor; verified live via `GET /api/v1/workflows/{id}` (`-5134402265`, not
+  the placeholder)
+- Decisions: committed `n8n/workflows/wf1_intake_triage.json` intentionally still has
+  `"PLACEHOLDER_OPS_CHAT_ID"` (must stay that way per AGENTS.md) — this live/committed divergence
+  means a future `make n8n-sync` of WF-1 will silently revert this fix; documented as gotcha #20
+  and flagged in PROGRESS.md Blockers rather than solved with reconciliation logic
+- Gotchas added: #20 (re-sync overwrites human-patched literals)
+- Handoff / next: unchanged — Phase 3 next; whoever next edits/re-syncs WF-1 must re-apply this
+  chatId fix afterward
