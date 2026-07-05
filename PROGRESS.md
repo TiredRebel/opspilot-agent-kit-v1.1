@@ -18,7 +18,7 @@
 - [x] P1-6 (Claude, 2026-07-05) 17 L1/L2 tests, all green with LLM_PROVIDER=fake: chunking, classify-schema, confidence boundary, llm-fallback (5xx + 4xx), budget-guardrail, ingest/query roundtrip, idempotency, stats.
 
 ## Phase 2 — Intake & auto-answer
-- [ ] P2-1 [HUMAN] Create bot via BotFather; ops group; tokens/chat IDs into .env
+- [~] P2-1 [HUMAN] (2026-07-05) Bot created via BotFather (@opspilot_cc_bot); TELEGRAM_BOT_TOKEN in .env (not committed). Still needed: create the ops group and add TELEGRAM_OPS_CHAT_ID to .env.
 - [ ] P2-2 WF-1 Intake & Triage (JSON authored + imported + activated via n8n API)
 - [ ] P2-3 WF-2 Draft Answer with confidence gate
 - [ ] P2-4 Intake idempotency verified (test_idempotency green)
