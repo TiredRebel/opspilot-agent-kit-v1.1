@@ -115,3 +115,23 @@
     warn the user explicitly that credentials will need re-creation, and if DB auth fails
     post-recreate despite a correct `.env`, suspect environment-variable shadowing before assuming
     the password itself is wrong — check with `[ -n "${VAR+x}" ]`, don't just re-edit `.env` again.
+22. **n8n's Schedule Trigger cron format has 6 fields, not the standard Unix 5** —
+    `[Second] [Minute] [Hour] [Day of Month] [Month] [Day of Week]` (confirmed from
+    `ScheduleTrigger.node.ts`). "Every 15 minutes" (`*/15 * * * *` in standard cron) is
+    `"0 */15 * * * *"` here — a leading seconds field of `0`, not `*/15 * * * *` copy-pasted as-is
+    (which n8n would parse with an off-by-one field shift). Shape: `{"rule": {"interval": [{"field":
+    "cronExpression", "expression": "0 */15 * * * *"}]}}`.
+23. **A single Telegram bot can have only one registered webhook URL — this constrains n8n workflow
+    design, not just deployment.** Two separate Telegram Trigger nodes in two different workflows
+    for the *same bot credential* will silently fight over the webhook registration on activation
+    (last one activated wins, with no error surfaced anywhere). See ADR-005 — the fix is one
+    Telegram Trigger total, with in-workflow routing (IF chain on `callback_query` presence /
+    `reply_to_message` + chat-id) fanning out to sub-workflows via Execute Workflow, rather than
+    giving each conceptual flow (intake vs. HITL callbacks) its own trigger.
+24. **When hand-authoring n8n IF/Switch filter conditions for "does this field exist," don't reach
+    for `{"type": "object", "operation": "notEmpty"}` without confirming that combination is valid
+    for this n8n version.** An invalid operator/type pair doesn't fail at import or activation (it's
+    stored as opaque JSON) — it silently misbehaves at actual execution time, which is a much worse
+    failure mode to debug than an upfront rejection. The safer, more standard idiom: coerce to a
+    boolean in the expression itself and check that
+    (`leftValue: "={{ !!$json.someField }}"`, `operator: {"type": "boolean", "operation": "true"}`).

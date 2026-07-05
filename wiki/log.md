@@ -154,3 +154,45 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
 - Handoff / next: once n8n is healthy again, recreate the `Postgres - OpsPilot` and
   `Telegram - OpsPilot` credentials (same steps as P2's close-out), re-run `make n8n-sync` for
   WF-1/WF-2, re-apply the ops-alert `chatId` fix (gotcha #20), then attempt P2-5's live Telegram E2E
+
+## [2026-07-06 00:45] build | Claude Code | Phase 3 — HITL & SLA (P3-1..P3-3, authored not verified)
+- Completed: edited `wf1_intake_triage.json` (Telegram Trigger re-enabled, `updates:["message",
+  "callback_query"]`, new IF-chain router for callback_query / ops-chat-reply / plain-message),
+  edited `wf2_draft_answer.json` (needs_human branch now inserts the `ai_draft` message — a real
+  gap found this session — and calls WF-3 instead of a NoOp), authored `wf3_hitl.json` (Switch on
+  `mode` then on `action`; no trigger of its own — pure Execute-Workflow sub-workflow) and
+  `wf4_sla_watchdog.json` (cron `*/15`, grouped reminder + per-ticket `last_reminder_at`); wrote
+  `docs/decisions/ADR-005-single-telegram-entry-point.md`; extended `scripts/n8n_sync.py` to sync
+  all 4 workflows in dependency order (WF-3, WF-4 first — no deps; then WF-2 — needs WF-3's id;
+  then WF-1 — needs both)
+- Files touched: `n8n/workflows/{wf1_intake_triage,wf2_draft_answer}.json` (edited),
+  `n8n/workflows/{wf3_hitl,wf4_sla_watchdog}.json` (new), `docs/decisions/ADR-005-*.md` (new),
+  `scripts/n8n_sync.py`, `PROGRESS.md`, `wiki/map.md`, `wiki/gotchas.md`
+- Decisions: **ADR-005** — Telegram allows exactly one webhook per bot token, so WF-3 cannot have
+  its own Telegram Trigger without silently breaking WF-1's customer-intake webhook registration on
+  activation (no error anywhere — just "customer messages stop arriving" at some later point).
+  Consolidated on WF-1's existing trigger as the sole entry point; WF-3 is purely
+  Execute-Workflow-invoked. Reply→ticket mapping for edit-capture (P3-2) uses a `[ticket:<uuid>]`
+  footer in the draft text rather than n8n workflow static data — no key-management/concurrency
+  concerns, fully inspectable by a human reading the chat, no schema change
+- Research: 2 rounds of Explore-agent research this phase, both reading n8n source directly
+  (`Telegram.node.ts`, `Switch.node.ts`, `TelegramApi.credentials.ts`, `ScheduleTrigger.node.ts`,
+  `ExecuteWorkflowTrigger.node.ts`) rather than trusting docs.n8n.io prose (consistently thin on
+  exact JSON shapes across both P2 and P3). Corrected two things Phase 2's research had gotten
+  wrong/unconfirmed: the inline-keyboard shape's actual array/object nesting (`rows` array →
+  singular `row` → `buttons` array, not the reverse), and confirmed `resource:"callback",
+  operation:"answerQuery"` is a native Telegram-node operation (no raw-HTTP/credential-token
+  workaround needed, which also wouldn't have worked — `$credentials` isn't exposed to expressions)
+- Verification status: **JSON authored and structurally validated only** (`python -m json.tool` +
+  a scripted connection-graph check for broken links/orphan/duplicate nodes across all 4 files) —
+  n8n itself has been down since the outage recorded in the previous entry, so import, activation,
+  and any live E2E behavior (button taps, callback answering, SLA cron timing) are **unverified**.
+  Treat P3-1..P3-3 as "written, reviewed, not yet proven" until n8n is back up.
+- Gotchas added: #22 (Schedule Trigger cron is 6 fields incl. seconds, not standard 5), #23 (one
+  webhook per bot token constrains workflow design, not just deployment), #24 (don't guess
+  IF/Switch operator type/operation pairs for existence checks — wrong ones fail silently at
+  runtime, not at import; use the boolean-coercion idiom instead)
+- Handoff / next: once n8n is healthy (see previous entry's blockers), recreate both credentials,
+  `make n8n-sync` (now handles all 4 files), then fix the 5 remaining `PLACEHOLDER_OPS_CHAT_ID`
+  spots (WF-1's "Is Ops Reply" IF + urgent-alert node, WF-3's 2 ops-message nodes, WF-4's reminder
+  node) before attempting P3-4's E2E (M2–M5)

@@ -25,10 +25,22 @@
 - [ ] P2-5 [HUMAN] E2E M1 happy path + backup screen recording — blocked on a public webhook URL for the Telegram Trigger (see gotcha #2: set up a cloudflared tunnel or similar, then re-enable the Telegram Trigger node in the n8n UI and set its ops-alert node's `chatId` — see Blockers).
 
 ## Phase 3 — Human-in-the-loop & SLA
-- [ ] P3-1 WF-3 inline keyboard (Approve/Edit/Reject) + callback handling
-- [ ] P3-2 Edit capture (reply-to) — both variants logged to messages
-- [ ] P3-3 WF-4 SLA watchdog (idempotent reminders, last_reminder_at)
-- [ ] P3-4 [HUMAN] E2E M2–M5
+- [~] P3-1 (Claude, 2026-07-06) WF-3 inline keyboard (Approve/Edit/Reject) + callback handling —
+  `n8n/workflows/wf3_hitl.json` authored, JSON structurally validated (no broken connections,
+  no orphan/duplicate nodes — scripted check, not a live n8n run). **Not yet imported/activated or
+  E2E-tested — n8n is down (see Blockers, unresolved from Phase 2).** ADR-005 records the
+  single-Telegram-entry-point architecture this required (WF-3 has no trigger of its own; WF-1's
+  existing Telegram Trigger now routes callback_query/edit-reply traffic to it via Execute
+  Workflow).
+- [~] P3-2 (Claude, 2026-07-06) Edit capture (reply-to) — `[ticket:<uuid>]` footer embedded in the
+  draft message, parsed back out of `reply_to_message.text` (schema-free, justified in ADR-005).
+  WF-2's `needs_human` branch now also inserts the `ai_draft` message (was missing before — a real
+  gap this phase found and fixed); WF-3's `edit_reply` path inserts the `operator` row. Same
+  live-verification caveat as P3-1.
+- [~] P3-3 (Claude, 2026-07-06) WF-4 SLA watchdog — `n8n/workflows/wf4_sla_watchdog.json` authored
+  (cron `*/15`, one grouped ops reminder + per-ticket `last_reminder_at` update via two independent
+  branches off one SELECT). Same live-verification caveat.
+- [ ] P3-4 [HUMAN] E2E M2–M5 — blocked on the same n8n outage as P2-5.
 
 ## Phase 4 — Digest & Notion
 - [ ] P4-1 WF-5 digest SQL aggregates
@@ -94,6 +106,19 @@ _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
   credential, and a `.env` DB-password edit that didn't match the live container until `ALTER USER`
   was run). Final state verified working: `Postgres - OpsPilot` (id `wpExxcblEvJLO3DZ`) and
   `Telegram - OpsPilot` (id `I8bufo32jgs857lq`, the renamed pre-existing "Telegram account 2").
+  **Superseded** — both credentials were lost again in the encryption-key-rotation incident below
+  and will need recreating once n8n is back up.
+- [OPEN] 2026-07-06 Claude: Phase 3 (WF-3, WF-4) was authored and structurally validated
+  (`python -m json.tool` + a scripted connection-graph check — no live n8n available) but **not**
+  imported/activated/E2E-tested, since n8n is still down from the Phase 2 outage. Once n8n is
+  healthy: recreate `Postgres - OpsPilot` + `Telegram - OpsPilot` credentials → `make n8n-sync`
+  (now syncs all 4 workflows in dependency order: WF-3, WF-4, WF-2, WF-1) → confirm all four
+  `active: true` → re-apply the `PLACEHOLDER_OPS_CHAT_ID` → real-chat-ID fix in **5 places** now:
+  WF-1's urgent-alert node *and* its "Is Ops Reply" IF condition (both needed — the IF one is
+  required for edit-capture routing to work at all, not just cosmetic), WF-3's "Send Ops Message"
+  + "Prompt For Correction" nodes, and WF-4's "Send Grouped Reminder" node → then attempt P3-4's E2E (force a
+  ticket to `needs_human`, confirm the 3-button message, tap Approve/Edit/Reject, verify the SLA
+  cron produces exactly one reminder then none on the next tick).
 
 ## Metrics to fill before applying
 - Auto-resolution rate: __% · Avg confidence: __ · Avg cost/ticket: $__ · p95 answer latency: __ s · Eval accuracy: __%
