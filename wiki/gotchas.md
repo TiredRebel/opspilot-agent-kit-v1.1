@@ -102,3 +102,16 @@
     committing the real value just to make the sync idempotent. Whoever re-syncs a workflow with a
     known placeholder must re-apply the same one-time UI edit afterward; check `PROGRESS.md`
     Blockers for the current list before assuming a re-sync is side-effect-free.
+21. **Recreating the pre-existing `n8n` container is risky — it's not this project's compose, and
+    has at least two latent bugs of its own** (`/home/mcgun/n8n/docker-compose.yml`, a separate
+    project). (a) It runs as `user: "0:0"` (root) but mounts its persistent volume at
+    `/home/node/.n8n` — root looks for config/encryption-key state at `/root/.n8n` instead, so
+    **any container recreation silently generates a new encryption key**, breaking decryption of
+    every existing credential (no warning, no error — just quietly-broken credentials afterward).
+    (b) Its `.env` file's `POSTGRES_NON_ROOT_PASSWORD` can be shadowed by a **stale value already
+    exported somewhere in the WSL environment** (docker-compose precedence: shell env > `.env`
+    file) — editing `.env` and even `--force-recreate`-ing the container silently keeps using the
+    old password. Before recreating this container for any reason (new env var, restart, etc.),
+    warn the user explicitly that credentials will need re-creation, and if DB auth fails
+    post-recreate despite a correct `.env`, suspect environment-variable shadowing before assuming
+    the password itself is wrong — check with `[ -n "${VAR+x}" ]`, don't just re-edit `.env` again.

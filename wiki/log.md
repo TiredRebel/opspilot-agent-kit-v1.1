@@ -129,3 +129,28 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
 - Gotchas added: #20 (re-sync overwrites human-patched literals)
 - Handoff / next: unchanged — Phase 3 next; whoever next edits/re-syncs WF-1 must re-apply this
   chatId fix afterward
+
+## [2026-07-06 00:20] build | human+Claude | n8n instance down — paused, not fixed
+- Attempted: set up an ngrok tunnel for P2-5 (Telegram E2E), applied `WEBHOOK_URL` to n8n's
+  separate `/home/mcgun/n8n/docker-compose.yml` project (its own `.env`, not this repo's) and
+  recreated the `n8n` container to pick it up
+- Found: recreating that container exposed two pre-existing bugs in the user's own n8n setup, not
+  this repo — (a) `user: "0:0"` (root) vs. the `n8n_storage` volume mounted at `/home/node/.n8n`
+  means root writes encryption-key state to unmounted `/root/.n8n` instead, so any recreate
+  silently rotates the encryption key (no backup existed — every credential on this n8n instance is
+  now undecryptable and needs recreating); (b) n8n's own Postgres sidecar auth kept failing even
+  after the user confirmed via direct `psql` that the current `.env` password works — root cause:
+  a stale `POSTGRES_NON_ROOT_PASSWORD` already exported somewhere in the WSL environment shadows
+  `.env` for any `docker compose` invocation (shell env beats `.env` file in compose's precedence);
+  explicit `unset` in the invoking shell didn't clear it either, meaning the source is more
+  persistent (`/etc/environment`, WSLENV passthrough, or similar) — needs the user's own terminal,
+  not a remote relay, to track down
+- Decisions: paused rather than kept guessing at someone else's infra from a lossy remote bridge.
+  This blocks nothing in our own repo — Phase 2's acceptance criteria already passed via the
+  Webhook Trigger path (gotcha #2's `disabled:true` workaround). Proceeding to Phase 3; n8n-specific
+  Phase 3 tasks (WF-3/WF-4 import+activate+E2E) will be authored now and verified once n8n is back
+- Gotchas added: #21 (recreating the pre-existing n8n container is risky — root/volume-path
+  mismatch rotates the encryption key; env-var shadowing can silently defeat a `.env` password fix)
+- Handoff / next: once n8n is healthy again, recreate the `Postgres - OpsPilot` and
+  `Telegram - OpsPilot` credentials (same steps as P2's close-out), re-run `make n8n-sync` for
+  WF-1/WF-2, re-apply the ops-alert `chatId` fix (gotcha #20), then attempt P2-5's live Telegram E2E

@@ -62,6 +62,29 @@ _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
   `setWebhook` call fails activation (gotcha #2). P2-5's E2E M1 needs a real Telegram flow: set up a
   tunnel (or the eventual VM domain), then re-enable the node in the n8n UI and re-save/activate.
   The Webhook Trigger path (`/webhook/opspilot-intake`) is fully live and already E2E-verified.
+- [OPEN] 2026-07-05 human+Claude: **n8n itself is currently DOWN** (crash-looping on its own
+  Postgres sidecar, `n8n-postgres-1`) — an issue in the user's separate, pre-existing
+  `/home/mcgun/n8n/docker-compose.yml` project, entirely outside this repo. Triggered when
+  recreating the `n8n` container to apply `WEBHOOK_URL` (an ngrok tunnel,
+  `https://caffeinic-convulsively-barney.ngrok-free.dev`, set up for P2-5). Two distinct issues
+  found:
+  1. **Encryption key lost.** `user: "0:0"` in that compose file runs n8n as root, but the
+     `n8n_storage` volume is mounted at `/home/node/.n8n` — root looks for its config at
+     `/root/.n8n` instead (unmounted, ephemeral), so recreating the container auto-generated a
+     *new* encryption key. No backup existed. **Every credential on this n8n instance (ours —
+     `Postgres - OpsPilot`, `Telegram - OpsPilot` — and the user's pre-existing ones) will need to
+     be recreated from scratch** once n8n is back up.
+  2. **DB auth still failing** (`password authentication failed for user "n8n"`) even after the
+     user confirmed (via a direct `psql` test) that the current `.env` password *does* authenticate
+     against the live DB. Root cause identified: a **stale `POSTGRES_NON_ROOT_PASSWORD` already
+     exported in the WSL shell environment** shadows the `.env` file's current value for any
+     `docker compose` invocation (docker-compose's env precedence: shell env > `.env` file).
+     Explicitly `unset`-ting it in the invoking shell did **not** fix it, meaning the override is
+     coming from somewhere more persistent than a simple shell export (`/etc/environment`, a
+     WSLENV-passed-through Windows env var, or similar) — needs the user's own terminal to track
+     down, not a remote/relayed session. Decision: paused — this blocks nothing in our own repo;
+     Phase 2's acceptance criteria already passed via the Webhook Trigger path. Resume Phase 2's
+     n8n-credential-recreation + P2-5 whenever the user has fixed their own instance.
 - [OPEN] 2026-07-05 Claude: `/query`'s embed call doesn't pass `ticket_id` (see
   `services/rag/app/main.py`), so `llm_calls` rows for `purpose='embed'` aren't attributed to a
   ticket. Out of scope for Phase 2 (guardrail: don't touch `services/rag` internals) — minor P1
