@@ -56,7 +56,7 @@
           "conditions": [
             {
               "id": "cond-is-ops-chat-1",
-              "leftValue": "={{ $json.message.chat.id }}",
+              "leftValue": "={{ String($json.message.chat.id) }}",
               "rightValue": "PLACEHOLDER_OPS_CHAT_ID",
               "operator": { "type": "string", "operation": "equals" }
             },
@@ -81,7 +81,7 @@
       "parameters": {
         "mode": "runOnceForEachItem",
         "language": "javaScript",
-        "jsCode": "const replyText = ($json.message.reply_to_message && $json.message.reply_to_message.text) || '';\nconst match = replyText.match(/\\[ticket:([0-9a-fA-F-]+)\\]/);\nreturn {\n  mode: 'edit_reply',\n  ticket_id: match ? match[1] : null,\n  corrected_text: $json.message.text || ''\n};"
+        "jsCode": "const replyText = ($json.message.reply_to_message && $json.message.reply_to_message.text) || '';\nconst match = replyText.match(/TICKET-ID:([0-9a-fA-F-]+)/);\nreturn {\n  mode: 'edit_reply',\n  ticket_id: match ? match[1] : null,\n  corrected_text: $json.message.text || ''\n};"
       },
       "id": "0631f406-ff8f-4b3a-ae3d-b50993a77f88",
       "name": "Prepare Edit Reply Payload",

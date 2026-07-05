@@ -77,7 +77,7 @@
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "PLACEHOLDER_OPS_CHAT_ID",
-        "text": "={{ 'Ticket needs review (confidence: ' + Number($json.confidence).toFixed(2) + ')\n\n' + $json.answer + '\n\nSources: ' + ($json.sources || []).join(', ') + '\n\n[ticket:' + $json.ticket_id + ']' }}",
+        "text": "={{ 'Ticket needs review (confidence: ' + Number($json.confidence).toFixed(2) + ')\\n\\n' + $json.answer + '\\n\\nSources: ' + ($json.sources || []).join(', ') + '\\n\\nTICKET-ID:' + $json.ticket_id }}",
         "replyMarkup": "inlineKeyboard",
         "inlineKeyboard": {
           "rows": [
