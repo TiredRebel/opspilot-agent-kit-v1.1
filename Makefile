@@ -7,7 +7,7 @@ down:
 	docker compose down
 
 seed:
-	@echo "make seed: not implemented yet — see P1-2 (scripts/ingest.py, scripts/seed_tickets.py)"
+	uv run scripts/ingest.py
 
 lint:
 	uv run ruff format --check .

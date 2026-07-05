@@ -7,6 +7,7 @@ COPY pyproject.toml ./
 RUN uv sync --no-dev
 
 COPY services/rag/app ./services/rag/app
+COPY services/rag/prompts ./services/rag/prompts
 
 ENV PATH="/app/.venv/bin:${PATH}"
 ENV PYTHONPATH="/app/services/rag"

@@ -27,8 +27,11 @@ services:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
       DAILY_BUDGET_USD: ${DAILY_BUDGET_USD}
       CONFIDENCE_THRESHOLD: ${CONFIDENCE_THRESHOLD}
+      KB_SEED_DIR: /app/kb/seed
     ports:
       - "${RAG_API_PORT:-8000}:8000"
+    volumes:
+      - ./kb:/app/kb:ro
     depends_on:
       postgres:
         condition: service_healthy
