@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 """CLI entrypoint for `make n8n-sync` — imports/updates + activates n8n/workflows/*.json via
-n8n's Public REST API. WF-2 is synced first so its real n8n-assigned workflow ID can be patched
-into WF-1's Execute Workflow node (the committed JSON carries a placeholder — the real ID isn't
-known until n8n creates the workflow)."""
+n8n's Public REST API. Synced in dependency order so each workflow's real n8n-assigned ID can be
+patched into whichever other committed JSON references it as a placeholder (the real ID isn't
+known until n8n creates the workflow): WF-3 and WF-4 have no dependencies; WF-2 references WF-3;
+WF-1 references both WF-2 and WF-3."""
 
 import json
 import os
@@ -70,19 +71,30 @@ def _sync_one(client: httpx.Client, raw_text: str) -> dict:
 
 
 def main() -> int:
-    wf2_path = WORKFLOWS_DIR / "wf2_draft_answer.json"
-    wf1_path = WORKFLOWS_DIR / "wf1_intake_triage.json"
-
     with _client() as client:
-        wf2_result = _sync_one(client, wf2_path.read_text(encoding="utf-8"))
+        wf3_result = _sync_one(
+            client, (WORKFLOWS_DIR / "wf3_hitl.json").read_text(encoding="utf-8")
+        )
+        print(wf3_result)
+
+        wf4_result = _sync_one(
+            client, (WORKFLOWS_DIR / "wf4_sla_watchdog.json").read_text(encoding="utf-8")
+        )
+        print(wf4_result)
+
+        wf2_raw = (WORKFLOWS_DIR / "wf2_draft_answer.json").read_text(encoding="utf-8")
+        wf2_raw = wf2_raw.replace("WF3_WORKFLOW_ID_PLACEHOLDER", wf3_result["id"])
+        wf2_result = _sync_one(client, wf2_raw)
         print(wf2_result)
 
-        wf1_raw = wf1_path.read_text(encoding="utf-8")
+        wf1_raw = (WORKFLOWS_DIR / "wf1_intake_triage.json").read_text(encoding="utf-8")
         wf1_raw = wf1_raw.replace("WF2_WORKFLOW_ID_PLACEHOLDER", wf2_result["id"])
+        wf1_raw = wf1_raw.replace("WF3_WORKFLOW_ID_PLACEHOLDER", wf3_result["id"])
         wf1_result = _sync_one(client, wf1_raw)
         print(wf1_result)
 
-    if not (wf1_result["active"] and wf2_result["active"]):
+    results = [wf1_result, wf2_result, wf3_result, wf4_result]
+    if not all(r["active"] for r in results):
         print("One or more workflows failed to activate.", file=sys.stderr)
         return 1
     return 0

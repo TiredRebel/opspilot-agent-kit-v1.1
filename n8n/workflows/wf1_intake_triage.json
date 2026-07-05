@@ -3,7 +3,7 @@
   "nodes": [
     {
       "parameters": {
-        "updates": ["message"],
+        "updates": ["message", "callback_query"],
         "additionalFields": {}
       },
       "id": "33c7fcb7-7498-4014-a4c1-4873d60b594e",
@@ -11,10 +11,112 @@
       "type": "n8n-nodes-base.telegramTrigger",
       "typeVersion": 1.4,
       "position": [0, 0],
-      "disabled": true,
       "credentials": {
         "telegramApi": { "id": null, "name": "Telegram - OpsPilot" }
       }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            {
+              "id": "cond-is-callback-1",
+              "leftValue": "={{ !!$json.callback_query }}",
+              "rightValue": "",
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "96e590f5-d108-46d0-8dd0-395030de923f",
+      "name": "Is Callback Query",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [0, 420]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const data = ($json.callback_query && $json.callback_query.data) || '';\nconst [action, ticket_id] = data.split('|');\nreturn {\n  mode: 'callback',\n  action,\n  ticket_id,\n  callback_query_id: $json.callback_query.id\n};"
+      },
+      "id": "fdad3bc3-913f-4dc3-8550-69647d9957f9",
+      "name": "Prepare Callback Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260, 380]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "conditions": [
+            {
+              "id": "cond-is-ops-chat-1",
+              "leftValue": "={{ $json.message.chat.id }}",
+              "rightValue": "PLACEHOLDER_OPS_CHAT_ID",
+              "operator": { "type": "string", "operation": "equals" }
+            },
+            {
+              "id": "cond-is-reply-1",
+              "leftValue": "={{ !!$json.message.reply_to_message }}",
+              "rightValue": "",
+              "operator": { "type": "boolean", "operation": "true", "singleValue": true }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3bf1e5a9-e9d4-4cd1-a96c-49bb0c7975ae",
+      "name": "Is Ops Reply",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [0, 620]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const replyText = ($json.message.reply_to_message && $json.message.reply_to_message.text) || '';\nconst match = replyText.match(/\\[ticket:([0-9a-fA-F-]+)\\]/);\nreturn {\n  mode: 'edit_reply',\n  ticket_id: match ? match[1] : null,\n  corrected_text: $json.message.text || ''\n};"
+      },
+      "id": "0631f406-ff8f-4b3a-ae3d-b50993a77f88",
+      "name": "Prepare Edit Reply Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260, 620]
+    },
+    {
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "WF3_WORKFLOW_ID_PLACEHOLDER",
+          "mode": "id"
+        },
+        "mode": "once",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "mode": "={{ $json.mode }}",
+            "action": "={{ $json.action }}",
+            "ticket_id": "={{ $json.ticket_id }}",
+            "callback_query_id": "={{ $json.callback_query_id }}",
+            "corrected_text": "={{ $json.corrected_text }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "2d141e7c-d06b-4a9c-aab7-457893172708",
+      "name": "HITL Router (WF-3)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [520, 500]
     },
     {
       "parameters": {
@@ -206,7 +308,25 @@
   ],
   "connections": {
     "Telegram Trigger": {
-      "main": [[{ "node": "Normalize Telegram", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Is Callback Query", "type": "main", "index": 0 }]]
+    },
+    "Is Callback Query": {
+      "main": [
+        [{ "node": "Prepare Callback Payload", "type": "main", "index": 0 }],
+        [{ "node": "Is Ops Reply", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare Callback Payload": {
+      "main": [[{ "node": "HITL Router (WF-3)", "type": "main", "index": 0 }]]
+    },
+    "Is Ops Reply": {
+      "main": [
+        [{ "node": "Prepare Edit Reply Payload", "type": "main", "index": 0 }],
+        [{ "node": "Normalize Telegram", "type": "main", "index": 0 }]
+      ]
+    },
+    "Prepare Edit Reply Payload": {
+      "main": [[{ "node": "HITL Router (WF-3)", "type": "main", "index": 0 }]]
     },
     "Webhook": {
       "main": [[{ "node": "Normalize Webhook", "type": "main", "index": 0 }]]

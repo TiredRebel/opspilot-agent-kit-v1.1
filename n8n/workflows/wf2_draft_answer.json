@@ -173,12 +173,50 @@
       }
     },
     {
-      "parameters": {},
-      "id": "9d027c73-65d7-4988-83e2-585687f16b5a",
-      "name": "WF-3 Placeholder",
-      "type": "n8n-nodes-base.noOp",
-      "typeVersion": 1,
-      "position": [1100, 160]
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO messages (ticket_id, role, content) VALUES ($1, 'ai_draft', $2)",
+        "options": {
+          "queryReplacement": "={{ [$('Select Ticket').item.json.ticket_id, $('Query RAG').item.json.answer] }}"
+        }
+      },
+      "id": "2a873b52-3541-446a-a8a6-a11568a2e562",
+      "name": "Insert AI Draft Message (Needs Human)",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [1100, 160],
+      "credentials": {
+        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+      }
+    },
+    {
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "WF3_WORKFLOW_ID_PLACEHOLDER",
+          "mode": "id"
+        },
+        "mode": "once",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "mode": "post_for_approval",
+            "ticket_id": "={{ $('Select Ticket').item.json.ticket_id }}",
+            "answer": "={{ $('Query RAG').item.json.answer }}",
+            "sources": "={{ $('Query RAG').item.json.sources }}",
+            "confidence": "={{ $('Query RAG').item.json.confidence }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "73ba2290-ac83-4c01-a6f9-85444312ba65",
+      "name": "Post For Approval (WF-3)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [1320, 160]
     }
   ],
   "connections": {
@@ -213,7 +251,10 @@
       "main": [[{ "node": "Insert AI Draft Message", "type": "main", "index": 0 }]]
     },
     "Update Ticket Needs Human": {
-      "main": [[{ "node": "WF-3 Placeholder", "type": "main", "index": 0 }]]
+      "main": [[{ "node": "Insert AI Draft Message (Needs Human)", "type": "main", "index": 0 }]]
+    },
+    "Insert AI Draft Message (Needs Human)": {
+      "main": [[{ "node": "Post For Approval (WF-3)", "type": "main", "index": 0 }]]
     }
   },
   "settings": {

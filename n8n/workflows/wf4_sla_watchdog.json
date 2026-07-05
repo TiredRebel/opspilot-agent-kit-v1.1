@@ -1,0 +1,99 @@
+{
+  "name": "WF-4 SLA Watchdog",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            { "field": "cronExpression", "expression": "0 */15 * * * *" }
+          ]
+        }
+      },
+      "id": "4f461cb6-2706-4cce-8010-57870809f77d",
+      "name": "Schedule Trigger",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.3,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, source, external_ref, subject, status FROM tickets WHERE status IN ('needs_human', 'escalated') AND updated_at < now() - interval '2 hours' AND (last_reminder_at IS NULL OR last_reminder_at < now() - interval '2 hours')",
+        "options": {}
+      },
+      "id": "826d2e8e-8a50-4d5e-be77-680c551b1be8",
+      "name": "Select Overdue Tickets",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [220, 0],
+      "credentials": {
+        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const lines = items.map(item => `• ${item.json.id} (${item.json.status}): ${item.json.subject || item.json.external_ref}`);\nreturn [{\n  json: {\n    text: `⏰ SLA reminder — ${items.length} ticket(s) awaiting action:\\n\\n${lines.join('\\n')}`\n  }\n}];"
+      },
+      "id": "282400da-7ca1-4907-9e00-22c732d8cc43",
+      "name": "Build Grouped Reminder",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [440, -80]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "PLACEHOLDER_OPS_CHAT_ID",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "913138e2-c93a-419b-9ad8-ee859c365f22",
+      "name": "Send Grouped Reminder",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [660, -80],
+      "credentials": {
+        "telegramApi": { "id": null, "name": "Telegram - OpsPilot" }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE tickets SET last_reminder_at = NOW() WHERE id = $1",
+        "options": {
+          "queryReplacement": "={{ [$json.id] }}"
+        }
+      },
+      "id": "8a739f1c-fb08-4a4e-b458-2263ae425ef5",
+      "name": "Mark Reminded",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [440, 80],
+      "credentials": {
+        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+      }
+    }
+  ],
+  "connections": {
+    "Schedule Trigger": {
+      "main": [[{ "node": "Select Overdue Tickets", "type": "main", "index": 0 }]]
+    },
+    "Select Overdue Tickets": {
+      "main": [
+        [
+          { "node": "Build Grouped Reminder", "type": "main", "index": 0 },
+          { "node": "Mark Reminded", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Build Grouped Reminder": {
+      "main": [[{ "node": "Send Grouped Reminder", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
