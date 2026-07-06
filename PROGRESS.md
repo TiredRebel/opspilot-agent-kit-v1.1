@@ -130,6 +130,16 @@ deploy documentation and locally-verifiable artifacts; it does not execute again
   New `LICENSE` (MIT). Bot handle, demo video link, and real `/stats` metrics remain `[HUMAN]`
   placeholders — need production traffic and the recorded video to fill in.
 
+## Maintenance (OpenSpec-tracked changes)
+- [x] `add-ollama-cloud-auth` (Claude, 2026-07-06, archived) — optional `OLLAMA_API_KEY` for the
+  `ollama` provider to authenticate directly against `https://ollama.com/v1`. See P5-2 blocker
+  entry below and wiki/gotchas.md #41 for the result.
+- [x] `add-docstrings-pep8-audit` (Claude, 2026-07-06, archived) — closed all docstring gaps
+  found by an AST scan across `services/rag/app/`, `evals/`, and `scripts/`; added `D100-D104`
+  (docstring-presence) to ruff's lint config, with tests exempted via `per-file-ignores`.
+  `ruff check`/`ruff format --check` clean, `make test` 18/18 green. New spec:
+  `openspec/specs/code-documentation-standards/spec.md`.
+
 ## Blockers / Findings
 _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
 - [CLOSED] 2026-07-05 human: WF-1's "Alert Ops - Urgent" Telegram node's `chatId` set to the real

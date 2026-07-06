@@ -30,6 +30,7 @@ from app.settings import settings
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    """Close the DB pool on shutdown; nothing needed on startup."""
     yield
     await db.close_pool()
 
@@ -40,6 +41,7 @@ router = APIRouter()
 
 @app.exception_handler(BudgetExceeded)
 async def budget_exceeded_handler(request: Request, exc: BudgetExceeded):
+    """Map `BudgetExceeded` to HTTP 429 instead of an unhandled 500."""
     return JSONResponse(status_code=429, content={"detail": str(exc)})
 
 
@@ -179,6 +181,7 @@ async def query(payload: QueryRequest) -> QueryResponse:
 
 @router.post("/summarize", response_model=SummarizeResponse)
 async def summarize(payload: SummarizeRequest) -> SummarizeResponse:
+    """Turn a stats payload into a natural-language digest (used by WF-5's daily digest)."""
     result = await complete(
         "summarize",
         [{"role": "user", "content": f"Stats: {payload.stats}"}],

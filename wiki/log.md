@@ -427,3 +427,34 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
   remaining work for P6-1/P6-4's real-VM acceptance criteria. P5-2's accuracy gap is unchanged in
   substance (still needs a real paid-tier or Anthropic/OpenAI-key provider to actually clear
   0.85) but now has a more complete comparison across four models
+
+## [2026-07-06 14:00] build | Claude Code | Ollama cloud API-key auth + docstring/PEP-8 audit (OpenSpec: add-ollama-cloud-auth, add-docstrings-pep8-audit)
+- P5-2 revisit via OpenSpec change `add-ollama-cloud-auth` (archived): added optional
+  `OLLAMA_API_KEY` setting so the `ollama` provider can authenticate directly against
+  `https://ollama.com/v1` instead of only the local daemon. Motivated by a live-confirmed
+  distinction — the local daemon's proxying of `:cloud` models needs a separate paid ollama.com
+  subscription plan (403 even after `ollama signin` confirmed the right account and a full
+  `ollama serve` restart), while a personal API key works immediately against the direct cloud
+  endpoint (pay-per-token, a different product). Tested against `kimi-k2.7-code:cloud`: auth path
+  confirmed working, but accuracy came back 0.750–0.792 across two runs — still below the local
+  12B model's 0.833, so P5-2's 0.85 target remains open. Also found: `llm.py`'s cost logging has
+  no pricing entry for `ollama`, so this real billed cloud usage logged as $0.0000 — the `$2`
+  dev-budget invariant can't currently see spend on this path (gotcha #41)
+- Separate OpenSpec change `add-docstrings-pep8-audit` (archived): an AST scan found 23
+  functions/classes + 2 modules missing docstrings in `services/rag/app/`, plus 9 more in
+  `evals/`/`scripts/` — `ruff check`/`ruff format --check` passed cleanly throughout because the
+  configured rule set never checked for docstrings. Closed all of them (one-line docstrings for
+  simple functions/Pydantic models, matching the codebase's existing concise style — no rewriting
+  of already-good multi-paragraph docstrings). Added `D100-D104` (docstring-presence only, not
+  the full stylistic `D` family) to `pyproject.toml`'s ruff `select`, with `services/rag/tests/**`
+  and `evals/test_*.py` exempted via `per-file-ignores` since test names are already the
+  documentation. `ruff check .`/`ruff format --check .` both clean, `make test` 18/18 green
+- Files touched: `services/rag/app/{__init__,settings,llm,main,schemas}.py`,
+  `evals/{conftest,test_classify,test_grounding}.py`, `scripts/{ingest,n8n_sync}.py`,
+  `pyproject.toml`, `.env.example`, `openspec/specs/llm-provider-layer/spec.md` (new),
+  `openspec/specs/code-documentation-standards/spec.md` (new), `PROGRESS.md`, `wiki/gotchas.md`,
+  `wiki/map.md`
+- Handoff / next: P5-2 still needs a real Anthropic/OpenAI key (already budgeted in
+  `docs/SPEC.md` §4) to actually reach 0.85 — every free/cheap-cloud route tried so far
+  (Gemini quota, `minimax-m3:cloud`, `glm-5.2:cloud`, `kimi-k2.7-code:cloud`) has come up short
+  or blocked

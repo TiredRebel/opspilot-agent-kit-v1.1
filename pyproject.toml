@@ -27,7 +27,17 @@ target-version = "py312"
 src = ["services/rag/app"]
 
 [tool.ruff.lint]
-select = ["E", "F", "I", "UP", "B"]
+# D100-D104: docstring-presence only (module/class/function/method/package) — deliberately not
+# the full pydocstyle "D" family, which also flags style choices (blank-line placement, summary
+# formatting, imperative mood) that this codebase's existing docstrings don't follow and aren't
+# being retrofitted (openspec/changes/archive/*-add-docstrings-pep8-audit design.md).
+select = ["E", "F", "I", "UP", "B", "D100", "D101", "D102", "D103", "D104"]
+
+[tool.ruff.lint.per-file-ignores]
+# Test function names are already the documentation; requiring docstrings here would just
+# restate the name.
+"services/rag/tests/**" = ["D100", "D101", "D102", "D103", "D104"]
+"evals/test_*.py" = ["D100", "D101", "D102", "D103", "D104"]
 
 [tool.pytest.ini_options]
 testpaths = ["services/rag/tests"]

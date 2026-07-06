@@ -1,3 +1,5 @@
+"""Env-driven settings for the RAG service, loaded from `.env` via pydantic-settings."""
+
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 

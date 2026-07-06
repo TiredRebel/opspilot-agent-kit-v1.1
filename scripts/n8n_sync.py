@@ -17,6 +17,7 @@ IMPORT_FIELDS = {"name", "nodes", "connections", "settings"}
 
 
 def _client() -> httpx.Client:
+    """Build an httpx client authenticated against n8n's Public REST API."""
     base_url = os.environ.get("N8N_API_URL", "http://localhost:5678")
     api_key = os.environ.get("N8N_API_KEY")
     if not api_key:
@@ -30,6 +31,7 @@ def _client() -> httpx.Client:
 
 
 def _find_by_name(client: httpx.Client, name: str) -> dict | None:
+    """Page through n8n's /workflows list to find an existing workflow by exact name."""
     cursor = None
     while True:
         params = {"limit": 250}
@@ -47,6 +49,7 @@ def _find_by_name(client: httpx.Client, name: str) -> dict | None:
 
 
 def _sync_one(client: httpx.Client, raw_text: str) -> dict:
+    """Create-or-update one workflow from its JSON text, then attempt to activate it."""
     full = json.loads(raw_text)
     body = {key: full[key] for key in IMPORT_FIELDS}
 
@@ -75,6 +78,7 @@ def _sync_one(client: httpx.Client, raw_text: str) -> dict:
 
 
 def main() -> int:
+    """Sync all 5 workflows in dependency order, patching placeholder IDs as they're created."""
     with _client() as client:
         wf3_result = _sync_one(
             client, (WORKFLOWS_DIR / "wf3_hitl.json").read_text(encoding="utf-8")
