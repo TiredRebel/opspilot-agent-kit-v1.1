@@ -247,6 +247,19 @@ _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
   Anthropic/OpenAI key; local models are a viable free `/classify`-only dev option but not
   currently sufficient for a passing `make evals` run. Full comparison and every technical finding
   in wiki/gotchas.md #33–#40.
+- [OPEN] 2026-07-06 Claude: **`kimi-k2.7-code:cloud` tried as a fifth model, also does not close
+  P5-2's gap** — see `openspec/changes/add-ollama-cloud-auth` (implemented) for the code change
+  that made this testable at all: `settings.py`/`llm.py` gained an optional `OLLAMA_API_KEY` that
+  routes the `ollama` provider directly to `https://ollama.com/v1`, since the local daemon's
+  `:cloud`-model proxying needs a separate paid ollama.com subscription plan that this session's
+  account doesn't hold (confirmed via a 403 even after `ollama signin` verified the correct
+  account and a full `ollama serve` restart — see wiki/gotchas.md #41). Once wired to a real
+  personal API key (pay-per-token product, distinct from the subscription), the call succeeded
+  (no 403) but scored only 0.750–0.792 across two runs — worse than the existing local 12B
+  default's 0.833. **Also found**: `llm.py`'s cost logging has no pricing entry for `ollama`, so
+  this real billed cloud usage logged as `$0.0000` — the `$2` dev-budget invariant currently can't
+  see spend on this path. To actually close P5-2: the only untried route left is a real
+  Anthropic/OpenAI key (spec already budgets for this, see docs/SPEC.md §4 "$2 dev budget").
 - [OPEN] 2026-07-06 Claude: Phase 6's real-VM acceptance criteria are explicitly deferred, per
   user decision — "human executes docs/infrastructure.md top-to-bottom," "TESTPLAN M7 passes over
   TLS," and "fresh-clone rehearsal on a clean machine" are all `[ ]` open, not faked as done. When

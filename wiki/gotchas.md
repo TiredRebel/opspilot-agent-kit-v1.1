@@ -302,3 +302,25 @@
     worked without any subscription). Don't assume every `:cloud`-suffixed model behind the same
     Ollama server is equally accessible — check each one; a 403 with that exact message means
     "needs a paid plan," not "misconfigured" or "model doesn't exist."
+41. **A working ollama.com personal API key does NOT unlock subscription-gated `:cloud` models
+    through the local daemon — those are two separate products.** Confirmed live: with the local
+    `ollama` CLI already signed in as the correct account (`ollama signin` → "already signed in as
+    user...") and even after a full `ollama serve` restart, `kimi-k2.7-code:cloud` still 403'd
+    through `localhost:11434` with the same `"this model requires a subscription"` error from
+    gotcha #40. Separately, that same personal API key worked immediately (clean 200) when used
+    directly against `https://ollama.com/v1` (or `/api/chat`) as a bearer token — a
+    pay-per-token developer API, billed differently from the flat-fee subscription plan the local
+    daemon's proxy path checks for. Added optional `OLLAMA_API_KEY` support to `_ollama_client()`
+    in `llm.py` (see `openspec/changes/add-ollama-cloud-auth`) so the direct-API route is usable;
+    when set, it takes over the `ollama` provider entirely (`base_url="https://ollama.com/v1"`),
+    bypassing the local-daemon subscription gate.
+    **Result once wired up**: `kimi-k2.7-code:cloud` reached only 0.750–0.792 accuracy across two
+    runs (same 27-item fixture) — non-deterministic between runs, and *worse* than the local 12B
+    model's 0.833 (gotcha #38) either way. Same pattern as `minimax-m3:cloud`: a cloud-routed
+    model is not automatically more accurate than a well-chosen local one for this task.
+    **Separate finding, not yet fixed**: the eval's printed "eval run cost" showed `$0.0000` for
+    this run despite it being a real, billed `https://ollama.com` API call — `llm.py`'s cost
+    logging has no per-token pricing entry for the `ollama` provider (it was written assuming
+    `ollama` always means free local compute). This means real spend against the direct cloud
+    endpoint is currently invisible to `llm_calls` and the `$2` dev-budget invariant in
+    `wiki/map.md`. Needs a follow-up if the cloud-auth path is used again for real spend tracking.

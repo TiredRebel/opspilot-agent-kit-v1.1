@@ -14,6 +14,11 @@ class Settings(BaseSettings):
     openai_api_key: str = ""
     gemini_api_key: str = ""
     ollama_base_url: str = "http://localhost:11434"
+    # Optional: a personal ollama.com API key. When set, the ollama provider authenticates
+    # directly against https://ollama.com/v1 instead of the local daemon — needed for `:cloud`
+    # models when the local daemon's account doesn't hold the separate ollama.com subscription
+    # plan (gotcha: local-daemon proxying and the direct API are two different auth gates).
+    ollama_api_key: str = ""
     # llama3.2:3b is fast and reliable but only ~0.667 classify accuracy in this project's eval
     # (wiki/gotchas.md #38) — a bigger local model (e.g. a 12B+ one) scores meaningfully higher
     # at the cost of speed. Kept as the default here since it's small enough to pull quickly.

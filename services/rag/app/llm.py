@@ -232,7 +232,14 @@ def _openai_client() -> openai.AsyncOpenAI:
 def _ollama_client() -> openai.AsyncOpenAI:
     """Ollama exposes an OpenAI-compatible chat/embeddings API, so we reuse the OpenAI SDK
     pointed at the local server instead of a separate client library. Ollama doesn't check the
-    api_key, but the SDK requires a non-empty string."""
+    api_key, but the SDK requires a non-empty string.
+
+    If `ollama_api_key` is set, talk to ollama.com's hosted endpoint directly with that key as
+    the bearer token instead — the local daemon's proxying of `:cloud` models is gated behind a
+    separate ollama.com subscription plan, but a personal API key works against the hosted API
+    on its own (pay-per-token), independent of that plan."""
+    if settings.ollama_api_key:
+        return openai.AsyncOpenAI(base_url="https://ollama.com/v1", api_key=settings.ollama_api_key)
     return openai.AsyncOpenAI(base_url=f"{settings.ollama_base_url}/v1", api_key="ollama")
 
 
