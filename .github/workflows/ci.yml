@@ -1,0 +1,100 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+env:
+  POSTGRES_USER: opspilot
+  POSTGRES_PASSWORD: changeme
+  POSTGRES_DB: opspilot
+  POSTGRES_PORT: 5432
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: opspilot
+          POSTGRES_PASSWORD: changeme
+          POSTGRES_DB: opspilot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U opspilot -d opspilot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Lint
+        run: |
+          uv run ruff format --check .
+          uv run ruff check .
+
+      - name: L1/L2 tests (fake provider, isolated test DB)
+        run: uv run pytest services/rag/tests
+
+  evals:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch'
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: opspilot
+          POSTGRES_PASSWORD: changeme
+          POSTGRES_DB: opspilot
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U opspilot -d opspilot"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+      DATABASE_URL: postgresql://opspilot:changeme@localhost:5432/opspilot
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --all-extras --dev
+
+      - name: Apply DB schema
+        run: |
+          uv run python -c "
+          import asyncio, asyncpg
+          async def main():
+              conn = await asyncpg.connect('${{ env.DATABASE_URL }}')
+              await conn.execute(open('db/init/01_schema.sql').read())
+              await conn.close()
+          asyncio.run(main())
+          "
+
+      - name: Start rag-api and seed KB
+        run: |
+          LLM_PROVIDER=fake DATABASE_URL=${{ env.DATABASE_URL }} \
+            uv run uvicorn app.main:app --app-dir services/rag --host 0.0.0.0 --port 8010 &
+          for i in $(seq 1 20); do curl -sf http://localhost:8010/health && break; sleep 1; done
+          RAG_API_PORT=8010 uv run scripts/ingest.py
+
+      - name: Evals
+        run: make evals

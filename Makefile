@@ -20,7 +20,7 @@ test:
 	uv run pytest services/rag/tests
 
 evals:
-	@echo "make evals: not implemented yet — see P5 (pytest -m evals)"
+	uv run pytest evals -m evals -s
 
 backup:
 	@echo "make backup: not implemented yet — see P6-2 (scripts/backup.sh)"

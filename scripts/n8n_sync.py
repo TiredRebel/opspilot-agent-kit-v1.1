@@ -58,6 +58,10 @@ def _sync_one(client: httpx.Client, raw_text: str) -> dict:
     response.raise_for_status()
     workflow = response.json()
 
+    # Creation/update succeeds even with unresolved credentials or a bad trigger config —
+    # activation is where n8n actually validates those (wiki/gotchas.md #16). Catching this
+    # per-workflow (rather than letting it crash the whole sync) keeps partial progress visible:
+    # a workflow that's created-but-inactive still shows up in the printed result below.
     try:
         activate_response = client.post(f"/workflows/{workflow['id']}/activate")
         activate_response.raise_for_status()

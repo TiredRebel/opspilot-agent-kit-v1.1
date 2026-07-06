@@ -300,3 +300,73 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
   fires on its own (only the webhook test path was exercised this session) and do a visual check of
   the Telegram message + Notion page formatting. Otherwise Phase 4 is done — Phase 5 (evals + CI) is
   next per PROGRESS.md
+
+## [2026-07-06 07:30] build | Claude Code | Phase 5 — Evals & CI + multi-provider llm.py (P5-1..P5-3)
+- Completed on the new `Phase-5` branch: P5-1 `evals/tickets.jsonl` (27 items, subagent-drafted
+  per the phase prompt's own instruction, reviewed for distribution/quality); P5-2
+  `evals/{conftest,test_classify,test_grounding}.py`; P5-3 `.github/workflows/ci.yml` +
+  `Makefile`'s `evals` target + README CI badge. Unplanned mid-phase addition: `llm.py` restructured
+  to genuinely support multiple providers (`anthropic`/`openai`/`gemini`/`ollama`/`fake`), needed
+  to unblock live evals once it turned out `ANTHROPIC_API_KEY`/`OPENAI_API_KEY` were both empty
+- Files touched: `evals/{conftest,test_classify,test_grounding,tickets.jsonl}.py`,
+  `.github/workflows/ci.yml`, `Makefile`, `README.md`, `services/rag/app/{llm,settings}.py`,
+  `services/rag/prompts/classify.md`, `.env`/`.env.example`, `pyproject.toml` (moved `httpx` from
+  dev to main deps — `llm.py`'s Gemini calls need it at runtime, not just in tests/scripts),
+  `docs/SPEC.md` §3.1, `PROGRESS.md`, `wiki/map.md`, `wiki/gotchas.md`
+- Decisions: `evals/conftest.py` deliberately does NOT reuse `services/rag/tests/conftest.py`'s
+  isolated-test-database pattern (gotcha #31) — grounding checks need the real ingested KB, so it
+  points at the actual dev database and never truncates. `_complete_openai_compatible()` extracted
+  as a shared response-parser for OpenAI and Ollama (both return identically-shaped
+  ChatCompletion objects via Ollama's OpenAI-compatible endpoint), avoiding duplicated parsing
+  logic. Only `anthropic` mode keeps a fallback chain (unchanged from ADR-001); `openai`,
+  `gemini`, `ollama` each run standalone by design — a genuine 4-way fallback graph was judged
+  unnecessary complexity for what these are actually used for (dev/eval alternatives, not a
+  production reliability chain)
+- Research, all verified live rather than guessed (established pattern this session): Gemini's
+  `generateContent`/`embedContent` REST shapes, its UPPERCASE-type structured-output schema
+  format, its native `outputDimensionality` parameter (confirmed hitting exactly 1536 dims,
+  matching the frozen schema — gotcha #5), real per-1M-token pricing from Google's own pricing
+  page, and — critically — an unusual `AQ.`-prefixed key from AI Studio that still worked despite
+  not matching the commonly-documented `AIzaSy...` format (gotcha #33)
+- Incident + fix, found mid-P5-1: running `pytest` to verify the `/stats` P4-1 extension silently
+  wiped the live dev database (all Phase 2/3 test tickets, the ingested KB) — `_clean_tables` in
+  `services/rag/tests/conftest.py` truncated the same database the running services actually use,
+  since the old fixture only ever rewrote the DB hostname (gotcha #11), not the database name.
+  User asked for a real fix, not just a re-seed: added a session-scoped fixture that creates/
+  resets a dedicated `<POSTGRES_DB>_test` database and reapplies `db/init/01_schema.sql` fresh
+  each session — no new env var, derived from the existing `POSTGRES_DB`. See gotcha #31 (from
+  the prior Phase 4 entry; this session's incident is what actually triggered the fix)
+- Gemini quota discovery: initially hit what looked like a simple 5 req/min rate limit (retry-
+  with-backoff added, parsing the exact wait from the 429 body since there's no `Retry-After`
+  header); after ~23 minutes of retries the *real* constraint surfaced — a separate 20
+  requests/*day* quota (`quotaId: GenerateRequestsPerDayPerProjectPerModel-FreeTier`), which no
+  amount of backoff fixes short of waiting a full day. This project's eval suite needs ~37 chat
+  calls, comfortably exceeding that. User chose local Ollama over enabling billing
+- Local-model comparison (all against the identical fixture + prompt, live): `llama3.2:3b` — fast,
+  reliable, 0.500→0.667 accuracy after one prompt clarification (still over-predicts `account`);
+  `huihui_ai/qwen3.5-abliterated:9b` — a visible-reasoning "thinking" model, slow (~60-100s/call),
+  needed an explicit generous `max_tokens` (8192, up from none) since its reasoning trace could
+  exceed Ollama's implicit default and truncate the final JSON (gotcha #36), but still
+  occasionally failed to converge even with that budget; a 12B gemma-coder-tuned GGUF model —
+  fast, zero validation failures, **0.833 accuracy**, the closest of the three but still under
+  the 0.85 bar. Per the phase's explicit stop condition (one prompt adjustment, one rerun, then
+  stop and document rather than keep tuning), accepted 0.833 as the recorded result rather than
+  continuing to iterate against a live accuracy target
+- `test_grounding.py` has not passed with any provider this session — blocked by the same Gemini
+  quota exhaustion, and independently by no local Ollama embedding model matching the schema's
+  frozen 1536 dimensions (`nomic-embed-text` gives 768, confirmed live) — `_embed()`'s dimension
+  guard correctly raised rather than writing a corrupted vector, exactly as designed
+- Comment-audit pass done per explicit request: added missing module/function docstrings and
+  WHY-comments across `llm.py`, `main.py`, `db.py`, `schemas.py`, `settings.py`, `n8n_sync.py`;
+  left `db/init/01_schema.sql` untouched (explicitly frozen per every phase prompt's guardrail,
+  even for comment-only changes)
+- Gotchas added: #33 (AI Studio key format varies, verify don't assume), #34 (Gemini schema is
+  UPPERCASE + native dimension control), #35 (Gemini free tier has a daily quota, not just
+  per-minute — corrected mid-session after initially under-diagnosing it), #36 (reasoning models
+  need generous max_tokens), #37 (no 1536-dim local embedding model exists), #38 (local model
+  accuracy/reliability comparison for structured classification)
+- Handoff / next: to actually pass `make evals` (P5-2's literal acceptance criterion), either
+  enable billing on the existing Gemini key or obtain a real Anthropic/OpenAI key — local models
+  remain a valid free option for `/classify`-only dev/testing but aren't sufficient alone. CI
+  workflow exists but hasn't been exercised against a real GitHub Actions run yet. README badge,
+  Makefile, and PROGRESS.md are otherwise complete for this phase

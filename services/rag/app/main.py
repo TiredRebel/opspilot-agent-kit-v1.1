@@ -1,3 +1,9 @@
+"""FastAPI app: /health, /kb/ingest, /classify, /query, /summarize, /stats.
+
+This is the only service allowed to call an LLM (ADR-001) — n8n workflows call these endpoints
+over HTTP rather than reaching an LLM API directly.
+"""
+
 import re
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -39,6 +45,8 @@ async def budget_exceeded_handler(request: Request, exc: BudgetExceeded):
 
 @router.get("/health")
 async def health(response: Response):
+    """Liveness probe — 503 (not just a false field) so container orchestration/compose
+    healthchecks can act on it without parsing the body."""
     db_ok = await db.check_db()
     if not db_ok:
         response.status_code = 503
@@ -47,6 +55,8 @@ async def health(response: Response):
 
 @router.post("/kb/ingest", response_model=IngestResponse)
 async def kb_ingest(seed_dir: str | None = None) -> IngestResponse:
+    """Idempotent by document title: re-ingesting a doc deletes its old chunks/row first, so
+    `make seed` is safe to rerun after editing kb/seed/*.md without creating duplicates."""
     directory = Path(seed_dir or settings.kb_seed_dir)
     pool = await db.get_pool()
     documents = 0
@@ -84,6 +94,8 @@ async def kb_ingest(seed_dir: str | None = None) -> IngestResponse:
 
 
 def _classify_valid(parsed: dict | None) -> bool:
+    """A schema-constrained LLM call can still come back malformed (e.g. a provider that ignores
+    the schema) — this is the actual validation gate, not just a truthiness check."""
     if not isinstance(parsed, dict):
         return False
     required = {"category", "priority", "sentiment", "lang"}
@@ -92,6 +104,8 @@ def _classify_valid(parsed: dict | None) -> bool:
 
 @router.post("/classify", response_model=ClassifyResponse)
 async def classify(payload: ClassifyRequest) -> ClassifyResponse:
+    """One retry on invalid structured output, then a clean 422 (docs/TESTPLAN.md
+    test_classify_schema.py) rather than surfacing a confusing downstream error."""
     system = load_prompt("classify")
     messages = [{"role": "user", "content": f"Subject: {payload.subject}\n\nBody: {payload.body}"}]
 
@@ -110,6 +124,9 @@ async def classify(payload: ClassifyRequest) -> ClassifyResponse:
 
 
 def _parse_score(text: str | None) -> float:
+    """The self-check prompt asks for a bare 0-1 number but LLMs sometimes wrap it in a
+    sentence — extract the first numeric substring rather than requiring exact-float parsing,
+    and clamp defensively in case the model returns something outside [0, 1]."""
     if not text:
         return 0.0
     match = re.search(r"[-+]?\d*\.?\d+", text)
@@ -120,6 +137,11 @@ def _parse_score(text: str | None) -> float:
 
 @router.post("/query", response_model=QueryResponse)
 async def query(payload: QueryRequest) -> QueryResponse:
+    """RAG pipeline: embed the question, retrieve top-k chunks, draft an answer grounded in
+    them, then a separate self-check call scores how well-supported that answer actually is.
+    Confidence blends retrieval similarity with the self-check score (SPEC §3.1) rather than
+    trusting either signal alone — a good retrieval match with a hallucinated answer, or a poor
+    match the model still fabricated confidently, should both score low."""
     pool = await db.get_pool()
     embed_result = await complete("embed", embed_text=payload.question)
     rows = await top_k_chunks(pool, embed_result.embedding)
@@ -167,6 +189,12 @@ async def summarize(payload: SummarizeRequest) -> SummarizeResponse:
 
 @router.get("/stats", response_model=StatsResponse)
 async def stats(hours: int | None = None) -> StatsResponse:
+    """All-time aggregates by default; `?hours=N` scopes every aggregate to `created_at >= now()
+    - N hours` instead (used by WF-5's daily digest, e.g. `?hours=24`). The WHERE clause is built
+    conditionally — `tickets_where` is either empty or a full `WHERE ...` clause, and each
+    per-column query below appends `AND <col> IS NOT NULL` after it, or starts its own `WHERE`
+    if `tickets_where` was empty — so the same code path serves both the filtered and
+    unfiltered case without duplicating every query."""
     pool = await db.get_pool()
 
     tickets_since = "created_at >= now() - ($1 * interval '1 hour')"

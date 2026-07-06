@@ -211,3 +211,70 @@
     checking Notion's official API reference, which documents `PATCH` for this route. Also: an
     n8n integration must have "insert content" capability granted (separate from just having the
     target page shared with it via **`...`** → Connections) for this to succeed at all.
+33. **A key copied from Google AI Studio doesn't always look like `AIzaSy...`** — one obtained
+    this session started with `AQ.` instead, and still worked correctly against
+    `generativelanguage.googleapis.com` (confirmed via a live `GET /v1beta/models` call). Don't
+    assume a key is invalid, wrong-service, or mistyped just because its prefix doesn't match the
+    most commonly-documented format — verify against the actual API before asking the user to
+    re-check where they copied it from.
+34. **Gemini's structured-output schema is a JSON-Schema subset with UPPERCASE type names
+    (`"OBJECT"`, `"STRING"`) and no `additionalProperties` support** — passing a normal
+    lowercase JSON-Schema dict (like `CLASSIFY_SCHEMA` in `schemas.py`) is silently rejected or
+    misbehaves. `llm.py`'s `_to_gemini_schema()` converts rather than hand-maintaining a second
+    schema per shape. Separately, `gemini-embedding-001` defaults to 3072-dim output, not the
+    1536 this project's schema is frozen at (gotcha #5) — but the model supports requesting a
+    smaller dimension natively via `outputDimensionality` in the request body (it's
+    Matryoshka-trained, so truncation is a supported, intended use case, not a hack); confirmed
+    live rather than assumed.
+35. **Google's Gemini API free tier has both a per-minute rate limit (as low as 5 req/min for
+    `gemini-2.5-flash`) AND a much more restrictive per-*day* quota (confirmed live: 20
+    requests/day, `quotaId: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"`) — retrying
+    with backoff only helps for the former.** The 429 body's `error.message` names the exact wait
+    in plain text ("Please retry in 36.6s") rather than a `Retry-After` header, and
+    `llm.py`'s `_post_gemini_with_retry()` parses and honors it — but once the *daily* quota is
+    exhausted, every retry gets a fresh 429 with a new short wait, creating the illusion that
+    backing off a bit longer would eventually succeed when it actually won't until the daily
+    quota resets. Diagnose which one you've hit by re-requesting immediately after a supposed
+    wait and reading `error.details[].quotaId` in the JSON body, not just the top-level message.
+    This project's `evals/tickets.jsonl` needs ~37 chat calls total (27 classify + ~10 for
+    grounding's answer/self-check pairs) — comfortably past the free daily cap for a single day,
+    which is why `evals/conftest.py` defaults to `ollama` instead (gotcha #38 covers the
+    accuracy tradeoff that comes with it).
+36. **A "thinking"/reasoning-style local Ollama model needs a generous explicit `max_tokens`, not
+    the 1024 used for Anthropic/OpenAI in `llm.py`.** `huihui_ai/qwen3.5-abliterated:9b` emits an
+    internal reasoning trace (often 1000+ tokens, returned separately in a `reasoning` field
+    alongside `content`) before the actual JSON answer — with too small a token budget the
+    response gets cut off mid-reasoning and `content` is empty or truncated, which fails JSON
+    parsing but looks like a schema-compliance problem rather than a token-budget one. `_call_
+    ollama` now passes `max_tokens=8192` to leave room for both the reasoning trace and the final
+    answer. If evaluating a different local model, check whether it does the same kind of visible
+    "thinking" before answering, and size `max_tokens` accordingly.
+37. **No dedicated Ollama embedding model commonly outputs exactly 1536 dimensions** — the
+    obvious default, `nomic-embed-text`, outputs 768 (confirmed live). Unlike Gemini's
+    Matryoshka-trained embedding model (gotcha #34), Ollama has no native way to request a
+    smaller output dimension, so there's no equivalent fix short of finding (or fine-tuning) a
+    model that happens to match, or padding/projecting the vector (not implemented — would
+    silently degrade retrieval quality in a way that's hard to detect later). `_embed()` raises a
+    clear error on a dimension mismatch rather than writing a corrupted row, so this fails loudly
+    at ingest/query time rather than silently. Practically: `ollama` mode currently only works for
+    chat-only endpoints (`/classify`); `/query`'s embed step needs `anthropic`, `openai`, or
+    `gemini` until a matching local embedding model is found.
+38. **Local Ollama model choice swings `/classify` accuracy dramatically — from clearly failing
+    to close-to-passing — with no code change, only a config value.** Compared live against the
+    same 27-item eval fixture and the same (once-clarified) `classify.md` prompt:
+    - `llama3.2:3b`: fast (~2s/call), reliable, but only 0.500–0.667 accuracy — consistently
+      over-predicts `account` for anything it's unsure about, including all 3 `other`-category
+      tickets in one run.
+    - `huihui_ai/qwen3.5-abliterated:9b`: a visible-reasoning "thinking" model (gotcha #36) —
+      slow (~60-100s/call) and, even with an 8192-token budget, still occasionally failed to
+      converge to valid JSON within budget on some tickets after 15+ minutes of otherwise-successful
+      calls. Not recommended for this task despite being a larger model, given the reliability cost.
+    - A 12B gemma-based coder-tuned model: fast (~5s/call, no reasoning trace), reliable (zero
+      validation failures), and scored 0.833 — close to but just under this project's 0.85 bar,
+      with `other` at a perfect 3/3 (unlike llama3.2:3b's 0/3). The strongest local option tried.
+    None of these reached the 0.85 threshold `docs/TESTPLAN.md` requires; only a cloud model
+    (Anthropic, OpenAI, or Gemini once past its free-tier quota — gotcha #35) reliably clears it.
+    Lesson: don't assume "bigger local model" or "reasoning model" automatically means more
+    accurate or more reliable for structured-output tasks — test the actual task, not just
+    general capability, and weight reliability (does it ever fail to produce valid JSON at all)
+    alongside raw accuracy.
