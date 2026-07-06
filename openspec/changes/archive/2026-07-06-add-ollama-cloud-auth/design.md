@@ -40,9 +40,11 @@ works for direct API calls; the app just has no code path that uses it.
 
 ## Decisions
 
-**1. New setting: `ollama_api_key: str | None = None` (env `OLLAMA_API_KEY`) in `settings.py`.**
+**1. New setting: `ollama_api_key: str = ""` (env `OLLAMA_API_KEY`) in `settings.py`.**
 Mirrors the existing optional-key pattern already used for `gemini_api_key`/`openai_api_key` in this
-file — no new pattern introduced.
+file — no new pattern introduced. (Corrected post-implementation: this design originally proposed
+`str | None = None`; the shipped code used `str = ""` to match `anthropic_api_key`/
+`openai_api_key`/`gemini_api_key`'s existing convention exactly, per Copilot PR review feedback.)
 
 **2. `_ollama_client()` branches on whether `settings.ollama_api_key` is set:**
 - If set: `base_url="https://ollama.com/v1"`, `api_key=settings.ollama_api_key`.
@@ -70,9 +72,15 @@ with how the function is used today.
   propagates provider exceptions with status codes (as seen with the 403 encountered this session);
   no new silent-failure mode is introduced.
 - **[Risk]** Real per-token cost when using the cloud endpoint, unlike the free local daemon.
-  → **Mitigation**: existing cost-logging in `llm.py` (every call logged to `llm_calls`) already
-  covers this provider; no new tracking needed. Budget invariant (`wiki/map.md`: dev spend < $2)
-  still applies and is the operator's responsibility when they choose to set the key.
+  → **Correction (post-implementation, per Copilot PR review):** the mitigation originally
+  written here was wrong — `_cost()` treats any model absent from `PRICING` as free, and `ollama`
+  models are deliberately unlisted (local inference has no per-token cost), so cloud usage via
+  `OLLAMA_API_KEY` actually logs as `$0`, not tracked, and invisible to the `$2` dev-budget
+  invariant. Confirmed live: a real billed `kimi-k2.7-code:cloud` eval run printed
+  `eval run cost: $0.0000`. This is an open, documented gap (wiki/gotchas.md #41,
+  PROGRESS.md P5-2 follow-up) — out of scope to fix in this change (no pricing data for
+  ollama.com's per-model cloud rates was gathered), but the risk should not have been marked
+  mitigated.
 - **[Risk]** Scope creep into "properly" distinguishing cloud vs. local Ollama models (e.g.
   validating `:cloud` suffix, auto-selecting endpoint). → **Mitigation**: explicitly a non-goal;
   the operator controls transport purely by whether `OLLAMA_API_KEY` is set.

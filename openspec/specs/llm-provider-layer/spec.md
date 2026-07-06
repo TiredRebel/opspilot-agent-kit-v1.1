@@ -2,8 +2,12 @@
 
 ## Purpose
 
-TBD — capture the responsibilities of the LLM provider abstraction layer (provider selection,
-authentication, request routing) as further changes land.
+Defines how `services/rag/app/llm.py` authenticates and routes outbound calls per configured
+`LLM_PROVIDER` (`anthropic`, `openai`, `gemini`, `ollama`, `fake`) — currently scoped to the
+`ollama` provider's authentication behavior (local daemon vs. direct ollama.com cloud endpoint).
+Provider selection and request-routing responsibilities beyond authentication are documented in
+`wiki/map.md`'s RAG service row and ADR-001, not restated here; this spec grows to cover other
+providers' requirements as future changes touch them.
 
 ## Requirements
 

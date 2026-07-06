@@ -40,7 +40,7 @@ def _redact(committed: object, live: object) -> object:
     if isinstance(committed, dict) and isinstance(live, dict):
         return {k: (_redact(committed[k], v) if k in committed else v) for k, v in live.items()}
     if isinstance(committed, list) and isinstance(live, list) and len(committed) == len(live):
-        return [_redact(c, v) for c, v in zip(committed, live)]
+        return [_redact(c, v) for c, v in zip(committed, live, strict=True)]
     return live
 
 
@@ -86,7 +86,7 @@ def _diff(committed: object, live: object, path: str = "root") -> list[str]:
         if len(committed) != len(live):
             diffs.append(f"{path}: length differs (committed={len(committed)}, export={len(live)})")
         else:
-            for i, (c, v) in enumerate(zip(committed, live)):
+            for i, (c, v) in enumerate(zip(committed, live, strict=True)):
                 diffs.extend(_diff(c, v, f"{path}[{i}]"))
     elif committed != live:
         diffs.append(f"{path}: committed={committed!r} export={live!r}")

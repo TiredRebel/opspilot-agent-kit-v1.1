@@ -1,6 +1,6 @@
 ## 1. Settings
 
-- [x] 1.1 Add `ollama_api_key: str | None = None` (env `OLLAMA_API_KEY`) to `services/rag/app/settings.py`, alongside the existing `ollama_*` settings.
+- [x] 1.1 Add `ollama_api_key: str = ""` (env `OLLAMA_API_KEY`) to `services/rag/app/settings.py`, alongside the existing `ollama_*` settings. (Corrected post-implementation: shipped as `str = ""` to match the existing `*_api_key` convention, not the `str | None = None` originally proposed — see design.md Decision 1.)
 
 ## 2. Provider client
 
