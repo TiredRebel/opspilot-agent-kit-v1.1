@@ -1,12 +1,16 @@
 """LLM provider layer (ADR-001) — the only module allowed to call an LLM or embedding API.
 
-`complete()` is the single entry point: primary Claude Haiku, OpenAI mini-class fallback on
-5xx/timeout/connection errors, deterministic `fake` provider for tests. Every attempt is logged
-to `llm_calls`, and a daily budget guardrail runs before any provider call.
+`complete()` dispatches on `settings.llm_provider`. Only `anthropic` has a fallback chain
+(-> OpenAI on 5xx/timeout/connection errors, the original ADR-001 design); `openai`, `gemini`,
+and `ollama` each run standalone with no fallback of their own. `fake` is deterministic for
+tests. Every attempt is logged to `llm_calls`, and a daily budget guardrail runs before any
+non-fake provider call.
 """
 
+import asyncio
 import json
 import random
+import re
 import time
 from dataclasses import dataclass
 from decimal import Decimal
@@ -16,6 +20,7 @@ from typing import Any, Literal
 from uuid import UUID
 
 import anthropic
+import httpx
 import openai
 
 from app import db
@@ -34,13 +39,25 @@ def load_prompt(name: str) -> str:
 ANTHROPIC_MODEL = "claude-haiku-4-5"
 OPENAI_MODEL = "gpt-5.4-mini"
 OPENAI_EMBED_MODEL = "text-embedding-3-small"
+GEMINI_MODEL = "gemini-2.5-flash"
+GEMINI_EMBED_MODEL = "gemini-embedding-001"
+GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta"
+# Every embedding path must return exactly this many dimensions — kb_chunks.embedding is a
+# frozen `vector(1536)` column (gotcha #5). Gemini's embedding model natively supports requesting
+# this dimension via `outputDimensionality` (Matryoshka-trained, verified live); Ollama has no
+# such control, so `_embed()` asserts the returned length rather than silently corrupting rows.
 EMBED_DIM = 1536
 
-# USD per 1M tokens: (input, output). Embedding models have no output tokens.
+# USD per 1M tokens: (input, output). Embedding models have no output tokens. Gemini's output
+# price covers "thinking" tokens too (billed as output, per Google's pricing page) — `_complete_
+# gemini` folds thinking into tokens_out accordingly. Ollama models aren't listed here: `_cost`
+# treats any unlisted model as free (local inference has no per-token API cost).
 PRICING: dict[str, tuple[float, float]] = {
     ANTHROPIC_MODEL: (1.00, 5.00),
     OPENAI_MODEL: (0.75, 4.50),
     OPENAI_EMBED_MODEL: (0.02, 0.0),
+    GEMINI_MODEL: (0.30, 2.50),
+    GEMINI_EMBED_MODEL: (0.15, 0.0),
 }
 
 
@@ -63,6 +80,10 @@ class LLMResult:
 
 
 def _cost(model: str, tokens_in: int, tokens_out: int) -> Decimal:
+    # Unlisted models (Ollama, local) have no per-token API price — treat as free rather than
+    # raising, so a locally-run model doesn't need a fake PRICING entry just to log a call.
+    if model not in PRICING:
+        return Decimal("0")
     price_in, price_out = PRICING[model]
     return Decimal(str(tokens_in / 1_000_000 * price_in + tokens_out / 1_000_000 * price_out))
 
@@ -189,6 +210,13 @@ def _openai_client() -> openai.AsyncOpenAI:
     return openai.AsyncOpenAI(api_key=settings.openai_api_key)
 
 
+def _ollama_client() -> openai.AsyncOpenAI:
+    """Ollama exposes an OpenAI-compatible chat/embeddings API, so we reuse the OpenAI SDK
+    pointed at the local server instead of a separate client library. Ollama doesn't check the
+    api_key, but the SDK requires a non-empty string."""
+    return openai.AsyncOpenAI(base_url=f"{settings.ollama_base_url}/v1", api_key="ollama")
+
+
 async def _call_anthropic(messages: list[dict[str, str]], schema: dict | None, system: str | None):
     """Raw call, isolated so tests can monkeypatch it to simulate 5xx/timeout/connection errors."""
     kwargs: dict[str, Any] = {}
@@ -220,8 +248,109 @@ async def _call_openai(messages: list[dict[str, str]], schema: dict | None, syst
     )
 
 
+async def _call_ollama(messages: list[dict[str, str]], schema: dict | None, system: str | None):
+    """Raw call, isolated so tests can monkeypatch it. Ollama's OpenAI-compatible endpoint takes
+    the same request shape as `_call_openai`. `max_tokens` is set generously (not the 1024 used
+    for Anthropic/OpenAI): reasoning-style local models emit a long internal "thinking" trace
+    before the final JSON, and without enough headroom the response gets cut off mid-generation,
+    producing truncated, unparseable JSON — not a schema-compliance failure but a token-budget
+    one, and easy to mistake for the model just being wrong."""
+    kwargs: dict[str, Any] = {}
+    if schema is not None:
+        kwargs["response_format"] = {
+            "type": "json_schema",
+            "json_schema": {"name": "response", "schema": schema, "strict": True},
+        }
+    full_messages = ([{"role": "system", "content": system}] if system else []) + messages
+    return await _ollama_client().chat.completions.create(
+        model=settings.ollama_model,
+        messages=full_messages,
+        max_tokens=8192,
+        **kwargs,
+    )
+
+
+def _to_gemini_schema(schema: dict) -> dict:
+    """Gemini's structured-output schema is a JSON-Schema subset with UPPERCASE type names and
+    no `additionalProperties` support — convert our JSON-Schema dicts (e.g. CLASSIFY_SCHEMA in
+    schemas.py) rather than hand-maintaining a second schema per shape. Verified against the live
+    API this session (lowercase types are rejected)."""
+    converted: dict[str, Any] = {}
+    for key, value in schema.items():
+        if key == "additionalProperties":
+            continue
+        if key == "type":
+            converted["type"] = value.upper()
+        elif key == "properties":
+            converted["properties"] = {k: _to_gemini_schema(v) for k, v in value.items()}
+        elif key == "items":
+            converted["items"] = _to_gemini_schema(value)
+        else:
+            converted[key] = value
+    return converted
+
+
+_GEMINI_MAX_RETRIES = 3
+_GEMINI_RETRY_AFTER_RE = re.compile(r"retry in ([\d.]+)s")
+
+
+async def _post_gemini_with_retry(url: str, body: dict) -> dict:
+    """Google's free tier is rate-limited as low as 5 req/min for gemini-2.5-flash — the 429
+    body names the exact wait in its message text (no Retry-After header), so we parse and honor
+    it rather than guessing a fixed backoff (SPEC §4.1: retry with backoff on all HTTP hops)."""
+    for attempt in range(_GEMINI_MAX_RETRIES + 1):
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.post(url, params={"key": settings.gemini_api_key}, json=body)
+        if response.status_code != 429 or attempt == _GEMINI_MAX_RETRIES:
+            response.raise_for_status()
+            return response.json()
+        message = response.json().get("error", {}).get("message", "")
+        match = _GEMINI_RETRY_AFTER_RE.search(message)
+        delay = float(match.group(1)) + 1 if match else 15.0
+        await asyncio.sleep(delay)
+    raise AssertionError("unreachable")  # loop always returns or raises on the last attempt
+
+
+async def _call_gemini(messages: list[dict[str, str]], schema: dict | None, system: str | None):
+    """Isolated so tests can monkeypatch it. Uses the plain REST API via httpx rather than a
+    Google SDK — request/response shape verified empirically against the live API this session
+    (structured JSON output, usage metadata field names)."""
+    contents = [
+        {"role": "model" if m["role"] == "assistant" else "user", "parts": [{"text": m["content"]}]}
+        for m in messages
+    ]
+    body: dict[str, Any] = {"contents": contents}
+    if system:
+        body["systemInstruction"] = {"parts": [{"text": system}]}
+    if schema is not None:
+        body["generationConfig"] = {
+            "responseMimeType": "application/json",
+            "responseSchema": _to_gemini_schema(schema),
+        }
+    return await _post_gemini_with_retry(
+        f"{GEMINI_API_BASE}/models/{GEMINI_MODEL}:generateContent", body
+    )
+
+
 async def _call_openai_embed(text: str):
     return await _openai_client().embeddings.create(model=OPENAI_EMBED_MODEL, input=text)
+
+
+async def _call_ollama_embed(text: str):
+    """Untested against a live server in this environment — verify locally. Ollama exposes an
+    OpenAI-compatible /v1/embeddings endpoint for models pulled with embedding support (the
+    configured chat model, e.g. a Qwen variant, is not itself an embedding model — set
+    OLLAMA_EMBED_MODEL to one that is, e.g. `nomic-embed-text`)."""
+    return await _ollama_client().embeddings.create(model=settings.ollama_embed_model, input=text)
+
+
+async def _call_gemini_embed(text: str):
+    """Requests EMBED_DIM natively via `outputDimensionality` (Matryoshka-trained model, verified
+    live) rather than truncating a larger vector after the fact."""
+    return await _post_gemini_with_retry(
+        f"{GEMINI_API_BASE}/models/{GEMINI_EMBED_MODEL}:embedContent",
+        {"content": {"parts": [{"text": text}]}, "outputDimensionality": EMBED_DIM},
+    )
 
 
 def _is_retryable(exc: Exception) -> bool:
@@ -231,27 +360,87 @@ def _is_retryable(exc: Exception) -> bool:
 
 
 async def _embed(text: str, ticket_id: str | UUID | None) -> LLMResult:
+    """Anthropic has no native embeddings API, so `anthropic` mode (like `openai` mode) still
+    uses OpenAI for this step only — unchanged from the original ADR-001 design. `gemini` and
+    `ollama` use their own embedding model. Every path is dimension-checked against EMBED_DIM
+    before returning, since a mismatch would silently corrupt the frozen `vector(1536)` column."""
+    provider = settings.llm_provider
     start = time.monotonic()
-    response = await _call_openai_embed(text)
+
+    if provider == "gemini":
+        data = await _call_gemini_embed(text)
+        embedding = data["embedding"]["values"]
+        # embedContent doesn't return token usage — approximate at ~4 chars/token (rough
+        # English-text average) purely for cost-tracking visibility, not billing precision.
+        tokens_in = max(1, len(text) // 4)
+        model, api_provider = GEMINI_EMBED_MODEL, "gemini"
+    elif provider == "ollama":
+        response = await _call_ollama_embed(text)
+        embedding = list(response.data[0].embedding)
+        tokens_in = response.usage.total_tokens
+        model, api_provider = settings.ollama_embed_model, "ollama"
+    else:
+        response = await _call_openai_embed(text)
+        embedding = list(response.data[0].embedding)
+        tokens_in = response.usage.total_tokens
+        model, api_provider = OPENAI_EMBED_MODEL, "openai"
+
+    if len(embedding) != EMBED_DIM:
+        raise ValueError(
+            f"{api_provider}/{model} returned a {len(embedding)}-dim embedding, expected "
+            f"{EMBED_DIM} (schema is frozen at vector(1536) — gotcha #5)"
+        )
+
     latency_ms = int((time.monotonic() - start) * 1000)
-    tokens_in = response.usage.total_tokens
-    cost = _cost(OPENAI_EMBED_MODEL, tokens_in, 0)
-    await _log(
-        ticket_id, "embed", "openai", OPENAI_EMBED_MODEL, tokens_in, 0, cost, latency_ms, True
-    )
+    cost = _cost(model, tokens_in, 0)
+    await _log(ticket_id, "embed", api_provider, model, tokens_in, 0, cost, latency_ms, True)
     return LLMResult(
-        provider="openai",
-        model=OPENAI_EMBED_MODEL,
+        provider=api_provider,
+        model=model,
         tokens_in=tokens_in,
         tokens_out=0,
         cost_usd=cost,
         latency_ms=latency_ms,
         success=True,
-        embedding=list(response.data[0].embedding),
+        embedding=embedding,
     )
 
 
-async def _fallback_openai(
+async def _complete_openai_compatible(
+    call_fn,
+    provider: str,
+    model: str,
+    purpose: Purpose,
+    messages: list[dict[str, str]],
+    schema: dict | None,
+    system: str | None,
+    ticket_id: str | UUID | None,
+) -> LLMResult:
+    """Shared response-parsing for any provider whose call returns an OpenAI-shaped
+    ChatCompletion object — OpenAI itself, and Ollama via its OpenAI-compatible endpoint."""
+    start = time.monotonic()
+    response = await call_fn(messages, schema, system)
+    latency_ms = int((time.monotonic() - start) * 1000)
+    tokens_in = response.usage.prompt_tokens
+    tokens_out = response.usage.completion_tokens
+    cost = _cost(model, tokens_in, tokens_out)
+    text = response.choices[0].message.content
+    parsed = json.loads(text) if schema is not None and text else None
+    await _log(ticket_id, purpose, provider, model, tokens_in, tokens_out, cost, latency_ms, True)
+    return LLMResult(
+        provider=provider,
+        model=model,
+        tokens_in=tokens_in,
+        tokens_out=tokens_out,
+        cost_usd=cost,
+        latency_ms=latency_ms,
+        success=True,
+        text=text,
+        parsed=parsed,
+    )
+
+
+async def _complete_gemini(
     purpose: Purpose,
     messages: list[dict[str, str]],
     schema: dict | None,
@@ -259,19 +448,25 @@ async def _fallback_openai(
     ticket_id: str | UUID | None,
 ) -> LLMResult:
     start = time.monotonic()
-    response = await _call_openai(messages, schema, system)
+    data = await _call_gemini(messages, schema, system)
     latency_ms = int((time.monotonic() - start) * 1000)
-    tokens_in = response.usage.prompt_tokens
-    tokens_out = response.usage.completion_tokens
-    cost = _cost(OPENAI_MODEL, tokens_in, tokens_out)
-    text = response.choices[0].message.content
+    usage = data.get("usageMetadata", {})
+    tokens_in = usage.get("promptTokenCount", 0)
+    total_tokens = usage.get("totalTokenCount", tokens_in)
+    # Gemini bills "thinking" tokens as output (per Google's pricing page) but reports them in a
+    # separate thoughtsTokenCount field alongside candidatesTokenCount — totalTokenCount minus
+    # promptTokenCount captures both together without depending on thoughtsTokenCount always
+    # being present (it's only set for models that actually used extended thinking).
+    tokens_out = total_tokens - tokens_in
+    cost = _cost(GEMINI_MODEL, tokens_in, tokens_out)
+    text = data["candidates"][0]["content"]["parts"][0]["text"]
     parsed = json.loads(text) if schema is not None and text else None
     await _log(
-        ticket_id, purpose, "openai", OPENAI_MODEL, tokens_in, tokens_out, cost, latency_ms, True
+        ticket_id, purpose, "gemini", GEMINI_MODEL, tokens_in, tokens_out, cost, latency_ms, True
     )
     return LLMResult(
-        provider="openai",
-        model=OPENAI_MODEL,
+        provider="gemini",
+        model=GEMINI_MODEL,
         tokens_in=tokens_in,
         tokens_out=tokens_out,
         cost_usd=cost,
@@ -303,7 +498,9 @@ async def _complete_chat(
         )
         if not _is_retryable(exc):
             raise
-        return await _fallback_openai(purpose, messages, schema, system, ticket_id)
+        return await _complete_openai_compatible(
+            _call_openai, "openai", OPENAI_MODEL, purpose, messages, schema, system, ticket_id
+        )
 
     latency_ms = int((time.monotonic() - start) * 1000)
     tokens_in = response.usage.input_tokens
@@ -364,4 +561,25 @@ async def complete(
     if purpose == "embed":
         return await _embed(embed_text or "", ticket_id)
 
-    return await _complete_chat(purpose, messages or [], schema, system, ticket_id)
+    provider = settings.llm_provider
+    messages = messages or []
+    if provider == "anthropic":
+        return await _complete_chat(purpose, messages, schema, system, ticket_id)
+    if provider == "openai":
+        return await _complete_openai_compatible(
+            _call_openai, "openai", OPENAI_MODEL, purpose, messages, schema, system, ticket_id
+        )
+    if provider == "gemini":
+        return await _complete_gemini(purpose, messages, schema, system, ticket_id)
+    if provider == "ollama":
+        return await _complete_openai_compatible(
+            _call_ollama,
+            "ollama",
+            settings.ollama_model,
+            purpose,
+            messages,
+            schema,
+            system,
+            ticket_id,
+        )
+    raise ValueError(f"unknown llm_provider: {provider!r}")

@@ -71,9 +71,37 @@
   test path) and do a visual check of the Telegram message + Notion page formatting.
 
 ## Phase 5 — Evals & CI
-- [ ] P5-1 evals/tickets.jsonl (25–30, ≥8 UA, ≥3 ambiguous)
-- [ ] P5-2 eval tests: accuracy ≥ 0.85, groundedness, cost < $0.50/run
-- [ ] P5-3 .github/workflows/ci.yml (lint + L1/L2 on push; evals manual dispatch)
+- [x] P5-1 (Claude, 2026-07-06) `evals/tickets.jsonl` — 27 items (subagent-drafted, human/agent-
+  reviewed): billing 8, technical 8, account 8, other 3 · priority: urgent 4, high 6, normal 12,
+  low 5 · lang: en 16, uk 11 (≥8 required) · 3 `expected_ambiguous` items across distinct
+  category pairs (billing/account, technical/billing, technical/account). Content verified
+  consistent with real kb/seed facts (pricing, SLA tiers, retention/refund windows, rate limits).
+- [x] P5-2 (Claude, 2026-07-06) `evals/test_classify.py` + `evals/test_grounding.py` +
+  `evals/conftest.py` built (isolated from `services/rag/tests/` — runs against the real dev DB
+  and real ingested KB, not the truncate-safe test DB, since grounding needs real embedded
+  chunks). Budget assertion, per-class confusion summary, `@pytest.mark.evals` throughout, all
+  wired into `make evals`. **Accuracy target not met with the providers available this
+  session** — see Blockers for the full model-comparison writeup (best local result: 0.833 on a
+  12B model, accepted as documented rather than continuing to tune, per this phase's stop
+  condition). `test_grounding.py` correctly fails under `ollama` (no local embedding model
+  matches the required 1536 dims — this is the dimension-guard in `_embed()` working as intended,
+  not a test bug) and was not run to a passing state with any provider this session.
+- [x] P5-3 (Claude, 2026-07-06) `.github/workflows/ci.yml` — `test` job (push/PR, no secrets:
+  postgres service container + ruff + `pytest services/rag/tests`) and `evals` job
+  (`workflow_dispatch` only, needs `ANTHROPIC_API_KEY` secret + `make evals`). `Makefile`'s
+  `evals` target wired to `uv run pytest evals -m evals -s`. README CI badge added. Not yet
+  verified against a real GitHub Actions run (would need a push to validate end-to-end).
+
+### Unplanned addition this phase: multi-provider `llm.py` (Ollama + Gemini)
+Requested mid-phase (needed to unblock live evals — neither `ANTHROPIC_API_KEY` nor
+`OPENAI_API_KEY` were ever populated in `.env`). `llm_provider` now genuinely selects among
+`anthropic` (primary, the only one with an OpenAI fallback chain — unchanged ADR-001 behavior),
+`openai`, `gemini` (gemini-2.5-flash + gemini-embedding-001, plain REST via httpx, rate-limit
+retry), `ollama` (local, via its OpenAI-compatible endpoint), and `fake`. See wiki/log.md for the
+full narrative and wiki/gotchas.md #33–#38 for every non-obvious finding (odd AI-Studio key
+format, Gemini's UPPERCASE schema + native dimension control, Gemini's free-tier daily quota,
+Ollama `max_tokens` for reasoning models, no 1536-dim local embedding model, and the local-model
+accuracy comparison).
 
 ## Phase 6 — Deploy & packaging
 - [ ] P6-1 [HUMAN+AGENT] VM provision, compose up, domain + Caddy TLS, n8n auth
@@ -170,6 +198,26 @@ _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
   since waiting for the real cron wasn't practical mid-build) — the `settings.timezone` field is
   set correctly per the plan's research, but the actual scheduled fire time should be confirmed
   once convenient.
+- [OPEN] 2026-07-06 Claude: **P5-2's 0.85 classify-accuracy target was not reached** with any
+  provider actually exercised live this session. Root cause: neither `ANTHROPIC_API_KEY` nor
+  `OPENAI_API_KEY` were ever populated in `.env` (confirmed empty). Gemini (`gemini-2.5-flash`,
+  wired and verified working) hit its free-tier's **daily** quota (20 requests/day — not just the
+  5/min limit, which retry-with-backoff already handles) partway through the 27-ticket run,
+  which no amount of retrying fixes until the quota resets; the user chose local Ollama over
+  enabling billing. Three local models compared live on the identical fixture + prompt:
+  `llama3.2:3b` (0.500–0.667, unreliable at the "other" category), `huihui_ai/qwen3.5-
+  abliterated:9b` (a reasoning model — slow, and still occasionally failed to produce valid JSON
+  within an 8192-token budget), and a 12B gemma-coder-tuned GGUF model (**0.833, the closest** —
+  fast, zero validation failures, perfect on "other"). One prompt clarification was made to
+  `classify.md` (category definitions) per the phase's stop condition, tried once, accepted the
+  result rather than continuing to tune. `test_grounding.py` has not passed with any provider
+  this session: Gemini's quota was exhausted before reaching it, and no local Ollama embedding
+  model outputs the required 1536 dimensions (confirmed: `nomic-embed-text` gives 768) — `/query`
+  correctly raises rather than corrupting `kb_chunks`. **To actually close P5-2**: either enable
+  billing on the Gemini key (cheap — the whole suite is well under $0.50 even at paid-tier
+  pricing) or obtain a real Anthropic/OpenAI key; local models are a viable free `/classify`-only
+  dev option but not currently sufficient for a passing `make evals` run. Full comparison and
+  every technical finding in wiki/gotchas.md #33–#38.
 
 ## Metrics to fill before applying
 - Auto-resolution rate: __% · Avg confidence: __ · Avg cost/ticket: $__ · p95 answer latency: __ s · Eval accuracy: __%

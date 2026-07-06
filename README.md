@@ -1,5 +1,7 @@
 # OpsPilot Agent Kit
 
+![CI](https://github.com/TiredRebel/opspilot-agent-kit-v1.1/actions/workflows/ci.yml/badge.svg)
+
 Everything an AI coding agent (Claude Code, Codex, or a Hermes-style team) needs to build the
 **OpsPilot** portfolio project — an AI support-triage and ops-automation hub — with minimal human
 babysitting. Drop this kit into a fresh repo and drive the build with the phase prompts.

@@ -18,6 +18,8 @@ CLASSIFY_SCHEMA = {
 
 
 class ClassifyRequest(BaseModel):
+    # Typed as UUID, not str, so a malformed ticket_id is rejected here with a clean 422 —
+    # otherwise it reaches asyncpg and crashes with a raw 500 (wiki/gotchas.md #13).
     ticket_id: UUID
     subject: str
     body: str

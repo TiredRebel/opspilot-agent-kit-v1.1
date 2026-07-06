@@ -48,11 +48,14 @@ centralizes fallback, prompt versioning, cost logging, and evals. n8n is a pure 
 | `POST /query` | Embed question → top-k (k=5) cosine search in pgvector → grounded answer with source citations → `{answer, sources[], confidence}` |
 | `POST /summarize` | Input: aggregate stats JSON → short human digest text (UA) |
 | `GET /health` | Liveness + DB check |
-| `GET /stats` | Totals: tickets by status, auto-resolution %, avg confidence, sum cost_usd, p95 latency |
+| `GET /stats` | Totals (optionally scoped to the last N hours via `?hours=`): tickets by status/category/priority, auto-resolution %, avg confidence, sum cost_usd, p95 latency |
 
 - **Provider layer** `app/llm.py`: `complete(purpose, messages, schema=None) -> LLMResult`.
-  Primary Claude Haiku-class; fallback OpenAI mini-class on 5xx/timeout; `fake` provider for tests
-  (deterministic canned outputs keyed by purpose). Every call inserted into `llm_calls`.
+  `LLM_PROVIDER` (env) selects the active provider: `anthropic` (Claude Haiku-class, primary —
+  the only provider with a fallback chain, to OpenAI mini-class on 5xx/timeout/connection
+  errors), `openai`, `gemini` (gemini-2.5-flash, plain REST API), `ollama` (local, via its
+  OpenAI-compatible endpoint), or `fake` for tests (deterministic canned outputs keyed by
+  purpose). Every call inserted into `llm_calls`, including the fake provider's.
 - **Confidence** = 0.5 × mean retrieval similarity + 0.5 × LLM self-check ("fully supported by context? 0–1").
   Gate threshold `CONFIDENCE_THRESHOLD=0.70` (env).
 - **Prompts** in `services/rag/prompts/{classify,answer,self_check,digest}.md` — version-controlled files.

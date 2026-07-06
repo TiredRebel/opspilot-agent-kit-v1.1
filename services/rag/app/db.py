@@ -1,12 +1,18 @@
+"""Module-level asyncpg connection pool (no ORM — ADR-004)."""
+
 import asyncpg
 
 from app.settings import settings
 
+# A pool is bound to the asyncio event loop that created it; reusing it from a different loop
+# raises "Event loop is closed" / "another operation is in progress" (see wiki/gotchas.md #12).
+# Kept as a bare module global (not request-scoped) since the app only ever runs on one loop in
+# production — tests are the exception, and reset this to None between runs for that reason.
 _pool: asyncpg.Pool | None = None
 
 
 async def get_pool() -> asyncpg.Pool:
-    """Lazily create the module-level asyncpg pool (no ORM — ADR-004)."""
+    """Create the pool on first use and cache it for the lifetime of the current event loop."""
     global _pool
     if _pool is None:
         _pool = await asyncpg.create_pool(settings.database_url)
@@ -14,6 +20,7 @@ async def get_pool() -> asyncpg.Pool:
 
 
 async def close_pool() -> None:
+    """Called from the FastAPI lifespan shutdown hook so the pool doesn't leak connections."""
     global _pool
     if _pool is not None:
         await _pool.close()
