@@ -104,10 +104,31 @@ Ollama `max_tokens` for reasoning models, no 1536-dim local embedding model, and
 accuracy comparison).
 
 ## Phase 6 — Deploy & packaging
-- [ ] P6-1 [HUMAN+AGENT] VM provision, compose up, domain + Caddy TLS, n8n auth
-- [ ] P6-2 scripts/backup.sh + nightly cron to object storage
-- [ ] P6-3 ADRs (001 locked, 002 confidence gate, 003 pgvector, 004 asyncpg) + docs/infrastructure.md with GCP↔AWS map
-- [ ] P6-4 README final (diagram, metrics from /stats, live handle) + [HUMAN] 3-min video
+**Scope decision this session**: real cloud VM provisioning is deferred — current dev setup
+(local compose + local n8n + ngrok tunnel) remains the working baseline. This phase produced the
+deploy documentation and locally-verifiable artifacts; it does not execute against a live VM.
+- [x] P6-1 (Claude, 2026-07-06) `docs/infrastructure.md` — full runbook (provision → clone → .env
+  → n8n on the same VM as a separate compose project → `docker compose --profile prod up -d` →
+  DNS → Caddy auto-TLS on two subdomains → n8n basic auth/`WEBHOOK_URL` → `make n8n-sync` →
+  M7 verification) + GCP↔AWS mapping table. `docker-compose.yml` gained a `caddy` service behind
+  `profiles: ["prod"]` (verified: absent from default `docker compose config`, present with
+  `--profile prod`) plus a new `caddy/Caddyfile` (two site blocks, not path-based routing).
+  Also fixed a real gap from Phase 5: `rag-api`'s environment block never passed through
+  `GEMINI_API_KEY`/`OLLAMA_*` — added. **Not executed against a real VM** (see scope decision
+  above) — commands are reviewed, not rehearsed.
+- [x] P6-2 (Claude, 2026-07-06) `scripts/backup.sh` (pg_dump → gzip → `rclone` upload, cloud-
+  agnostic; cron line documented) + `scripts/test_backup_restore.sh`, **run live against a
+  scratch database this session** (`opspilot_restore_test`): dump/restore cycle confirmed —
+  restored row counts matched the source exactly (`kb_documents=10 kb_chunks=15`). The `rclone`
+  upload step itself is documented but not exercised (no cloud remote configured).
+- [x] P6-3 (Claude, 2026-07-06) ADR-001 (LLM via service), ADR-002 (confidence gate), ADR-003
+  (pgvector), ADR-004 (asyncpg/no-ORM) written; ADR-005 corrected (stale `[ticket:<uuid>]` example
+  updated to the actual `TICKET-ID:<uuid>` format used since Phase 3). `wiki/INDEX.md` updated.
+- [x] P6-4 (Claude, 2026-07-06) `README.md` replaced — was the agent-kit's own build-instructions
+  README; now the project's portfolio README (pitch, Mermaid diagram reused from `docs/SPEC.md`
+  §2, 3-command quickstart, CI badge, metrics table placeholders, out-of-scope section, license).
+  New `LICENSE` (MIT). Bot handle, demo video link, and real `/stats` metrics remain `[HUMAN]`
+  placeholders — need production traffic and the recorded video to fill in.
 
 ## Blockers / Findings
 _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
@@ -204,20 +225,34 @@ _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
   wired and verified working) hit its free-tier's **daily** quota (20 requests/day — not just the
   5/min limit, which retry-with-backoff already handles) partway through the 27-ticket run,
   which no amount of retrying fixes until the quota resets; the user chose local Ollama over
-  enabling billing. Three local models compared live on the identical fixture + prompt:
-  `llama3.2:3b` (0.500–0.667, unreliable at the "other" category), `huihui_ai/qwen3.5-
-  abliterated:9b` (a reasoning model — slow, and still occasionally failed to produce valid JSON
-  within an 8192-token budget), and a 12B gemma-coder-tuned GGUF model (**0.833, the closest** —
-  fast, zero validation failures, perfect on "other"). One prompt clarification was made to
-  `classify.md` (category definitions) per the phase's stop condition, tried once, accepted the
-  result rather than continuing to tune. `test_grounding.py` has not passed with any provider
-  this session: Gemini's quota was exhausted before reaching it, and no local Ollama embedding
-  model outputs the required 1536 dimensions (confirmed: `nomic-embed-text` gives 768) — `/query`
-  correctly raises rather than corrupting `kb_chunks`. **To actually close P5-2**: either enable
-  billing on the Gemini key (cheap — the whole suite is well under $0.50 even at paid-tier
-  pricing) or obtain a real Anthropic/OpenAI key; local models are a viable free `/classify`-only
-  dev option but not currently sufficient for a passing `make evals` run. Full comparison and
-  every technical finding in wiki/gotchas.md #33–#38.
+  enabling billing. Four models compared live on the identical fixture + prompt (Phase 6 revisit
+  adds a fourth): `llama3.2:3b` (0.500–0.667, unreliable at the "other" category), `huihui_ai/
+  qwen3.5-abliterated:9b` (a reasoning model — slow, and still occasionally failed to produce
+  valid JSON within an 8192-token budget), a 12B gemma-coder-tuned GGUF model (**0.833, the
+  best of all four** — fast, zero validation failures, perfect on "other" — currently the `.env`
+  default), and `minimax-m3:cloud` (Ollama-proxied to its own cloud backend, not local compute —
+  gotcha #40; fast and reliable but only **0.750**, worse than the local 12B model). Requested
+  `glm-5.2:cloud` specifically was tried first but requires a paid ollama.com subscription (403).
+  One prompt clarification was made to `classify.md` (category definitions) per the phase's stop
+  condition, tried once, accepted the result rather than continuing to tune indefinitely. Also
+  found and fixed a real bug while testing `minimax-m3:cloud`: it wrapped valid JSON in markdown
+  code fences despite `strict: true`, which crashed with an unhandled `JSONDecodeError` instead of
+  the intended clean retry — `llm.py`'s new `_parse_json()` helper strips fences and returns
+  `None` on failure instead of raising, applied to all three structured-output call sites
+  (gotcha #39). `test_grounding.py` has not passed with any provider this session: Gemini's quota
+  was exhausted before reaching it, and no local Ollama embedding model outputs the required 1536
+  dimensions (confirmed: `nomic-embed-text` gives 768) — `/query` correctly raises rather than
+  corrupting `kb_chunks`. **To actually close P5-2**: either enable billing on the Gemini key
+  (cheap — the whole suite is well under $0.50 even at paid-tier pricing) or obtain a real
+  Anthropic/OpenAI key; local models are a viable free `/classify`-only dev option but not
+  currently sufficient for a passing `make evals` run. Full comparison and every technical finding
+  in wiki/gotchas.md #33–#40.
+- [OPEN] 2026-07-06 Claude: Phase 6's real-VM acceptance criteria are explicitly deferred, per
+  user decision — "human executes docs/infrastructure.md top-to-bottom," "TESTPLAN M7 passes over
+  TLS," and "fresh-clone rehearsal on a clean machine" are all `[ ]` open, not faked as done. When
+  a real VM is eventually provisioned: rehearse `docs/infrastructure.md` literally, fix whatever
+  step doesn't work as written (it hasn't been run against a real machine yet), then flip these to
+  `[x]`.
 
 ## Metrics to fill before applying
 - Auto-resolution rate: __% · Avg confidence: __ · Avg cost/ticket: $__ · p95 answer latency: __ s · Eval accuracy: __%

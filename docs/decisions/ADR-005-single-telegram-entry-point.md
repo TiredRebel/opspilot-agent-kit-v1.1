@@ -26,8 +26,10 @@ own** — it is invoked purely via Execute Workflow, receiving a `mode` field (`
   single-purpose workflow — accepted as the smaller cost versus a webhook registration race that
   would fail silently and be hard to diagnose (no error, just "customer messages stopped arriving"
   sometime after WF-3 was activated).
-- The reply→ticket mapping for edit-capture uses a `[ticket:<uuid>]` footer embedded in the draft
+- The reply→ticket mapping for edit-capture uses a `TICKET-ID:<uuid>` footer embedded in the draft
   message text (parsed back out of `reply_to_message.text`), not n8n workflow static data — chosen
   because it needs no key-management across stateless webhook executions and is fully inspectable
   by a human just reading the Telegram thread. This is schema-free per the DB's frozen-schema
-  constraint (no new column or table).
+  constraint (no new column or table). Originally written as a bracketed `[ticket:<uuid>]` footer;
+  changed to this bracket-free form in Phase 3 after discovering Telegram's default Markdown parse
+  mode silently strips unmatched `[...]` as incomplete link syntax (wiki/gotchas.md #26).

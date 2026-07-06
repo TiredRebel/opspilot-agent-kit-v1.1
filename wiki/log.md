@@ -370,3 +370,60 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
   remain a valid free option for `/classify`-only dev/testing but aren't sufficient alone. CI
   workflow exists but hasn't been exercised against a real GitHub Actions run yet. README badge,
   Makefile, and PROGRESS.md are otherwise complete for this phase
+
+## [2026-07-06 10:15] build | Claude Code | Phase 6 — Deploy & packaging (P6-1..P6-4)
+- Completed on new `Phase-6` branch: P6-1 `docs/infrastructure.md` (full runbook) +
+  `docker-compose.yml`'s `caddy` service behind `profiles: ["prod"]` + `caddy/Caddyfile`; P6-2
+  `scripts/backup.sh` + `scripts/test_backup_restore.sh` (run live against a scratch DB); P6-3
+  four new ADRs + one correction to ADR-005; P6-4 `README.md` replaced with the project's own
+  portfolio README + new `LICENSE` (MIT)
+- Files touched: `docs/infrastructure.md` (new), `docker-compose.yml`, `caddy/Caddyfile` (new),
+  `scripts/{backup.sh,test_backup_restore.sh}` (new), `docs/decisions/ADR-{001,002,003,004}-*.md`
+  (new), `docs/decisions/ADR-005-*.md` (corrected), `wiki/INDEX.md`, `README.md`, `LICENSE` (new),
+  `services/rag/app/llm.py` (markdown-fence JSON parsing fix), `.env`, `PROGRESS.md`, `wiki/map.md`
+- Decisions: real cloud VM provisioning explicitly **deferred** this session (user's call) — the
+  runbook is written as accurate forward-looking documentation but not rehearsed against a live
+  machine; `PROGRESS.md`'s acceptance criteria for the real-VM/TLS/DNS parts are left `[ ]` open
+  rather than checked off unearned. Caddy chosen over nginx (automatic HTTPS, fewer moving parts
+  to document/maintain) after the user asked to reconsider FastAPI-self-hosted-routing and nginx
+  as alternatives — FastAPI/uvicorn can terminate TLS itself but doesn't solve routing to n8n
+  (a separate process this repo doesn't control) and loses automatic cert renewal either way.
+  Two subdomains (not path-based routing on one domain) for n8n vs. rag-api, since n8n's UI/API
+  path space is broad and version-dependent — a future n8n upgrade adding new top-level routes
+  could silently collide with a path-based rule. `rclone` (not gsutil/aws-cli) for backups, since
+  the cloud choice itself is deferred — doesn't hard-couple the script to one provider
+- Verified live rather than assumed: `docker compose config` (default) excludes `caddy`;
+  `docker compose --profile prod config` includes it — profile gating works as designed and local
+  dev is genuinely unaffected. The dump→gzip→restore cycle actually run against a scratch
+  `opspilot_restore_test` database — restored row counts matched the source exactly
+  (`kb_documents=10 kb_chunks=15`); the `rclone` upload step itself is documented but not
+  exercised (no cloud remote configured, consistent with deferring real cloud infra)
+- Mid-phase revisit of Phase 5's still-open accuracy gap (user asked to try `glm-5.2:cloud` for
+  Ollama and fold any fixes into this work): `glm-5.2:cloud` requires a paid ollama.com
+  subscription (a plain 403, not a missing-model error) — inaccessible with the current account.
+  Substituted `minimax-m3:cloud` (also Ollama-cloud-routed, confirmed free-tier accessible) and
+  reran the full classify eval: **0.750, worse than the already-tested local 12B model's 0.833**
+  — concrete evidence that "cloud-routed" and "presumably bigger" don't automatically mean more
+  accurate for this specific structured-classification task (gotcha #38 updated with this data
+  point; gotcha #40 documents the `:cloud` accessibility discovery). `.env`'s `OLLAMA_MODEL`
+  reverted to the 12B model as the best-tested option
+- Bug found and fixed during that revisit: `minimax-m3:cloud` wrapped its valid JSON answer in
+  markdown code fences despite `response_format: {type: json_schema, strict: true}` — "strict"
+  mode is evidently not equally strict across every provider. The original
+  `json.loads(text)` would raise an unhandled `JSONDecodeError` instead of the intended clean
+  retry/422 path. Fixed with a shared `_parse_json()` helper (strips a leading/trailing fence,
+  returns `None` rather than raising on anything unparseable) applied at all three
+  structured-output call sites — Anthropic, the OpenAI-compatible path shared by OpenAI/Ollama,
+  and Gemini, since any of them could in principle do this (gotcha #39)
+- Also fixed a real gap from Phase 5 while touching `docker-compose.yml`: `rag-api`'s environment
+  block never passed through `GEMINI_API_KEY`/`OLLAMA_*` — the containerized service literally
+  couldn't have used those providers despite `llm.py` supporting them since Phase 5
+- Gotchas added: #39 (a provider can wrap JSON in markdown fences even under `strict: true` —
+  parse defensively), #40 (Ollama's `:cloud` models proxy to ollama.com, some need a paid
+  subscription, check each one rather than assuming); #38 updated with the `minimax-m3:cloud`
+  data point
+- Handoff / next: when a real VM is provisioned, rehearse `docs/infrastructure.md` literally end
+  to end and fix whatever doesn't work as written (it's reviewed, not tested) — that's the
+  remaining work for P6-1/P6-4's real-VM acceptance criteria. P5-2's accuracy gap is unchanged in
+  substance (still needs a real paid-tier or Anthropic/OpenAI-key provider to actually clear
+  0.85) but now has a more complete comparison across four models

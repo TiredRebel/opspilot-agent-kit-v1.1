@@ -25,6 +25,13 @@ services:
       LLM_PROVIDER: ${LLM_PROVIDER}
       ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY}
       OPENAI_API_KEY: ${OPENAI_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      # If LLM_PROVIDER=ollama and Ollama runs on the host (not in this compose stack), set
+      # OLLAMA_BASE_URL=http://host.docker.internal:11434 in .env — "localhost" from inside this
+      # container resolves to the container itself, not the host (same reasoning as gotcha #14).
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+      OLLAMA_MODEL: ${OLLAMA_MODEL}
+      OLLAMA_EMBED_MODEL: ${OLLAMA_EMBED_MODEL}
       DAILY_BUDGET_USD: ${DAILY_BUDGET_USD}
       CONFIDENCE_THRESHOLD: ${CONFIDENCE_THRESHOLD}
       KB_SEED_DIR: /app/kb/seed
@@ -36,5 +43,23 @@ services:
       postgres:
         condition: service_healthy
 
+  # Production-only reverse proxy with automatic HTTPS (Let's Encrypt via Caddy). Absent from
+  # `docker compose up -d` unless explicitly requested — local dev is unaffected either way.
+  # Start with: docker compose --profile prod up -d
+  caddy:
+    image: caddy:2-alpine
+    profiles: ["prod"]
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - rag-api
+
 volumes:
   pgdata:
+  caddy_data:
+  caddy_config:

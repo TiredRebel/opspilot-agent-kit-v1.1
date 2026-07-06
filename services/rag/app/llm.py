@@ -79,6 +79,25 @@ class LLMResult:
     embedding: list[float] | None = None
 
 
+_JSON_FENCE_RE = re.compile(r"^```(?:json)?\s*\n?(.*?)\n?```$", re.DOTALL)
+
+
+def _parse_json(text: str | None, schema: dict | None) -> dict | None:
+    """Parse structured-output text, tolerating a model that wraps valid JSON in markdown code
+    fences despite an explicit schema + `strict: true` instruction not to (seen live with
+    minimax-m3:cloud via Ollama — not every provider's "strict" mode is actually strict). Returns
+    None rather than raising on anything unparseable, so callers retry/422 cleanly instead of
+    crashing with an unhandled JSONDecodeError."""
+    if schema is None or not text:
+        return None
+    match = _JSON_FENCE_RE.match(text.strip())
+    candidate = match.group(1) if match else text
+    try:
+        return json.loads(candidate)
+    except json.JSONDecodeError:
+        return None
+
+
 def _cost(model: str, tokens_in: int, tokens_out: int) -> Decimal:
     # Unlisted models (Ollama, local) have no per-token API price — treat as free rather than
     # raising, so a locally-run model doesn't need a fake PRICING entry just to log a call.
@@ -425,7 +444,7 @@ async def _complete_openai_compatible(
     tokens_out = response.usage.completion_tokens
     cost = _cost(model, tokens_in, tokens_out)
     text = response.choices[0].message.content
-    parsed = json.loads(text) if schema is not None and text else None
+    parsed = _parse_json(text, schema)
     await _log(ticket_id, purpose, provider, model, tokens_in, tokens_out, cost, latency_ms, True)
     return LLMResult(
         provider=provider,
@@ -460,7 +479,7 @@ async def _complete_gemini(
     tokens_out = total_tokens - tokens_in
     cost = _cost(GEMINI_MODEL, tokens_in, tokens_out)
     text = data["candidates"][0]["content"]["parts"][0]["text"]
-    parsed = json.loads(text) if schema is not None and text else None
+    parsed = _parse_json(text, schema)
     await _log(
         ticket_id, purpose, "gemini", GEMINI_MODEL, tokens_in, tokens_out, cost, latency_ms, True
     )
@@ -507,7 +526,7 @@ async def _complete_chat(
     tokens_out = response.usage.output_tokens
     cost = _cost(ANTHROPIC_MODEL, tokens_in, tokens_out)
     text = next((b.text for b in response.content if b.type == "text"), None)
-    parsed = json.loads(text) if schema is not None and text else None
+    parsed = _parse_json(text, schema)
     await _log(
         ticket_id,
         purpose,
