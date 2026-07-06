@@ -13,7 +13,7 @@ Update this catalog in the same session as any page you add or materially change
 _None yet. Pages earn existence only per the heuristic in AGENTS.md → Wiki schema; most knowledge belongs in map.md._
 
 ## Decisions
-- [../docs/decisions/](../docs/decisions/) — ADRs. ADR-001 (LLM via service) and ADR-004 (asyncpg) pre-locked; written up at P6-3.
+- [../docs/decisions/](../docs/decisions/) — ADRs. ADR-001 (LLM via service), ADR-002 (confidence gate), ADR-003 (pgvector), ADR-004 (asyncpg), ADR-005 (single Telegram entry point) — all written.
 
 ## Templates
 

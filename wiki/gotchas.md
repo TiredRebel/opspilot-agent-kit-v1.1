@@ -271,10 +271,34 @@
       calls. Not recommended for this task despite being a larger model, given the reliability cost.
     - A 12B gemma-based coder-tuned model: fast (~5s/call, no reasoning trace), reliable (zero
       validation failures), and scored 0.833 — close to but just under this project's 0.85 bar,
-      with `other` at a perfect 3/3 (unlike llama3.2:3b's 0/3). The strongest local option tried.
-    None of these reached the 0.85 threshold `docs/TESTPLAN.md` requires; only a cloud model
-    (Anthropic, OpenAI, or Gemini once past its free-tier quota — gotcha #35) reliably clears it.
-    Lesson: don't assume "bigger local model" or "reasoning model" automatically means more
-    accurate or more reliable for structured-output tasks — test the actual task, not just
-    general capability, and weight reliability (does it ever fail to produce valid JSON at all)
-    alongside raw accuracy.
+      with `other` at a perfect 3/3 (unlike llama3.2:3b's 0/3). **The strongest of all four models
+      tried, including the cloud-routed one below** — currently the default in `.env`.
+    - `minimax-m3:cloud` (routed through Ollama's own cloud backend, not running locally at all —
+      see gotcha #40): fast (~3s/call, cloud-side compute), reliable, but scored only 0.750 —
+      *worse* than the local 12B model despite presumably being a much larger model. Concretely
+      confirms the lesson below isn't just about local-vs-cloud or model size in the abstract.
+    None of these reached the 0.85 threshold `docs/TESTPLAN.md` requires; only a "real" cloud
+    provider (Anthropic, OpenAI, or Gemini past its free-tier quota — gotcha #35) reliably clears
+    it. Lesson: don't assume "bigger model" or "reasoning model" or "cloud-routed" automatically
+    means more accurate or more reliable for a specific structured-output task — test the actual
+    task, not just general capability or spec sheet, and weight reliability (does it ever fail to
+    produce valid JSON at all) alongside raw accuracy.
+39. **A model can wrap valid JSON in markdown code fences (` ```json ... ``` `) even when given
+    an explicit `response_format: json_schema` with `strict: true`** — seen live with
+    `minimax-m3:cloud` via Ollama's OpenAI-compatible endpoint. "Strict" structured-output mode is
+    evidently not equally strict across every provider/model. The original parsing
+    (`json.loads(text)` directly) would raise an unhandled `JSONDecodeError` on this, crashing the
+    request instead of the intended clean retry/422 path. Fixed with a shared `_parse_json()`
+    helper in `llm.py` that strips a leading/trailing fence (with or without a `json` language
+    tag) before parsing, and catches `JSONDecodeError` to return `None` rather than raising —
+    used at all three structured-output call sites (Anthropic, the OpenAI-compatible path shared
+    by OpenAI/Ollama, and Gemini), since any of them could in principle do this.
+40. **Ollama can transparently proxy to *cloud-hosted* models it doesn't run itself** — model
+    names ending `:cloud` (visible in `ollama list`/`/api/tags`) route through
+    `https://ollama.com` using the local Ollama installation's own account, not local compute at
+    all. Some require a paid ollama.com subscription (`glm-5.2:cloud`, `minimax-m2.7:cloud`,
+    `kimi-k2.7-code:cloud` all returned `"this model requires a subscription"` — a plain 403, not
+    a model-not-found error) while others are accessible on the free tier (`minimax-m3:cloud`
+    worked without any subscription). Don't assume every `:cloud`-suffixed model behind the same
+    Ollama server is equally accessible — check each one; a 403 with that exact message means
+    "needs a paid plan," not "misconfigured" or "model doesn't exist."

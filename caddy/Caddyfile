@@ -1,0 +1,19 @@
+# Two subdomains, not path-based routing on one domain: n8n's UI/webhook/API paths occupy a wide,
+# n8n-version-dependent path space, and colliding with rag-api's specific endpoints (/health,
+# /classify, /query, /summarize, /stats, /kb/ingest) is a maintenance risk every n8n upgrade.
+# Caddy issues/renews a separate Let's Encrypt cert per site block automatically — no certbot,
+# no renewal cron to babysit.
+#
+# Replace api.example.com / ops.example.com with your real subdomains before running
+# `docker compose --profile prod up -d`.
+
+api.example.com {
+	reverse_proxy rag-api:8000
+}
+
+ops.example.com {
+	# n8n runs as a separate docker-compose project on this same VM (see docs/infrastructure.md) —
+	# not part of this repo's compose stack (wiki/gotchas.md #1), so it's addressed by whatever
+	# hostname/port that separate stack publishes on, not a service name from this file.
+	reverse_proxy host.docker.internal:5678
+}
