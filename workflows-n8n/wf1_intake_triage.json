@@ -1,0 +1,602 @@
+{
+  "name": "WF-1 Intake & Triage",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message",
+          "callback_query"
+        ],
+        "additionalFields": {}
+      },
+      "id": "33c7fcb7-7498-4014-a4c1-4873d60b594e",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": null,
+          "name": "Telegram - OpsPilot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-is-callback-1",
+              "leftValue": "={{ !!$json.callback_query }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "96e590f5-d108-46d0-8dd0-395030de923f",
+      "name": "Is Callback Query",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        420
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const data = ($json.callback_query && $json.callback_query.data) || '';\nconst [action, ticket_id] = data.split('|');\nreturn {\n  mode: 'callback',\n  action,\n  ticket_id,\n  callback_query_id: $json.callback_query.id\n};"
+      },
+      "id": "fdad3bc3-913f-4dc3-8550-69647d9957f9",
+      "name": "Prepare Callback Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-is-ops-chat-1",
+              "leftValue": "={{ String($json.message.chat.id) }}",
+              "rightValue": "PLACEHOLDER_OPS_CHAT_ID",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "cond-is-reply-1",
+              "leftValue": "={{ !!$json.message.reply_to_message }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "3bf1e5a9-e9d4-4cd1-a96c-49bb0c7975ae",
+      "name": "Is Ops Reply",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        0,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const replyText = ($json.message.reply_to_message && $json.message.reply_to_message.text) || '';\nconst match = replyText.match(/TICKET-ID:([0-9a-fA-F-]+)/);\nreturn {\n  mode: 'edit_reply',\n  ticket_id: match ? match[1] : null,\n  corrected_text: $json.message.text || ''\n};"
+      },
+      "id": "0631f406-ff8f-4b3a-ae3d-b50993a77f88",
+      "name": "Prepare Edit Reply Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "WF3_WORKFLOW_ID_PLACEHOLDER",
+          "mode": "id"
+        },
+        "mode": "once",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "mode": "={{ $json.mode }}",
+            "action": "={{ $json.action }}",
+            "ticket_id": "={{ $json.ticket_id }}",
+            "callback_query_id": "={{ $json.callback_query_id }}",
+            "corrected_text": "={{ $json.corrected_text }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "2d141e7c-d06b-4a9c-aab7-457893172708",
+      "name": "HITL Router (WF-3)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        520,
+        500
+      ]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "opspilot-intake",
+        "responseMode": "lastNode",
+        "options": {}
+      },
+      "id": "45a0d731-6ce8-4467-901a-f8e64809a927",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 1,
+      "position": [
+        0,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const msg = $json.message || {};\nconst chatId = msg.chat ? msg.chat.id : null;\nconst messageId = msg.message_id;\nreturn {\n  source: 'telegram',\n  external_ref: `${chatId}:${messageId}`,\n  subject: null,\n  body: msg.text || ''\n};"
+      },
+      "id": "933cd918-039d-4174-81ac-a64e72924897",
+      "name": "Normalize Telegram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const body = $json.body || $json;\nreturn {\n  source: 'webform',\n  external_ref: body.external_ref,\n  subject: body.subject || null,\n  body: body.body || ''\n};"
+      },
+      "id": "40457157-cf73-4afd-a363-3e34db70cc3c",
+      "name": "Normalize Webhook",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        260,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO tickets (source, external_ref, subject, body) VALUES ($1, $2, $3, $4) ON CONFLICT (source, external_ref) DO NOTHING RETURNING id, source, external_ref, subject, body",
+        "options": {
+          "queryReplacement": "={{ [$json.source, $json.external_ref, $json.subject, $json.body] }}"
+        }
+      },
+      "id": "fdd9ee8e-1eb9-4a1c-929b-ddcda18c8b66",
+      "name": "Insert Ticket",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        520,
+        130
+      ],
+      "credentials": {
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-is-new-1",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "39e3840c-e9b5-44b0-b52b-143dbaac7f1e",
+      "name": "Is New Ticket",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        740,
+        130
+      ]
+    },
+    {
+      "parameters": {},
+      "id": "fefc92c6-151a-4bab-ac2d-ef69d0c81d3e",
+      "name": "Duplicate - Skip",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        960,
+        320
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "http://host.docker.internal:8010/classify",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ ticket_id: $json.id, subject: $json.subject, body: $json.body }) }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 10000
+        }
+      },
+      "id": "f82a37d8-de9f-4cca-9244-b11b7df6fcf1",
+      "name": "Classify Ticket",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        960,
+        60
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 1000
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE tickets SET category = $1, priority = $2, sentiment = $3, lang = $4, status = 'drafted', updated_at = NOW() WHERE id = $5",
+        "options": {
+          "queryReplacement": "={{ [$json.category, $json.priority, $json.sentiment, $json.lang, $('Insert Ticket').item.json.id] }}"
+        }
+      },
+      "id": "09c02c8c-a278-44ad-935d-e342463f8d3d",
+      "name": "Update Triage Fields",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1180,
+        60
+      ],
+      "credentials": {
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-urgent-1",
+              "leftValue": "={{ $('Classify Ticket').item.json.priority }}",
+              "rightValue": "urgent",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "420589cf-02c2-4e48-a3c5-f2a6e0032705",
+      "name": "Is Urgent",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1400,
+        60
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "PLACEHOLDER_OPS_CHAT_ID",
+        "text": "={{ 'Urgent ticket ' + $('Insert Ticket').item.json.id + ' (' + $('Insert Ticket').item.json.source + '): ' + $('Insert Ticket').item.json.body }}",
+        "additionalFields": {}
+      },
+      "id": "f243b936-6edf-4ec1-93aa-d85d6c9ee2e8",
+      "name": "Alert Ops - Urgent",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1620,
+        -80
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": null,
+          "name": "Telegram - OpsPilot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "source": "database",
+        "workflowId": {
+          "__rl": true,
+          "value": "WF2_WORKFLOW_ID_PLACEHOLDER",
+          "mode": "id"
+        },
+        "mode": "once",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "ticket_id": "={{ $('Insert Ticket').item.json.id }}"
+          },
+          "matchingColumns": [],
+          "schema": []
+        },
+        "options": {}
+      },
+      "id": "9c9cf0fc-99d3-4306-bfb4-47708ff74a0a",
+      "name": "Draft Answer (WF-2)",
+      "type": "n8n-nodes-base.executeWorkflow",
+      "typeVersion": 1.3,
+      "position": [
+        1620,
+        160
+      ]
+    }
+  ],
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Is Callback Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Callback Query": {
+      "main": [
+        [
+          {
+            "node": "Prepare Callback Payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Is Ops Reply",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Callback Payload": {
+      "main": [
+        [
+          {
+            "node": "HITL Router (WF-3)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Ops Reply": {
+      "main": [
+        [
+          {
+            "node": "Prepare Edit Reply Payload",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Normalize Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Edit Reply Payload": {
+      "main": [
+        [
+          {
+            "node": "HITL Router (WF-3)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Normalize Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Telegram": {
+      "main": [
+        [
+          {
+            "node": "Insert Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Webhook": {
+      "main": [
+        [
+          {
+            "node": "Insert Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Ticket": {
+      "main": [
+        [
+          {
+            "node": "Is New Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is New Ticket": {
+      "main": [
+        [
+          {
+            "node": "Classify Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Duplicate - Skip",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Classify Ticket": {
+      "main": [
+        [
+          {
+            "node": "Update Triage Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Triage Fields": {
+      "main": [
+        [
+          {
+            "node": "Is Urgent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Urgent": {
+      "main": [
+        [
+          {
+            "node": "Alert Ops - Urgent",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Draft Answer (WF-2)",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Draft Answer (WF-2)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  }
+}
