@@ -21,6 +21,7 @@ _CASES = [
 
 
 async def _chunk_content(pool, source: str) -> str:
+    """Fetch a cited chunk's raw content by its `title#chunk_index` source string."""
     title, _, chunk_index = source.rpartition("#")
     row = await pool.fetchrow(
         """

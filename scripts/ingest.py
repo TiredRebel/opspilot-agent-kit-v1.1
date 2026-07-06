@@ -8,6 +8,7 @@ import httpx
 
 
 def main() -> int:
+    """POST /kb/ingest on the running rag-api and print the resulting document/chunk counts."""
     port = os.environ.get("RAG_API_PORT", "8010")
     url = f"http://localhost:{port}/kb/ingest"
     try:

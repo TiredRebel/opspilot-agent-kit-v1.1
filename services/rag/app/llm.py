@@ -67,6 +67,8 @@ class BudgetExceeded(Exception):
 
 @dataclass
 class LLMResult:
+    """Normalized result of any provider call — chat completion or embedding alike."""
+
     provider: str
     model: str
     tokens_in: int
@@ -99,6 +101,7 @@ def _parse_json(text: str | None, schema: dict | None) -> dict | None:
 
 
 def _cost(model: str, tokens_in: int, tokens_out: int) -> Decimal:
+    """Compute USD cost for a call from `PRICING`, treating any unlisted model as free."""
     # Unlisted models (Ollama, local) have no per-token API price — treat as free rather than
     # raising, so a locally-run model doesn't need a fake PRICING entry just to log a call.
     if model not in PRICING:
@@ -118,6 +121,7 @@ async def _log(
     latency_ms: int,
     success: bool,
 ) -> None:
+    """Insert one row into `llm_calls` recording this attempt's cost/latency/outcome."""
     pool = await db.get_pool()
     await pool.execute(
         """
@@ -139,6 +143,7 @@ async def _log(
 
 
 async def _check_budget() -> None:
+    """Raise `BudgetExceeded` if today's logged spend has hit `daily_budget_usd`."""
     pool = await db.get_pool()
     spent = await pool.fetchval(
         "SELECT COALESCE(SUM(cost_usd), 0) FROM llm_calls WHERE created_at::date = CURRENT_DATE"
@@ -150,12 +155,14 @@ async def _check_budget() -> None:
 
 
 def _fake_embedding(text: str) -> list[float]:
+    """Deterministic pseudo-embedding for the `fake` provider, seeded from the input text's hash."""
     seed = int(sha256(text.encode()).hexdigest(), 16)
     rng = random.Random(seed)
     return [rng.uniform(-1, 1) for _ in range(EMBED_DIM)]
 
 
 def _fake_result(purpose: Purpose, embed_text: str | None) -> LLMResult:
+    """Deterministic canned `LLMResult` per purpose, used by the `fake` provider in tests."""
     if purpose == "embed":
         return LLMResult(
             provider="fake",
@@ -222,17 +229,28 @@ def _fake_result(purpose: Purpose, embed_text: str | None) -> LLMResult:
 
 
 def _anthropic_client() -> anthropic.AsyncAnthropic:
+    """Build an Anthropic client using the configured API key."""
     return anthropic.AsyncAnthropic(api_key=settings.anthropic_api_key)
 
 
 def _openai_client() -> openai.AsyncOpenAI:
+    """Build an OpenAI client using the configured API key."""
     return openai.AsyncOpenAI(api_key=settings.openai_api_key)
 
 
 def _ollama_client() -> openai.AsyncOpenAI:
-    """Ollama exposes an OpenAI-compatible chat/embeddings API, so we reuse the OpenAI SDK
-    pointed at the local server instead of a separate client library. Ollama doesn't check the
-    api_key, but the SDK requires a non-empty string."""
+    """Ollama exposes an OpenAI-compatible chat/embeddings API, so we reuse the OpenAI SDK instead
+    of a separate client library, pointed at one of two targets.
+
+    Default: the local daemon (`ollama_base_url`) — it doesn't check `api_key` at all, but the SDK
+    requires a non-empty string, hence the placeholder `"ollama"` value.
+
+    If `ollama_api_key` is set, talk to ollama.com's hosted endpoint directly with that key as a
+    real bearer token instead — the local daemon's proxying of `:cloud` models is gated behind a
+    separate ollama.com subscription plan, but a personal API key works against the hosted API on
+    its own (pay-per-token), independent of that plan."""
+    if settings.ollama_api_key:
+        return openai.AsyncOpenAI(base_url="https://ollama.com/v1", api_key=settings.ollama_api_key)
     return openai.AsyncOpenAI(base_url=f"{settings.ollama_base_url}/v1", api_key="ollama")
 
 
@@ -352,6 +370,7 @@ async def _call_gemini(messages: list[dict[str, str]], schema: dict | None, syst
 
 
 async def _call_openai_embed(text: str):
+    """Raw OpenAI embeddings call, isolated so tests can monkeypatch it."""
     return await _openai_client().embeddings.create(model=OPENAI_EMBED_MODEL, input=text)
 
 
@@ -373,6 +392,7 @@ async def _call_gemini_embed(text: str):
 
 
 def _is_retryable(exc: Exception) -> bool:
+    """True if `exc` is a 5xx/timeout/connection error that should trigger the OpenAI fallback."""
     if isinstance(exc, anthropic.APIStatusError):
         return exc.status_code >= 500
     return isinstance(exc, (anthropic.APIConnectionError, anthropic.APITimeoutError))
@@ -466,6 +486,7 @@ async def _complete_gemini(
     system: str | None,
     ticket_id: str | UUID | None,
 ) -> LLMResult:
+    """Call Gemini and normalize its response into an `LLMResult`, logging the attempt."""
     start = time.monotonic()
     data = await _call_gemini(messages, schema, system)
     latency_ms = int((time.monotonic() - start) * 1000)
@@ -503,6 +524,7 @@ async def _complete_chat(
     system: str | None,
     ticket_id: str | UUID | None,
 ) -> LLMResult:
+    """Call Anthropic, falling back to OpenAI once on a retryable error (ADR-001)."""
     start = time.monotonic()
     try:
         response = await _call_anthropic(messages, schema, system)
@@ -560,6 +582,7 @@ async def complete(
     ticket_id: str | UUID | None = None,
     embed_text: str | None = None,
 ) -> LLMResult:
+    """Entry point for every LLM/embedding call — dispatches on `settings.llm_provider`."""
     if settings.llm_provider == "fake":
         result = _fake_result(purpose, embed_text)
         await _log(

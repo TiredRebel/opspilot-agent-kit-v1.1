@@ -427,3 +427,69 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
   remaining work for P6-1/P6-4's real-VM acceptance criteria. P5-2's accuracy gap is unchanged in
   substance (still needs a real paid-tier or Anthropic/OpenAI-key provider to actually clear
   0.85) but now has a more complete comparison across four models
+
+## [2026-07-06 14:00] build | Claude Code | Ollama cloud API-key auth + docstring/PEP-8 audit (OpenSpec: add-ollama-cloud-auth, add-docstrings-pep8-audit)
+- P5-2 revisit via OpenSpec change `add-ollama-cloud-auth` (archived): added optional
+  `OLLAMA_API_KEY` setting so the `ollama` provider can authenticate directly against
+  `https://ollama.com/v1` instead of only the local daemon. Motivated by a live-confirmed
+  distinction — the local daemon's proxying of `:cloud` models needs a separate paid ollama.com
+  subscription plan (403 even after `ollama signin` confirmed the right account and a full
+  `ollama serve` restart), while a personal API key works immediately against the direct cloud
+  endpoint (pay-per-token, a different product). Tested against `kimi-k2.7-code:cloud`: auth path
+  confirmed working, but accuracy came back 0.750–0.792 across two runs — still below the local
+  12B model's 0.833, so P5-2's 0.85 target remains open. Also found: `llm.py`'s cost logging has
+  no pricing entry for `ollama`, so this real billed cloud usage logged as $0.0000 — the `$2`
+  dev-budget invariant can't currently see spend on this path (gotcha #41)
+- Separate OpenSpec change `add-docstrings-pep8-audit` (archived): an AST scan found 23
+  functions/classes + 2 modules missing docstrings in `services/rag/app/`, plus 9 more in
+  `evals/`/`scripts/` — `ruff check`/`ruff format --check` passed cleanly throughout because the
+  configured rule set never checked for docstrings. Closed all of them (one-line docstrings for
+  simple functions/Pydantic models, matching the codebase's existing concise style — no rewriting
+  of already-good multi-paragraph docstrings). Added `D100-D104` (docstring-presence only, not
+  the full stylistic `D` family) to `pyproject.toml`'s ruff `select`, with `services/rag/tests/**`
+  and `evals/test_*.py` exempted via `per-file-ignores` since test names are already the
+  documentation. `ruff check .`/`ruff format --check .` both clean, `make test` 18/18 green
+- Files touched: `services/rag/app/{__init__,settings,llm,main,schemas}.py`,
+  `evals/{conftest,test_classify,test_grounding}.py`, `scripts/{ingest,n8n_sync}.py`,
+  `pyproject.toml`, `.env.example`, `openspec/specs/llm-provider-layer/spec.md` (new),
+  `openspec/specs/code-documentation-standards/spec.md` (new), `PROGRESS.md`, `wiki/gotchas.md`,
+  `wiki/map.md`
+- Handoff / next: P5-2 still needs a real Anthropic/OpenAI key (already budgeted in
+  `docs/SPEC.md` §4) to actually reach 0.85 — every free/cheap-cloud route tried so far
+  (Gemini quota, `minimax-m3:cloud`, `glm-5.2:cloud`, `kimi-k2.7-code:cloud`) has come up short
+  or blocked
+
+## [2026-07-06 15:30] build | Claude Code | Live n8n workflow export (OpenSpec: export-live-n8n-workflows)
+- User-requested: a `workflows-n8n/` folder with the 5 OpsPilot workflows exported fresh from the
+  live n8n instance, redacted, and genuinely ready to import — motivated by `n8n/workflows/*.json`
+  deliberately containing `PLACEHOLDER_*` tokens that never get the real live-patched values
+  (gotcha #20), so those committed files alone wouldn't import cleanly on a fresh instance.
+- Scoped to just the 5 OpsPilot workflows out of 13 total on the shared instance (gotcha #1 — this
+  project reuses an existing local n8n install); the other 8 are unrelated personal automations
+  and were explicitly excluded per user decision.
+- New `scripts/export_n8n_workflows.py`: fetches each of the 5 by name (n8n's `/workflows` list
+  endpoint already returns full `nodes`/`connections`/`settings`, no extra per-ID call needed),
+  reduces to the same `{name, nodes, connections, settings}` shape as `n8n/workflows/*.json`
+  (reusing `n8n_sync.py`'s `IMPORT_FIELDS`), then redacts by diffing against the committed file:
+  nodes matched by `name` (not list index, so an added/removed live node doesn't break redaction
+  for the rest), any committed value *containing* a `PLACEHOLDER_*`/`*_PLACEHOLDER` substring
+  wins over the live value at that path, credential `.id` and `webhookId` are always stripped
+  (instance-specific, non-portable). Ends with a structural diff against the committed file,
+  printed but non-fatal, so any real drift is visible rather than silently swallowed or silently
+  committed.
+- **Real bug caught during this session, before anything was committed**: the first version's
+  placeholder check required an exact whole-string match, which missed WF-5's Notion URL
+  (`.../blocks/PLACEHOLDER_NOTION_PAGE_ID/children` — the token is embedded in a larger string,
+  not the whole value) and leaked the real Notion page ID into the first export attempt. Caught by
+  the manual secret-grep verification step (not the diff step, which doesn't know what's a
+  secret) before the file was ever committed; fixed by switching to a substring search and letting
+  the *whole* committed string win at that leaf, then re-ran clean (zero real-secret matches,
+  placeholder counts matching `n8n/workflows/` exactly: 4/1/3/1/2 per file)
+- Real (benign) drift found by the diff step: WF-1's live `settings.binaryMode: "separate"` isn't
+  present in the committed file — an n8n default/setting added sometime after WF-1 was last
+  committed, not a secret, not otherwise acted on this session
+- Files touched: `scripts/export_n8n_workflows.py` (new), `workflows-n8n/*.json` (new, 5 files),
+  `wiki/map.md`
+- Handoff / next: this is a manual, on-demand snapshot tool — not wired into CI/`make`, so
+  `workflows-n8n/` will go stale if `n8n/workflows/` or the live instance changes and this script
+  isn't re-run. No automation currently keeps it fresh by design (see design.md non-goals).

@@ -18,6 +18,8 @@ CLASSIFY_SCHEMA = {
 
 
 class ClassifyRequest(BaseModel):
+    """POST /classify request body."""
+
     # Typed as UUID, not str, so a malformed ticket_id is rejected here with a clean 422 —
     # otherwise it reaches asyncpg and crashes with a raw 500 (wiki/gotchas.md #13).
     ticket_id: UUID
@@ -26,6 +28,8 @@ class ClassifyRequest(BaseModel):
 
 
 class ClassifyResponse(BaseModel):
+    """POST /classify response body — the parsed structured-output fields."""
+
     category: str
     priority: str
     sentiment: str
@@ -33,30 +37,42 @@ class ClassifyResponse(BaseModel):
 
 
 class QueryRequest(BaseModel):
+    """POST /query request body."""
+
     question: str
     ticket_id: UUID | None = None
 
 
 class QueryResponse(BaseModel):
+    """POST /query response body — grounded answer, cited sources, and blended confidence."""
+
     answer: str
     sources: list[str]
     confidence: float
 
 
 class IngestResponse(BaseModel):
+    """POST /kb/ingest response body — counts of documents/chunks written this run."""
+
     documents: int
     chunks: int
 
 
 class SummarizeRequest(BaseModel):
+    """POST /summarize request body — the stats payload to turn into a digest."""
+
     stats: dict
 
 
 class SummarizeResponse(BaseModel):
+    """POST /summarize response body."""
+
     text: str
 
 
 class StatsResponse(BaseModel):
+    """GET /stats response body — ticket/cost/latency aggregates, optionally time-scoped."""
+
     tickets_by_status: dict[str, int]
     tickets_by_category: dict[str, int]
     tickets_by_priority: dict[str, int]

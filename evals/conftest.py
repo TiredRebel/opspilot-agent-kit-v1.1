@@ -35,6 +35,7 @@ def _localhost_database_url() -> str:
 
 @pytest.fixture(scope="session", autouse=True)
 def _use_localhost_database():
+    """Point the app's settings at the localhost-rewritten dev database for the whole session."""
     settings.database_url = _localhost_database_url()
 
 

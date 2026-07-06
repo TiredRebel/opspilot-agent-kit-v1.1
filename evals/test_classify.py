@@ -20,6 +20,7 @@ _ACCURACY_THRESHOLD = 0.85
 
 
 def _load_tickets() -> list[dict]:
+    """Load the labeled fixture tickets from `tickets.jsonl`, one JSON object per line."""
     with _FIXTURE_PATH.open(encoding="utf-8") as f:
         return [json.loads(line) for line in f if line.strip()]
 
