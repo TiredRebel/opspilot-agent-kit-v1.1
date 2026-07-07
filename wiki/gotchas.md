@@ -271,18 +271,40 @@
       calls. Not recommended for this task despite being a larger model, given the reliability cost.
     - A 12B gemma-based coder-tuned model: fast (~5s/call, no reasoning trace), reliable (zero
       validation failures), and scored 0.833 — close to but just under this project's 0.85 bar,
-      with `other` at a perfect 3/3 (unlike llama3.2:3b's 0/3). **The strongest of all four models
-      tried, including the cloud-routed one below** — currently the default in `.env`.
+      with `other` at a perfect 3/3 (unlike llama3.2:3b's 0/3). **The strongest of every model
+      tried, local or cloud** — currently the default in `.env`.
     - `minimax-m3:cloud` (routed through Ollama's own cloud backend, not running locally at all —
       see gotcha #40): fast (~3s/call, cloud-side compute), reliable, but scored only 0.750 —
       *worse* than the local 12B model despite presumably being a much larger model. Concretely
       confirms the lesson below isn't just about local-vs-cloud or model size in the abstract.
-    None of these reached the 0.85 threshold `docs/TESTPLAN.md` requires; only a "real" cloud
-    provider (Anthropic, OpenAI, or Gemini past its free-tier quota — gotcha #35) reliably clears
-    it. Lesson: don't assume "bigger model" or "reasoning model" or "cloud-routed" automatically
-    means more accurate or more reliable for a specific structured-output task — test the actual
-    task, not just general capability or spec sheet, and weight reliability (does it ever fail to
-    produce valid JSON at all) alongside raw accuracy.
+    - `kimi-k2.7-code:cloud` (via the direct `OLLAMA_API_KEY` cloud-auth path — gotcha #41):
+      0.750–0.792 across two runs (non-deterministic between runs), still worse than the local
+      12B model either way.
+    - `gemma4:31b-cloud` (also via the direct `OLLAMA_API_KEY` path, tested per
+      `openspec/changes/archive/*-try-gemma4-31b-cloud`): 0.792, reproducible across two runs
+      (unlike `kimi-k2.7-code:cloud`'s variance) — confusion showed `account` bleeding into
+      `billing`/`technical` and one `billing` item misclassified as `other`. Still below both the
+      0.85 target and the local 12B model's 0.833, despite presumably being a larger model than
+      the 12B local one — reinforces the lesson below rather than being a one-off.
+    - `qwen3.5:397b-cloud`: 0.792 — same score as `gemma4:31b-cloud`, still below the local 12B
+      model. Also took **22.5 minutes** for a single 27-item run (vs. ~2-5s/call for the local
+      model and ~3s/call for the smaller cloud models) — even setting accuracy aside, a model this
+      slow isn't viable for `/classify`'s synchronous request path regardless of score.
+    - `glm-5.2:cloud`: previously blocked by the subscription gate (gotcha #40); once the account
+      was reconnected to the subscription, it became accessible and scored 0.750 — matching
+      `minimax-m3:cloud`'s result, still the worst of any model tried.
+    None of the cloud candidates reached the local 12B model's 0.833, let alone the 0.85 threshold
+    `docs/TESTPLAN.md` requires; only a "real" cloud provider (Anthropic, OpenAI, or Gemini past
+    its free-tier quota — gotcha #35) has ever reliably cleared it. Lesson: don't assume "bigger
+    model" or "reasoning model" or "cloud-routed" automatically means more accurate or more
+    reliable for a specific structured-output task — test the actual task, not just general
+    capability or spec sheet, and weight reliability (does it ever fail to produce valid JSON at
+    all) and latency alongside raw accuracy. Five cloud-routed models have now been tried
+    (`minimax-m3:cloud`, `kimi-k2.7-code:cloud`, `gemma4:31b-cloud`, `qwen3.5:397b-cloud`,
+    `glm-5.2:cloud`); none has beaten the local model, and the scores cluster tightly in a
+    0.750–0.792 band regardless of stated model size — strong evidence the ceiling here is the
+    task/prompt combination interacting with this family of models, not any single model's
+    parameter count.
 39. **A model can wrap valid JSON in markdown code fences (` ```json ... ``` `) even when given
     an explicit `response_format: json_schema` with `strict: true`** — seen live with
     `minimax-m3:cloud` via Ollama's OpenAI-compatible endpoint. "Strict" structured-output mode is
@@ -301,7 +323,10 @@
     a model-not-found error) while others are accessible on the free tier (`minimax-m3:cloud`
     worked without any subscription). Don't assume every `:cloud`-suffixed model behind the same
     Ollama server is equally accessible — check each one; a 403 with that exact message means
-    "needs a paid plan," not "misconfigured" or "model doesn't exist."
+    "needs a paid plan," not "misconfigured" or "model doesn't exist." **Update:** once the
+    account's subscription was reconnected, `glm-5.2:cloud` became accessible and was actually
+    tested (gotcha #38) — the 403 really was purely an access-tier gate, not a sign the model
+    itself was unusable or misconfigured.
 41. **A working ollama.com personal API key does NOT unlock subscription-gated `:cloud` models
     through the local daemon — those are two separate products.** Confirmed live: with the local
     `ollama` CLI already signed in as the correct account (`ollama signin` → "already signed in as

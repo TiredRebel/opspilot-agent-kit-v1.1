@@ -270,6 +270,30 @@ _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
   this real billed cloud usage logged as `$0.0000` — the `$2` dev-budget invariant currently can't
   see spend on this path. To actually close P5-2: the only untried route left is a real
   Anthropic/OpenAI key (spec already budgets for this, see docs/SPEC.md §4 "$2 dev budget").
+- [OPEN] 2026-07-07 Claude: **`gemma4:31b-cloud` tried as a sixth model (openspec change
+  `try-gemma4-31b-cloud`), also does not close P5-2's gap.** Via the same `OLLAMA_API_KEY` direct
+  cloud-auth path as the prior test — no code change needed, this was a config-value-only test.
+  Scored 0.792, reproducible across two runs (unlike `kimi-k2.7-code:cloud`'s run-to-run
+  variance), still below both the 0.85 target and the local 12B model's 0.833. Per the decision
+  rule in that change's design (update the default only if a candidate strictly beats 0.833),
+  `.env`'s `OLLAMA_MODEL` was left unchanged. Four cloud-routed models have now been tried total
+  (`minimax-m3:cloud` 0.750, `kimi-k2.7-code:cloud` 0.750–0.792, `gemma4:31b-cloud` 0.792,
+  `glm-5.2:cloud` blocked entirely by the subscription gate) — none has beaten the local model.
+  The conclusion from the prior entry stands unchanged: the only untried route left is a real
+  Anthropic/OpenAI key.
+- [OPEN] 2026-07-07 Claude: **Two more cloud models tried on the `llm-optimization` branch,
+  neither closes P5-2's gap.** `qwen3.5:397b-cloud` scored 0.792 (same as `gemma4:31b-cloud`) but
+  took 22.5 minutes for one 27-item eval run — impractically slow for `/classify`'s synchronous
+  path regardless of accuracy. `glm-5.2:cloud` (previously blocked by the subscription gate, gotcha
+  #40) became accessible once the account's subscription was reconnected and scored 0.750, tying
+  `minimax-m3:cloud` as the worst result of any model tried. Per the same threshold rule as the
+  prior entry, `.env`'s `OLLAMA_MODEL` was left unchanged. Five cloud-routed models have now been
+  tried total (`minimax-m3:cloud` 0.750, `kimi-k2.7-code:cloud` 0.750–0.792, `gemma4:31b-cloud`
+  0.792, `qwen3.5:397b-cloud` 0.792, `glm-5.2:cloud` 0.750) — all cluster in a narrow 0.750–0.792
+  band regardless of stated model size, which is itself informative: this looks like a
+  task/prompt ceiling for this model family, not a "just try a bigger model" problem. The
+  conclusion is unchanged and now well-evidenced: the only untried route to close P5-2 is a real
+  Anthropic/OpenAI key.
 - [OPEN] 2026-07-06 Claude: Phase 6's real-VM acceptance criteria are explicitly deferred, per
   user decision — "human executes docs/infrastructure.md top-to-bottom," "TESTPLAN M7 passes over
   TLS," and "fresh-clone rehearsal on a clean machine" are all `[ ]` open, not faked as done. When
