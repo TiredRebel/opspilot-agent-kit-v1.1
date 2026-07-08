@@ -1,5 +1,7 @@
 import pytest
 from app import llm, main
+from app.llm.providers import anthropic as anthropic_provider
+from app.llm.providers import openai as openai_provider
 from app.settings import settings
 from fastapi.testclient import TestClient
 
@@ -26,8 +28,8 @@ async def test_budget_exceeded_raises_without_calling_a_provider(pool, monkeypat
         called = True
         raise AssertionError("provider must not be called once the daily budget is exceeded")
 
-    monkeypatch.setattr(llm, "_call_anthropic", should_not_be_called)
-    monkeypatch.setattr(llm, "_call_openai", should_not_be_called)
+    monkeypatch.setattr(anthropic_provider, "_call_anthropic", should_not_be_called)
+    monkeypatch.setattr(openai_provider, "_call_openai", should_not_be_called)
 
     with pytest.raises(llm.BudgetExceeded):
         await llm.complete("classify", [{"role": "user", "content": "hi"}])

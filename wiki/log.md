@@ -493,3 +493,27 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
 - Handoff / next: this is a manual, on-demand snapshot tool — not wired into CI/`make`, so
   `workflows-n8n/` will go stale if `n8n/workflows/` or the live instance changes and this script
   isn't re-run. No automation currently keeps it fresh by design (see design.md non-goals).
+
+## [2026-07-08 10:20] build | Claude Code | llm.py split into app/llm/ package (OpenSpec: split-llm-provider-package)
+- Completed: `services/rag/app/llm.py` (627 lines, top god node in the knowledge graph) replaced by
+  the `app/llm/` package — `base.py` (LLMResult/Purpose/BudgetExceeded/Provider protocol/EMBED_DIM
+  + shared dim-check), `pricing.py`, `prompts.py`, `ledger.py` (`Ledger` interface + asyncpg
+  `PgLedger` — the package's only DB touchpoint), `providers/{anthropic,openai,gemini,ollama,fake}.py`
+  (+ `_openai_compat.py` shared parser), `registry.py` (explicit PROVIDERS dict replaces both
+  `if provider ==` dispatch chains), `__init__.py` façade re-exporting the public four.
+- No behavior change: ADR-001 anthropic→openai fallback ordering (log failed attempt → re-raise if
+  non-retryable → fall back) moved verbatim; budget check still precedes every non-fake call; fake
+  short-circuit still skips the budget check; `main.py` untouched (façade imports only).
+- Edge-case tightening (only intentional deviation): unknown `LLM_PROVIDER` + embed purpose now
+  raises the same `ValueError` as chat did, instead of silently using the OpenAI embed path.
+- Tests: patch targets moved to `app.llm.providers.<name>._call_*` (assertions unchanged); new
+  `test_provider_no_db.py` proves a provider runs against a stub Ledger with Postgres unreachable
+  (conftest's autouse DB fixtures overridden locally). 19/19 green; ruff format+check clean.
+- Live spot-check: `LLM_PROVIDER=ollama` `/classify` roundtrip against the local daemon (12B gemma
+  model) returned valid structured output and wrote the expected `llm_calls` row (cost $0, unlisted
+  local model — same as before).
+- Files touched: `services/rag/app/llm/**` (new, 12 files), `services/rag/app/llm.py` (deleted),
+  `services/rag/tests/{test_llm_fallback,test_budget_guardrail}.py` (patch paths),
+  `services/rag/tests/test_provider_no_db.py` (new), `wiki/map.md`, `PROGRESS.md`.
+- Handoff / next: the `Ledger` seam is the intended hook for a future `ticket_events`/event-emission
+  change; archive the OpenSpec change once reviewed (`/opsx:archive`).
