@@ -139,6 +139,13 @@ deploy documentation and locally-verifiable artifacts; it does not execute again
   (docstring-presence) to ruff's lint config, with tests exempted via `per-file-ignores`.
   `ruff check`/`ruff format --check` clean, `make test` 18/18 green. New spec:
   `openspec/specs/code-documentation-standards/spec.md`.
+- [x] `split-llm-provider-package` (Claude, 2026-07-08, active — not yet archived) — replaced the
+  627-line `services/rag/app/llm.py` god module with the `app/llm/` package: one module per
+  provider under `providers/`, explicit registry dispatch (adding a provider = new module + one
+  registry entry), `Ledger` interface isolating the package's only DB touchpoint, façade
+  re-exports so `main.py` and callers are unchanged. No behavior change; 19/19 tests green
+  (incl. new DB-free provider test), lint clean, live `ollama` `/classify` spot-check passed.
+  Delta spec: `openspec/changes/split-llm-provider-package/specs/llm-provider-layer/spec.md`.
 
 ## Blockers / Findings
 _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_

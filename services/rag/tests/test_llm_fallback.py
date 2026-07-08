@@ -4,6 +4,8 @@ import anthropic
 import httpx
 import pytest
 from app import llm
+from app.llm.providers import anthropic as anthropic_provider
+from app.llm.providers import openai as openai_provider
 from app.settings import settings
 
 
@@ -32,8 +34,8 @@ async def test_primary_5xx_falls_back_once_and_logs_both_attempts(pool, monkeypa
         openai_calls += 1
         return openai_response
 
-    monkeypatch.setattr(llm, "_call_anthropic", failing_anthropic)
-    monkeypatch.setattr(llm, "_call_openai", fake_openai)
+    monkeypatch.setattr(anthropic_provider, "_call_anthropic", failing_anthropic)
+    monkeypatch.setattr(openai_provider, "_call_openai", fake_openai)
 
     result = await llm.complete("answer", [{"role": "user", "content": "hi"}])
 
@@ -59,8 +61,8 @@ async def test_primary_4xx_does_not_fall_back(monkeypatch):
     async def should_not_be_called(*args, **kwargs):
         raise AssertionError("OpenAI fallback should not be called on a non-retryable 4xx")
 
-    monkeypatch.setattr(llm, "_call_anthropic", failing_anthropic)
-    monkeypatch.setattr(llm, "_call_openai", should_not_be_called)
+    monkeypatch.setattr(anthropic_provider, "_call_anthropic", failing_anthropic)
+    monkeypatch.setattr(openai_provider, "_call_openai", should_not_be_called)
 
     with pytest.raises(anthropic.APIStatusError):
         await llm.complete("answer", [{"role": "user", "content": "hi"}])
