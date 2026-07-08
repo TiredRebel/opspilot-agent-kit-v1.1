@@ -20,9 +20,9 @@ from app.settings import settings
 from dotenv import dotenv_values
 
 _ENV = dotenv_values(Path(__file__).resolve().parents[3] / ".env")
-_SCHEMA_SQL = (Path(__file__).resolve().parents[3] / "db" / "init" / "01_schema.sql").read_text(
-    encoding="utf-8"
-)
+# All init files in lexical order — the same set and order the postgres entrypoint applies on a
+# fresh volume, so the test schema can't drift from production (ADR-006 additive-only policy).
+_DB_INIT_DIR = Path(__file__).resolve().parents[3] / "db" / "init"
 
 
 def _pg_creds() -> tuple[str, str, str]:
@@ -65,7 +65,8 @@ async def _reset_test_database():
 
     test_conn = await asyncpg.connect(_localhost_database_url())
     try:
-        await test_conn.execute(_SCHEMA_SQL)
+        for sql_file in sorted(_DB_INIT_DIR.glob("*.sql")):
+            await test_conn.execute(sql_file.read_text(encoding="utf-8"))
     finally:
         await test_conn.close()
 
@@ -92,7 +93,7 @@ async def pool():
 @pytest_asyncio.fixture(autouse=True)
 async def _clean_tables(pool):
     """Keep L2 tests order-independent by truncating app tables before and after each test."""
-    tables = "tickets, messages, kb_documents, kb_chunks, llm_calls"
+    tables = "tickets, messages, kb_documents, kb_chunks, llm_calls, ticket_events"
     await pool.execute(f"TRUNCATE {tables} CASCADE")
     yield
     await pool.execute(f"TRUNCATE {tables} CASCADE")

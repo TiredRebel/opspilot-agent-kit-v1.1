@@ -1,12 +1,14 @@
-"""FastAPI app: /health, /kb/ingest, /classify, /query, /summarize, /stats.
+"""FastAPI app: /health, /kb/ingest, /classify, /query, /summarize, /stats, /tickets/*/events.
 
 This is the only service allowed to call an LLM (ADR-001) — n8n workflows call these endpoints
 over HTTP rather than reaching an LLM API directly.
 """
 
+import json
 import re
 from contextlib import asynccontextmanager
 from pathlib import Path
+from uuid import UUID
 
 from fastapi import APIRouter, FastAPI, HTTPException, Request, Response
 from fastapi.responses import JSONResponse
@@ -24,6 +26,8 @@ from app.schemas import (
     StatsResponse,
     SummarizeRequest,
     SummarizeResponse,
+    TicketEvent,
+    TicketEventsResponse,
 )
 from app.settings import settings
 
@@ -188,6 +192,33 @@ async def summarize(payload: SummarizeRequest) -> SummarizeResponse:
         system=load_prompt("digest"),
     )
     return SummarizeResponse(text=result.text or "")
+
+
+@router.get("/tickets/{ticket_id}/events", response_model=TicketEventsResponse)
+async def ticket_events(ticket_id: UUID) -> TicketEventsResponse:
+    """A ticket's audit trail from `ticket_events` (trigger-captured — see ADR-006), oldest
+    first. `seq` breaks ties for events created in the same transaction (shared created_at).
+    The UUID-typed path param turns a malformed id into a clean 422 (same reasoning as
+    ClassifyRequest.ticket_id, gotcha #13)."""
+    pool = await db.get_pool()
+    exists = await pool.fetchval("SELECT 1 FROM tickets WHERE id = $1", ticket_id)
+    if not exists:
+        raise HTTPException(status_code=404, detail=f"ticket {ticket_id} not found")
+    rows = await pool.fetch(
+        """
+        SELECT type, payload, created_at FROM ticket_events
+        WHERE ticket_id = $1 ORDER BY created_at, seq
+        """,
+        ticket_id,
+    )
+    # asyncpg returns jsonb as text unless a codec is registered on the pool — parse here.
+    events = [
+        TicketEvent(
+            type=row["type"], payload=json.loads(row["payload"]), created_at=row["created_at"]
+        )
+        for row in rows
+    ]
+    return TicketEventsResponse(ticket_id=ticket_id, events=events)
 
 
 @router.get("/stats", response_model=StatsResponse)
