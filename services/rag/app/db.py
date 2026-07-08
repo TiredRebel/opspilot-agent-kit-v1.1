@@ -1,8 +1,12 @@
 """Module-level asyncpg connection pool (no ORM — ADR-004)."""
 
+import logging
+
 import asyncpg
 
 from app.settings import settings
+
+logger = logging.getLogger("app.db")
 
 # A pool is bound to the asyncio event loop that created it; reusing it from a different loop
 # raises "Event loop is closed" / "another operation is in progress" (see wiki/gotchas.md #12).
@@ -27,12 +31,15 @@ async def close_pool() -> None:
         _pool = None
 
 
-async def check_db() -> bool:
-    """Liveness check used by GET /health."""
+async def check_db() -> tuple[bool, str | None]:
+    """Liveness check used by GET /health. Returns `(ok, error_class_name)` — the exception
+    class gives /health's body a specific reason instead of a bare `db: false`, and the full
+    traceback goes to the log rather than being swallowed."""
     try:
         pool = await get_pool()
         async with pool.acquire() as conn:
             await conn.fetchval("SELECT 1")
-        return True
-    except Exception:
-        return False
+        return True, None
+    except Exception as exc:
+        logger.exception("database health check failed")
+        return False, type(exc).__name__

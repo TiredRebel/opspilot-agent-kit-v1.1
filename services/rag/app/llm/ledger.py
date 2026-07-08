@@ -5,13 +5,17 @@ they receive a `Ledger` and call `record()` for every attempt. Budget enforcemen
 (`check_budget()`) runs in the dispatch layer before any non-fake provider call.
 """
 
+import logging
 from decimal import Decimal
 from typing import Protocol
 from uuid import UUID
 
 from app import db
 from app.llm.base import BudgetExceeded
+from app.logging_setup import kv
 from app.settings import settings
+
+logger = logging.getLogger("app.llm.ledger")
 
 
 class Ledger(Protocol):
@@ -55,7 +59,24 @@ class PgLedger:
         latency_ms: int,
         success: bool,
     ) -> None:
-        """Insert one row into `llm_calls` recording this attempt's cost/latency/outcome."""
+        """Insert one row into `llm_calls` recording this attempt's cost/latency/outcome, and
+        emit the matching INFO line — the live view of what the table records durably. This is
+        the one spot that sees every attempt for every provider (including failed pre-fallback
+        ones), so per-attempt logging lives here, not in provider modules."""
+        logger.info(
+            kv(
+                "llm attempt",
+                purpose=purpose,
+                provider=provider,
+                model=model,
+                tokens_in=tokens_in,
+                tokens_out=tokens_out,
+                cost_usd=cost_usd,
+                latency_ms=latency_ms,
+                success=success,
+                ticket_id=ticket_id,
+            )
+        )
         pool = await db.get_pool()
         await pool.execute(
             """
@@ -83,5 +104,6 @@ class PgLedger:
         )
         if float(spent) >= settings.daily_budget_usd:
             raise BudgetExceeded(
-                f"daily budget ${settings.daily_budget_usd:.2f} exceeded (spent ${spent})"
+                f"daily budget ${settings.daily_budget_usd:.2f} exceeded (spent ${spent}) — "
+                f"resets at midnight UTC (spend is summed per created_at::date)"
             )

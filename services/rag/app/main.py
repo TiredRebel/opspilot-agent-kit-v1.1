@@ -5,6 +5,7 @@ over HTTP rather than reaching an LLM API directly.
 """
 
 import json
+import logging
 import re
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -15,6 +16,7 @@ from fastapi.responses import JSONResponse
 
 from app import db
 from app.llm import BudgetExceeded, complete, load_prompt
+from app.logging_setup import kv, setup_logging
 from app.retrieval import blend_confidence, chunk_text, to_vector_literal, top_k_chunks
 from app.schemas import (
     CLASSIFY_SCHEMA,
@@ -31,10 +33,13 @@ from app.schemas import (
 )
 from app.settings import settings
 
+logger = logging.getLogger("app.main")
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    """Close the DB pool on shutdown; nothing needed on startup."""
+    """Configure structured logging on startup; close the DB pool on shutdown."""
+    setup_logging(settings.log_level)
     yield
     await db.close_pool()
 
@@ -52,11 +57,15 @@ async def budget_exceeded_handler(request: Request, exc: BudgetExceeded):
 @router.get("/health")
 async def health(response: Response):
     """Liveness probe — 503 (not just a false field) so container orchestration/compose
-    healthchecks can act on it without parsing the body."""
-    db_ok = await db.check_db()
+    healthchecks can act on it without parsing the body. When the DB is down, the body names
+    the exception class (the full traceback is in the service log)."""
+    db_ok, db_error = await db.check_db()
     if not db_ok:
         response.status_code = 503
-    return {"status": "ok" if db_ok else "unavailable", "db": db_ok}
+    body = {"status": "ok" if db_ok else "unavailable", "db": db_ok}
+    if db_error is not None:
+        body["error"] = db_error
+    return body
 
 
 @router.post("/kb/ingest", response_model=IngestResponse)
@@ -99,23 +108,28 @@ async def kb_ingest(seed_dir: str | None = None) -> IngestResponse:
     return IngestResponse(documents=documents, chunks=chunks)
 
 
+_REQUIRED_CLASSIFY_FIELDS = {"category", "priority", "sentiment", "lang"}
+
+
 def _classify_valid(parsed: dict | None) -> bool:
     """A schema-constrained LLM call can still come back malformed (e.g. a provider that ignores
     the schema) — this is the actual validation gate, not just a truthiness check."""
     if not isinstance(parsed, dict):
         return False
-    required = {"category", "priority", "sentiment", "lang"}
-    return required.issubset(parsed.keys())
+    return _REQUIRED_CLASSIFY_FIELDS.issubset(parsed.keys())
 
 
 @router.post("/classify", response_model=ClassifyResponse)
 async def classify(payload: ClassifyRequest) -> ClassifyResponse:
-    """One retry on invalid structured output, then a clean 422 (docs/TESTPLAN.md
-    test_classify_schema.py) rather than surfacing a confusing downstream error."""
+    """One retry on invalid structured output, then a 422 whose detail says what actually came
+    back — which fields were missing and from which provider/model — rather than a generic
+    failure line (docs/TESTPLAN.md test_classify_schema.py)."""
     system = load_prompt("classify")
     messages = [{"role": "user", "content": f"Subject: {payload.subject}\n\nBody: {payload.body}"}]
 
-    for _attempt in range(2):
+    attempts = 2
+    result = None
+    for _attempt in range(attempts):
         result = await complete(
             "classify",
             messages,
@@ -126,17 +140,33 @@ async def classify(payload: ClassifyRequest) -> ClassifyResponse:
         if _classify_valid(result.parsed):
             return ClassifyResponse(**result.parsed)
 
-    raise HTTPException(status_code=422, detail="classification failed validation after retry")
+    if isinstance(result.parsed, dict):
+        missing = sorted(_REQUIRED_CLASSIFY_FIELDS - result.parsed.keys())
+        what = f"missing fields: {', '.join(missing)}"
+    else:
+        what = "output was not parseable JSON"
+    detail = (
+        f"classification failed validation after {attempts} attempts "
+        f"(provider={result.provider}, model={result.model}, {what})"
+    )
+    logger.warning(kv("classify failed validation", ticket_id=payload.ticket_id, detail=detail))
+    raise HTTPException(status_code=422, detail=detail)
 
 
 def _parse_score(text: str | None) -> float:
     """The self-check prompt asks for a bare 0-1 number but LLMs sometimes wrap it in a
     sentence — extract the first numeric substring rather than requiring exact-float parsing,
-    and clamp defensively in case the model returns something outside [0, 1]."""
+    and clamp defensively in case the model returns something outside [0, 1]. An unextractable
+    reply scores 0.0 (fail-safe toward escalation) but is logged — silently zeroing confidence
+    is how a misbehaving self-check model stays invisible."""
     if not text:
+        logger.warning("self-check returned empty text; scoring 0.0")
         return 0.0
     match = re.search(r"[-+]?\d*\.?\d+", text)
     if not match:
+        logger.warning(
+            kv("self-check reply had no extractable number; scoring 0.0", raw=text[:200])
+        )
         return 0.0
     return max(0.0, min(1.0, float(match.group())))
 
@@ -152,7 +182,23 @@ async def query(payload: QueryRequest) -> QueryResponse:
     embed_result = await complete("embed", embed_text=payload.question)
     rows = await top_k_chunks(pool, embed_result.embedding)
 
-    mean_similarity = sum(row["similarity"] for row in rows) / len(rows) if rows else 0.0
+    # Empty retrieval: drafting from an empty context could only hallucinate (and costs two
+    # LLM calls), so answer honestly and let the confidence gate (0.0 < 0.70) route it to a
+    # human via the existing needs_human path — no response-shape or workflow change.
+    if not rows:
+        logger.warning(
+            kv("query retrieved zero KB chunks - is the KB ingested?", ticket_id=payload.ticket_id)
+        )
+        return QueryResponse(
+            answer=(
+                "I could not find any knowledge-base content for this question — the KB may "
+                "not be ingested yet (POST /kb/ingest)."
+            ),
+            sources=[],
+            confidence=0.0,
+        )
+
+    mean_similarity = sum(row["similarity"] for row in rows) / len(rows)
     context = "\n\n".join(
         f"[source: {row['title']}#{row['chunk_index']}]\n{row['content']}" for row in rows
     )

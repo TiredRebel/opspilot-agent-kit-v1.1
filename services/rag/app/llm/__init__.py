@@ -40,7 +40,10 @@ async def complete(
     provider_name = settings.llm_provider
     provider = registry.PROVIDERS.get(provider_name)
     if provider is None:
-        raise ValueError(f"unknown llm_provider: {provider_name!r}")
+        raise ValueError(
+            f"unknown llm_provider: {provider_name!r} — expected one of: "
+            f"{', '.join(sorted(registry.PROVIDERS))}"
+        )
 
     if provider_name == "fake":
         result = _fake_result(purpose, embed_text)

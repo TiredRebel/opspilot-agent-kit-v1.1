@@ -77,34 +77,44 @@ def _sync_one(client: httpx.Client, raw_text: str) -> dict:
     return {"name": workflow["name"], "id": workflow["id"], "active": active, "detail": detail}
 
 
+def _report(result: dict) -> None:
+    """One human-readable line per workflow; the raw n8n response detail only on failure."""
+    if result["active"]:
+        print(f"{result['name']}: imported, activated")
+    else:
+        print(
+            f"{result['name']}: imported, ACTIVATION FAILED — {result['detail']}", file=sys.stderr
+        )
+
+
 def main() -> int:
     """Sync all 5 workflows in dependency order, patching placeholder IDs as they're created."""
     with _client() as client:
         wf3_result = _sync_one(
             client, (WORKFLOWS_DIR / "wf3_hitl.json").read_text(encoding="utf-8")
         )
-        print(wf3_result)
+        _report(wf3_result)
 
         wf4_result = _sync_one(
             client, (WORKFLOWS_DIR / "wf4_sla_watchdog.json").read_text(encoding="utf-8")
         )
-        print(wf4_result)
+        _report(wf4_result)
 
         wf5_result = _sync_one(
             client, (WORKFLOWS_DIR / "wf5_daily_digest.json").read_text(encoding="utf-8")
         )
-        print(wf5_result)
+        _report(wf5_result)
 
         wf2_raw = (WORKFLOWS_DIR / "wf2_draft_answer.json").read_text(encoding="utf-8")
         wf2_raw = wf2_raw.replace("WF3_WORKFLOW_ID_PLACEHOLDER", wf3_result["id"])
         wf2_result = _sync_one(client, wf2_raw)
-        print(wf2_result)
+        _report(wf2_result)
 
         wf1_raw = (WORKFLOWS_DIR / "wf1_intake_triage.json").read_text(encoding="utf-8")
         wf1_raw = wf1_raw.replace("WF2_WORKFLOW_ID_PLACEHOLDER", wf2_result["id"])
         wf1_raw = wf1_raw.replace("WF3_WORKFLOW_ID_PLACEHOLDER", wf3_result["id"])
         wf1_result = _sync_one(client, wf1_raw)
-        print(wf1_result)
+        _report(wf1_result)
 
     results = [wf1_result, wf2_result, wf3_result, wf4_result, wf5_result]
     if not all(r["active"] for r in results):
