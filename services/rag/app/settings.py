@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     daily_budget_usd: float = 2.00
     confidence_threshold: float = 0.70
     kb_seed_dir: str = "kb/seed"
+    # Level for the `app` logger namespace (structured key=value lines to stderr); uvicorn's
+    # own loggers are configured separately by uvicorn itself.
+    log_level: str = "INFO"
 
 
 settings = Settings()

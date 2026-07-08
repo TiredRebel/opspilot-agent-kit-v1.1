@@ -35,6 +35,7 @@ services:
       DAILY_BUDGET_USD: ${DAILY_BUDGET_USD}
       CONFIDENCE_THRESHOLD: ${CONFIDENCE_THRESHOLD}
       KB_SEED_DIR: /app/kb/seed
+      LOG_LEVEL: ${LOG_LEVEL:-INFO}
     ports:
       - "${RAG_API_PORT:-8000}:8000"
     volumes:

@@ -156,6 +156,15 @@ deploy documentation and locally-verifiable artifacts; it does not execute again
   green, lint clean, live smoke against the dev DB passed. Spec synced to
   `openspec/specs/ticket-event-log/spec.md`; change archived at
   `openspec/changes/archive/2026-07-08-add-ticket-events-log/`.
+- [x] `add-structured-logging` (Claude, 2026-07-08, active — not yet archived) — stdlib-only
+  structured logging (`app/logging_setup.py`, `LOG_LEVEL` setting, key=value lines, one INFO
+  per LLM attempt via `PgLedger.record()`, fallback WARNING) plus the meaningful-messages pass:
+  classify 422 names missing fields/provider/model, `/health` names the DB exception class,
+  budget message states its reset, unknown provider lists valid options, `n8n_sync.py` prints
+  per-workflow outcomes. One behavior change: empty-retrieval `/query` short-circuits to a
+  sentinel (no answer/self_check calls, confidence 0.0 → needs_human via the unchanged gate).
+  33/33 tests green, lint clean, live-verified (ollama classify log line + empty-KB sentinel).
+  New spec capability: `service-observability`.
 
 ## Blockers / Findings
 _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_

@@ -2,6 +2,7 @@
 errors, the original ADR-001 design). Embeddings delegate to the OpenAI embed path: Anthropic
 has no native embeddings API."""
 
+import logging
 import time
 from decimal import Decimal
 from uuid import UUID
@@ -12,7 +13,10 @@ from app.llm.base import LLMResult, Purpose, _parse_json
 from app.llm.ledger import Ledger
 from app.llm.pricing import ANTHROPIC_MODEL, _cost
 from app.llm.providers import openai as openai_provider
+from app.logging_setup import kv
 from app.settings import settings
+
+logger = logging.getLogger("app.llm.providers.anthropic")
 
 
 def _anthropic_client() -> anthropic.AsyncAnthropic:
@@ -64,6 +68,14 @@ async def chat(
         )
         if not _is_retryable(exc):
             raise
+        logger.warning(
+            kv(
+                "anthropic call failed with retryable error — falling back to openai (ADR-001)",
+                error=type(exc).__name__,
+                purpose=purpose,
+                ticket_id=ticket_id,
+            )
+        )
         return await openai_provider.chat(purpose, messages, schema, system, ticket_id, ledger)
 
     latency_ms = int((time.monotonic() - start) * 1000)

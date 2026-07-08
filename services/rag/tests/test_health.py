@@ -16,12 +16,12 @@ def test_health_db_down(monkeypatch):
     with TestClient(app) as client:
         response = client.get("/health")
     assert response.status_code == 503
-    assert response.json() == {"status": "unavailable", "db": False}
+    assert response.json() == {"status": "unavailable", "db": False, "error": "ConnectionError"}
 
 
-async def _ok() -> bool:
-    return True
+async def _ok() -> tuple[bool, str | None]:
+    return True, None
 
 
-async def _down() -> bool:
-    return False
+async def _down() -> tuple[bool, str | None]:
+    return False, "ConnectionError"

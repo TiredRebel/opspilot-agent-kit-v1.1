@@ -552,3 +552,42 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
 - Handoff / next: intent-level events (draft.approved vs edited) and any pg_notify/queue consumers
   are explicitly deferred to the service-owns-ticket-writes change; `type` is TEXT so those arrive
   without DDL. Deployed instances need the one-off psql apply (same command as above).
+
+## [2026-07-08 12:15] build | Claude Code | Structured logging + meaningful messages (OpenSpec: add-structured-logging)
+- Completed: `app/logging_setup.py` (stdlib-only; `setup_logging()` configures the `app` logger
+  namespace — stderr handler, single-line format, propagate=False so uvicorn/root can't
+  double-print; `kv()` helper renders key=value suffixes, None keys omitted). `LOG_LEVEL` setting
+  (+ `.env.example`, compose `${LOG_LEVEL:-INFO}`), wired in the lifespan startup.
+- Per-LLM-attempt INFO line lives in `PgLedger.record()` — the one spot that sees every attempt
+  for every provider (incl. failed pre-fallback anthropic ones); zero provider-module edits for
+  it. WARNING (exception class named) in `providers/anthropic.py` when a retryable error triggers
+  the ADR-001 fallback. Live-verified with ollama: the line carries purpose/provider/model/
+  tokens/cost/latency/success/ticket_id.
+- Meaningful messages: classify 422 detail now names missing fields + provider + model + attempt
+  count (WARNING logged too); `_parse_score` logs the raw self-check text before scoring 0.0;
+  `check_db` returns `(ok, error_class)` and logs the traceback — `/health` body gains `error`
+  when down; BudgetExceeded says it resets at midnight UTC; unknown `LLM_PROVIDER` lists valid
+  options derived from `sorted(registry.PROVIDERS)` (can't drift); `n8n_sync.py` prints
+  `<name>: imported, activated` per workflow, raw response only on failure.
+- One deliberate behavior change: `/query` with zero retrieved chunks no longer drafts from an
+  empty context — short-circuits before the answer/self_check LLM calls (they could only
+  hallucinate, and cost two calls), returns sentinel answer + sources=[] + confidence 0.0. The
+  WF-2 gate (0.0 < 0.70 → needs_human) routes it to a human unchanged. Live-verified against the
+  empty test DB.
+- Tests: new `test_observability.py` (5 tests: empty-KB short-circuit incl. llm_calls purposes
+  check, classify 422 detail, health error class, per-attempt INFO record, unknown-provider
+  message). `test_health.py` stubs updated for the `(ok, error)` tuple (the only pre-existing
+  test this change touches). 33/33 green, ruff clean.
+- Gotcha found while testing: pytest's caplog attaches at the ROOT logger, so a propagate=False
+  logger is invisible to it — and attaching caplog.handler to the `app` logger directly captures
+  records TWICE if setup_logging() hasn't run yet in that process (once via the logger handler,
+  once via propagation, since propagate is still True pre-setup). Fix: the test fixture calls the
+  idempotent setup_logging() first, then attaches caplog.handler. Also: em dashes in log messages
+  render as `�` in Windows consoles — log messages stick to ASCII punctuation.
+- Files touched: `services/rag/app/{logging_setup.py(new),main.py,db.py,settings.py}`,
+  `app/llm/{__init__.py,ledger.py,providers/anthropic.py}`, `scripts/n8n_sync.py`,
+  `services/rag/tests/{test_observability.py(new),test_health.py}`, `.env.example`,
+  `docker-compose.yml`, `wiki/map.md`, `PROGRESS.md`.
+- Handoff / next: request-ID middleware and log shipping deferred until >1 service or >1 log
+  consumer. Remaining review items: service-owned ticket writes (intent-level events), job queue
+  for the long /query path.
