@@ -591,3 +591,18 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
 - Handoff / next: request-ID middleware and log shipping deferred until >1 service or >1 log
   consumer. Remaining review items: service-owned ticket writes (intent-level events), job queue
   for the long /query path.
+
+## [2026-07-08 13:00] build | Claude Code | Archived try-gemma4-31b-cloud + spec sync (PR #11)
+- Completed: OpenSpec change `try-gemma4-31b-cloud` closed out — delta spec synced into
+  `openspec/specs/llm-provider-layer/spec.md` (new requirement: the `OLLAMA_MODEL` default SHALL
+  be justified by a recorded eval comparison, 3 scenarios covering record/beat/lose outcomes),
+  change moved to `openspec/changes/archive/2026-07-08-try-gemma4-31b-cloud/`. Squash-merged as
+  PR #11.
+- Files touched: `openspec/specs/llm-provider-layer/spec.md`, `openspec/changes/**` (move),
+  `PROGRESS.md` (Maintenance entry + P5-2 blocker cross-ref).
+- Decisions: none new — the eval result itself (0.792, default unchanged) was recorded 2026-07-07.
+- Gotchas added: none.
+- Branch cleanup: all 6 stale local+remote branches from PRs #5–#10 deleted (verified merged via
+  `gh pr list` first — squash merges defeat `git branch --merged`); only `master` remains.
+- Handoff / next: no active OpenSpec changes. Open items unchanged: P4-4 (live 09:00 Kyiv cron),
+  P5-2 (needs a real Anthropic/OpenAI key), Phase 6 real-VM rehearsal.

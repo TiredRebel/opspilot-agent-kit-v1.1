@@ -167,6 +167,15 @@ deploy documentation and locally-verifiable artifacts; it does not execute again
   Spec synced to `openspec/specs/service-observability/spec.md`; change archived at
   `openspec/changes/archive/2026-07-08-add-structured-logging/`.
 
+- [x] `try-gemma4-31b-cloud` (Claude, 2026-07-08, archived; eval merged as PR #4, archive as
+  PR #11) — config-value-only eval of `gemma4:31b-cloud` via the `OLLAMA_API_KEY` direct
+  cloud-auth path: 0.792, reproducible across two runs, below the local 12B default's 0.833 —
+  `.env` unchanged per the decision rule. Delta spec synced into
+  `openspec/specs/llm-provider-layer/spec.md` (new requirement: `OLLAMA_MODEL` default SHALL be
+  justified by a recorded eval comparison); change archived at
+  `openspec/changes/archive/2026-07-08-try-gemma4-31b-cloud/`. Full details: gotcha #38 + the
+  P5-2 blocker entries below.
+
 ## Blockers / Findings
 _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
 - [CLOSED] 2026-07-05 human: WF-1's "Alert Ops - Urgent" Telegram node's `chatId` set to the real
@@ -298,7 +307,8 @@ _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
   see spend on this path. To actually close P5-2: the only untried route left is a real
   Anthropic/OpenAI key (spec already budgets for this, see docs/SPEC.md §4 "$2 dev budget").
 - [OPEN] 2026-07-07 Claude: **`gemma4:31b-cloud` tried as a sixth model (openspec change
-  `try-gemma4-31b-cloud`), also does not close P5-2's gap.** Via the same `OLLAMA_API_KEY` direct
+  `try-gemma4-31b-cloud`, archived 2026-07-08 via PR #11 — delta spec synced into
+  `openspec/specs/llm-provider-layer/spec.md`), also does not close P5-2's gap.** Via the same `OLLAMA_API_KEY` direct
   cloud-auth path as the prior test — no code change needed, this was a config-value-only test.
   Scored 0.792, reproducible across two runs (unlike `kimi-k2.7-code:cloud`'s run-to-run
   variance), still below both the 0.85 target and the local 12B model's 0.833. Per the decision
