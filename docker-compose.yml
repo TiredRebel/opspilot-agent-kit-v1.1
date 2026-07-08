@@ -44,6 +44,27 @@ services:
       postgres:
         condition: service_healthy
 
+  # Message broker for async hops (ADR-007): intake buffering (WF-1 → WF-2), outbound delivery
+  # with retry/DLQ (WF-6), and ticket-event fan-out (WF-7). Both ports are published to the host
+  # because n8n runs OUTSIDE this compose stack (gotcha #1) — its RabbitMQ credential connects to
+  # localhost:${RABBITMQ_PORT}. Topology (exchanges/queues/bindings) is NOT declared here; run
+  # `make mq-topology` after the broker is healthy (see scripts/rabbitmq_topology.py).
+  rabbitmq:
+    image: rabbitmq:3.13-management-alpine
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_MGMT_PORT:-15672}:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 10s
+      retries: 10
+
   # Production-only reverse proxy with automatic HTTPS (Let's Encrypt via Caddy). Absent from
   # `docker compose up -d` unless explicitly requested — local dev is unaffected either way.
   # Start with: docker compose --profile prod up -d
@@ -62,5 +83,6 @@ services:
 
 volumes:
   pgdata:
+  rabbitmq_data:
   caddy_data:
   caddy_config:
