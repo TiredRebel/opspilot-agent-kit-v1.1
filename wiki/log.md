@@ -517,3 +517,38 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
   `services/rag/tests/test_provider_no_db.py` (new), `wiki/map.md`, `PROGRESS.md`.
 - Handoff / next: the `Ledger` seam is the intended hook for a future `ticket_events`/event-emission
   change; archive the OpenSpec change once reviewed (`/opsx:archive`).
+
+## [2026-07-08 11:15] build | Claude Code | Append-only ticket_events audit log (OpenSpec: add-ticket-events-log)
+- Completed: `db/init/02_ticket_events.sql` — `ticket_events` table (id, seq identity, ticket_id
+  FK, type, payload jsonb, created_at) + `(ticket_id, created_at, seq)` index, populated by AFTER
+  triggers on `tickets` (ticket.created / ticket.classified / ticket.status_changed `{from,to}` /
+  ticket.sla_reminded) and `messages` (message.added with role + message id). Trigger-based so
+  BOTH writers (n8n's ~10 raw-SQL postgres nodes and the rag-api) are captured with zero workflow
+  JSON changes. Append-only enforced by a raising BEFORE UPDATE/DELETE trigger (REVOKE wouldn't
+  bind — both writers connect as the table owner); TRUNCATE deliberately allowed for tests.
+- Schema freeze amended, not broken (ADR-006): `01_schema.sql` byte-for-byte unchanged; policy is
+  now "existing tables frozen; additive-only via numbered `db/init/NN_*.sql` + one ADR each".
+  Applied to the dev DB via `docker exec -i ... psql < db/init/02_ticket_events.sql`, run twice to
+  prove idempotency (IF NOT EXISTS / OR REPLACE / DROP TRIGGER IF EXISTS throughout).
+- New endpoint `GET /tickets/{ticket_id}/events` (ordered `(created_at, seq)`, 404 unknown, 422
+  malformed UUID); `TicketEvent`/`TicketEventsResponse` models in schemas.py. asyncpg returns
+  jsonb as text — parsed with json.loads at the endpoint.
+- `seq` exists because same-transaction events share `created_at` (now() is transaction time) —
+  confirmed live in the smoke test: classified + status_changed landed with identical timestamps
+  and only seq ordered them.
+- Tests: conftest now applies ALL `db/init/*.sql` in lexical order (was hardcoded 01_schema.sql —
+  the test DB would otherwise silently diverge from fresh-volume schemas) and truncates
+  ticket_events; `evals/conftest.py` needed NO change (tasks.md 2.2's premise was wrong — it
+  applies no schema, it runs against the real dev DB). New `test_ticket_events.py`: 9 L2 tests
+  (5 capture types, append-only UPDATE+DELETE rejection, ordered endpoint response, 404, 422).
+  28/28 green, ruff clean.
+- Live smoke: psql-inserted ticket (n8n's write path) + triage/status updates produced 3 events;
+  endpoint returned them in order against the dev DB. Note: smoke ticket `smoke-events-1` stays in
+  the dev DB — its events can't be deleted (append-only + FK), which is the feature working.
+- Files touched: `db/init/02_ticket_events.sql` (new), `services/rag/app/{main,schemas}.py`,
+  `services/rag/tests/{conftest.py,test_ticket_events.py}`,
+  `docs/decisions/ADR-006-additive-schema-changes.md` (new), `wiki/map.md` (invariant #2 reworded,
+  new component row, ADR list), `PROGRESS.md`.
+- Handoff / next: intent-level events (draft.approved vs edited) and any pg_notify/queue consumers
+  are explicitly deferred to the service-owns-ticket-writes change; `type` is TEXT so those arrive
+  without DDL. Deployed instances need the one-off psql apply (same command as above).

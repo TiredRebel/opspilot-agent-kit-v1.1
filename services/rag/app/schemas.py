@@ -1,5 +1,6 @@
 """Pydantic request/response models and JSON-schema constants for structured LLM output."""
 
+from datetime import datetime
 from uuid import UUID
 
 from pydantic import BaseModel
@@ -68,6 +69,21 @@ class SummarizeResponse(BaseModel):
     """POST /summarize response body."""
 
     text: str
+
+
+class TicketEvent(BaseModel):
+    """One ticket_events row — type, trigger-built payload, and when it happened."""
+
+    type: str
+    payload: dict
+    created_at: datetime
+
+
+class TicketEventsResponse(BaseModel):
+    """GET /tickets/{ticket_id}/events response body — the ticket's audit trail, oldest first."""
+
+    ticket_id: UUID
+    events: list[TicketEvent]
 
 
 class StatsResponse(BaseModel):
