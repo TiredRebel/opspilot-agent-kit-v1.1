@@ -147,14 +147,15 @@ deploy documentation and locally-verifiable artifacts; it does not execute again
   (incl. new DB-free provider test), lint clean, live `ollama` `/classify` spot-check passed.
   Delta spec synced into `openspec/specs/llm-provider-layer/spec.md` (3 structural requirements
   added); change archived at `openspec/changes/archive/2026-07-08-split-llm-provider-package/`.
-- [x] `add-ticket-events-log` (Claude, 2026-07-08, active — not yet archived) — append-only
+- [x] `add-ticket-events-log` (Claude, 2026-07-08, archived; merged as PR #7) — append-only
   `ticket_events` audit log via `db/init/02_ticket_events.sql`: AFTER triggers on
   `tickets`/`messages` capture ticket.created / classified / status_changed / sla_reminded /
   message.added from both writers (n8n + rag-api) with zero workflow changes; append-only
   enforced in-database; new `GET /tickets/{id}/events`. Schema freeze amended additively
   (ADR-006, `01_schema.sql` untouched); conftest now applies all `db/init/*.sql`. 28/28 tests
-  green, lint clean, live smoke against the dev DB passed. New spec capability:
-  `ticket-event-log`.
+  green, lint clean, live smoke against the dev DB passed. Spec synced to
+  `openspec/specs/ticket-event-log/spec.md`; change archived at
+  `openspec/changes/archive/2026-07-08-add-ticket-events-log/`.
 
 ## Blockers / Findings
 _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
