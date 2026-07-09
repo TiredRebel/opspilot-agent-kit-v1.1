@@ -109,8 +109,11 @@
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "PLACEHOLDER_OPS_CHAT_ID",
-        "text": "={{ 'Ticket needs review (confidence: ' + Number($json.confidence).toFixed(2) + ')\\n\\n' + $json.answer + '\\n\\nSources: ' + ($json.sources || []).join(', ') + '\\n\\nTICKET-ID:' + $json.ticket_id }}",
+        "text": "={{ '🎫 <b>Ticket needs review</b> — confidence ' + Math.round(Number($json.confidence) * 100) + '%\\n\\n<i>Answer:</i>\\n' + $json.answer + '\\n\\n<i>Sources:</i>\\n' + ($json.sources || []).map(s => '• ' + s).join('\\n') + '\\n\\nTICKET-ID: ' + $json.ticket_id }}",
         "replyMarkup": "inlineKeyboard",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        },
         "inlineKeyboard": {
           "rows": [
             {
@@ -138,8 +141,7 @@
               }
             }
           ]
-        },
-        "additionalFields": {}
+        }
       },
       "id": "04e70fa8-43fd-46c5-8f0d-1b95885f8bbe",
       "name": "Send Ops Message",
@@ -286,24 +288,27 @@
     },
     {
       "parameters": {
-        "resource": "message",
         "operation": "sendMessage",
-        "chatId": "={{ $json.chat_id }}",
-        "text": "={{ $json.answer }}",
-        "additionalFields": {}
+        "mode": "exchange",
+        "exchange": "opspilot.work",
+        "exchangeType": "direct",
+        "routingKey": "deliver",
+        "sendInputData": false,
+        "message": "={{ JSON.stringify({ ticket_id: $('Execute Workflow Trigger').item.json.ticket_id, chat_id: $json.chat_id, text: $json.answer }) }}",
+        "options": {}
       },
       "id": "65c61268-b9db-4c8e-ba9c-216bb66b8fdf",
-      "name": "Reply To Customer (Approve)",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
+      "name": "Publish Delivery (Approve)",
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
       "position": [
         1220,
         0
       ],
       "credentials": {
-        "telegramApi": {
+        "rabbitmq": {
           "id": null,
-          "name": "Telegram - OpsPilot"
+          "name": "RabbitMQ - OpsPilot"
         }
       }
     },
@@ -598,24 +603,27 @@
     },
     {
       "parameters": {
-        "resource": "message",
         "operation": "sendMessage",
-        "chatId": "={{ $json.chat_id }}",
-        "text": "={{ $json.corrected_text }}",
-        "additionalFields": {}
+        "mode": "exchange",
+        "exchange": "opspilot.work",
+        "exchangeType": "direct",
+        "routingKey": "deliver",
+        "sendInputData": false,
+        "message": "={{ JSON.stringify({ ticket_id: $('Execute Workflow Trigger').item.json.ticket_id, chat_id: $json.chat_id, text: $json.corrected_text }) }}",
+        "options": {}
       },
       "id": "120c382d-e771-4d95-9954-1eb10a0ea823",
-      "name": "Send To Customer (Edit Reply)",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
+      "name": "Publish Delivery (Edit Reply)",
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
       "position": [
         1440,
         480
       ],
       "credentials": {
-        "telegramApi": {
+        "rabbitmq": {
           "id": null,
-          "name": "Telegram - OpsPilot"
+          "name": "RabbitMQ - OpsPilot"
         }
       }
     },
@@ -720,14 +728,14 @@
       "main": [
         [
           {
-            "node": "Reply To Customer (Approve)",
+            "node": "Publish Delivery (Approve)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Reply To Customer (Approve)": {
+    "Publish Delivery (Approve)": {
       "main": [
         [
           {
@@ -841,14 +849,14 @@
       "main": [
         [
           {
-            "node": "Send To Customer (Edit Reply)",
+            "node": "Publish Delivery (Edit Reply)",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Send To Customer (Edit Reply)": {
+    "Publish Delivery (Edit Reply)": {
       "main": [
         [
           {
@@ -861,6 +869,7 @@
     }
   },
   "settings": {
-    "executionOrder": "v1"
+    "executionOrder": "v1",
+    "binaryMode": "separate"
   }
 }

@@ -3,16 +3,27 @@
   "nodes": [
     {
       "parameters": {
-        "inputSource": "passthrough"
+        "queue": "q.draft_answer",
+        "options": {
+          "jsonParseBody": true,
+          "onlyContent": true,
+          "acknowledge": "executionFinishesSuccessfully"
+        }
       },
       "id": "4b508219-9607-4124-9639-8ac2fa3cd134",
-      "name": "Execute Workflow Trigger",
-      "type": "n8n-nodes-base.executeWorkflowTrigger",
-      "typeVersion": 1.1,
+      "name": "RabbitMQ Trigger",
+      "type": "n8n-nodes-base.rabbitmqTrigger",
+      "typeVersion": 1,
       "position": [
         0,
         0
-      ]
+      ],
+      "credentials": {
+        "rabbitmq": {
+          "id": null,
+          "name": "RabbitMQ - OpsPilot"
+        }
+      }
     },
     {
       "parameters": {
@@ -153,24 +164,27 @@
     },
     {
       "parameters": {
-        "resource": "message",
         "operation": "sendMessage",
-        "chatId": "={{ $json.chat_id }}",
-        "text": "={{ $json.answer }}",
-        "additionalFields": {}
+        "mode": "exchange",
+        "exchange": "opspilot.work",
+        "exchangeType": "direct",
+        "routingKey": "deliver",
+        "sendInputData": false,
+        "message": "={{ JSON.stringify({ ticket_id: $('Select Ticket').item.json.ticket_id, chat_id: $json.chat_id, text: $json.answer }) }}",
+        "options": {}
       },
       "id": "dc13a42b-a536-4758-84ed-986f8411326b",
-      "name": "Reply To Customer",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
+      "name": "Publish Delivery",
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
       "position": [
         1320,
         -200
       ],
       "credentials": {
-        "telegramApi": {
+        "rabbitmq": {
           "id": null,
-          "name": "Telegram - OpsPilot"
+          "name": "RabbitMQ - OpsPilot"
         }
       }
     },
@@ -300,7 +314,7 @@
     }
   ],
   "connections": {
-    "Execute Workflow Trigger": {
+    "RabbitMQ Trigger": {
       "main": [
         [
           {
@@ -366,7 +380,7 @@
       "main": [
         [
           {
-            "node": "Reply To Customer",
+            "node": "Publish Delivery",
             "type": "main",
             "index": 0
           }
@@ -380,7 +394,7 @@
         ]
       ]
     },
-    "Reply To Customer": {
+    "Publish Delivery": {
       "main": [
         [
           {

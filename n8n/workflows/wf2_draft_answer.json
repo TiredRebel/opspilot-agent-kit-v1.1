@@ -2,12 +2,28 @@
   "name": "WF-2 Draft Answer",
   "nodes": [
     {
-      "parameters": { "inputSource": "passthrough" },
+      "parameters": {
+        "queue": "q.draft_answer",
+        "options": {
+          "jsonParseBody": true,
+          "onlyContent": true,
+          "acknowledge": "executionFinishesSuccessfully"
+        }
+      },
       "id": "4b508219-9607-4124-9639-8ac2fa3cd134",
-      "name": "Execute Workflow Trigger",
-      "type": "n8n-nodes-base.executeWorkflowTrigger",
-      "typeVersion": 1.1,
-      "position": [0, 0]
+      "name": "RabbitMQ Trigger",
+      "type": "n8n-nodes-base.rabbitmqTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "rabbitmq": {
+          "id": null,
+          "name": "RabbitMQ - OpsPilot"
+        }
+      }
     },
     {
       "parameters": {
@@ -21,9 +37,15 @@
       "name": "Select Ticket",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [220, 0],
+      "position": [
+        220,
+        0
+      ],
       "credentials": {
-        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
       }
     },
     {
@@ -35,15 +57,25 @@
         "jsonBody": "={{ JSON.stringify({ question: $json.body, ticket_id: $json.ticket_id }) }}",
         "sendHeaders": true,
         "headerParameters": {
-          "parameters": [{ "name": "Content-Type", "value": "application/json" }]
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
         },
-        "options": { "timeout": 15000 }
+        "options": {
+          "timeout": 15000
+        }
       },
       "id": "ec05fb8c-47d3-4f56-80f1-bf46eaf72800",
       "name": "Query RAG",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
-      "position": [440, 0],
+      "position": [
+        440,
+        0
+      ],
       "retryOnFail": true,
       "maxTries": 3,
       "waitBetweenTries": 1000
@@ -51,13 +83,21 @@
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
           "conditions": [
             {
               "id": "cond-confidence-1",
               "leftValue": "={{ $json.confidence }}",
-              "rightValue": 0.70,
-              "operator": { "type": "number", "operation": "gte" }
+              "rightValue": 0.7,
+              "operator": {
+                "type": "number",
+                "operation": "gte"
+              }
             }
           ],
           "combinator": "and"
@@ -68,7 +108,10 @@
       "name": "Confidence Gate",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [660, 0]
+      "position": [
+        660,
+        0
+      ]
     },
     {
       "parameters": {
@@ -80,18 +123,30 @@
       "name": "Parse Chat Id",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [880, -120]
+      "position": [
+        880,
+        -120
+      ]
     },
     {
       "parameters": {
         "conditions": {
-          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict", "version": 2 },
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
           "conditions": [
             {
               "id": "cond-haschatid-1",
               "leftValue": "={{ $json.chat_id }}",
               "rightValue": "",
-              "operator": { "type": "string", "operation": "notEmpty", "singleValue": true }
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
             }
           ],
           "combinator": "and"
@@ -102,23 +157,35 @@
       "name": "Has Chat Id",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
-      "position": [1100, -120]
+      "position": [
+        1100,
+        -120
+      ]
     },
     {
       "parameters": {
-        "resource": "message",
         "operation": "sendMessage",
-        "chatId": "={{ $json.chat_id }}",
-        "text": "={{ $json.answer }}",
-        "additionalFields": {}
+        "mode": "exchange",
+        "exchange": "opspilot.work",
+        "exchangeType": "direct",
+        "routingKey": "deliver",
+        "sendInputData": false,
+        "message": "={{ JSON.stringify({ ticket_id: $('Select Ticket').item.json.ticket_id, chat_id: $json.chat_id, text: $json.answer }) }}",
+        "options": {}
       },
       "id": "dc13a42b-a536-4758-84ed-986f8411326b",
-      "name": "Reply To Customer",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [1320, -200],
+      "name": "Publish Delivery",
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
+      "position": [
+        1320,
+        -200
+      ],
       "credentials": {
-        "telegramApi": { "id": null, "name": "Telegram - OpsPilot" }
+        "rabbitmq": {
+          "id": null,
+          "name": "RabbitMQ - OpsPilot"
+        }
       }
     },
     {
@@ -133,9 +200,15 @@
       "name": "Update Ticket Answered",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [1540, -120],
+      "position": [
+        1540,
+        -120
+      ],
       "credentials": {
-        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
       }
     },
     {
@@ -150,9 +223,15 @@
       "name": "Insert AI Draft Message",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [1760, -120],
+      "position": [
+        1760,
+        -120
+      ],
       "credentials": {
-        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
       }
     },
     {
@@ -167,9 +246,15 @@
       "name": "Update Ticket Needs Human",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [880, 160],
+      "position": [
+        880,
+        160
+      ],
       "credentials": {
-        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
       }
     },
     {
@@ -184,9 +269,15 @@
       "name": "Insert AI Draft Message (Needs Human)",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [1100, 160],
+      "position": [
+        1100,
+        160
+      ],
       "credentials": {
-        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
       }
     },
     {
@@ -216,45 +307,136 @@
       "name": "Post For Approval (WF-3)",
       "type": "n8n-nodes-base.executeWorkflow",
       "typeVersion": 1.3,
-      "position": [1320, 160]
+      "position": [
+        1320,
+        160
+      ]
     }
   ],
   "connections": {
-    "Execute Workflow Trigger": {
-      "main": [[{ "node": "Select Ticket", "type": "main", "index": 0 }]]
+    "RabbitMQ Trigger": {
+      "main": [
+        [
+          {
+            "node": "Select Ticket",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Select Ticket": {
-      "main": [[{ "node": "Query RAG", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Query RAG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Query RAG": {
-      "main": [[{ "node": "Confidence Gate", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Confidence Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Confidence Gate": {
       "main": [
-        [{ "node": "Parse Chat Id", "type": "main", "index": 0 }],
-        [{ "node": "Update Ticket Needs Human", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Parse Chat Id",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Ticket Needs Human",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Parse Chat Id": {
-      "main": [[{ "node": "Has Chat Id", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Has Chat Id",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Has Chat Id": {
       "main": [
-        [{ "node": "Reply To Customer", "type": "main", "index": 0 }],
-        [{ "node": "Update Ticket Answered", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Publish Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Ticket Answered",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
-    "Reply To Customer": {
-      "main": [[{ "node": "Update Ticket Answered", "type": "main", "index": 0 }]]
+    "Publish Delivery": {
+      "main": [
+        [
+          {
+            "node": "Update Ticket Answered",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Update Ticket Answered": {
-      "main": [[{ "node": "Insert AI Draft Message", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Insert AI Draft Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Update Ticket Needs Human": {
-      "main": [[{ "node": "Insert AI Draft Message (Needs Human)", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Insert AI Draft Message (Needs Human)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Insert AI Draft Message (Needs Human)": {
-      "main": [[{ "node": "Post For Approval (WF-3)", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Post For Approval (WF-3)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {

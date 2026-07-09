@@ -606,3 +606,50 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
   `gh pr list` first — squash merges defeat `git branch --merged`); only `master` remains.
 - Handoff / next: no active OpenSpec changes. Open items unchanged: P4-4 (live 09:00 Kyiv cron),
   P5-2 (needs a real Anthropic/OpenAI key), Phase 6 real-VM rehearsal.
+
+## [2026-07-08 16:15] build | Claude Code | RabbitMQ async messaging (add-rabbitmq-messaging)
+- Completed / Partial: OpenSpec change `add-rabbitmq-messaging` implemented and validated;
+  ADR-007 written. WF-1/WF-2 intake buffering, WF-2/WF-3→WF-6 outbound delivery with retry/DLQ,
+  and pg_notify→WF-7→`opspilot.events` ticket fan-out all wired in JSON. Still open: live E2E
+  verification of the new workflows (no access to the user's n8n editor/credentials), lint/test
+  run, PR/merge/archive.
+- Files touched: `docker-compose.yml`, `.env.example`, `Makefile`, `scripts/rabbitmq_topology.py`,
+  `db/init/03_event_notify.sql`, `n8n/workflows/{wf1_intake_triage,wf2_draft_answer,wf3_hitl,
+  wf6_delivery,wf7_event_publisher}.json`, `scripts/{n8n_sync.py,export_n8n_workflows.py}`,
+  `docs/decisions/ADR-007-rabbitmq-async-messaging.md`, `openspec/changes/add-rabbitmq-messaging/`,
+  `PROGRESS.md`, `wiki/map.md`.
+- Decisions: ADR-007 (RabbitMQ, n8n-native consumers, consumer-managed retry counter because n8n's
+  RabbitMQ trigger nacks with `requeue=true`, pg_notify for fan-out with `ticket_events` as source
+  of truth). User-approved deviation from frozen `docs/SPEC.md` v1.0: WF-1→WF-2 no longer direct
+  `Execute Workflow`; customer sends no longer inline.
+- Gotchas added: none yet — record discovered traps after live E2E (e.g. n8n RabbitMQ trigger ack
+  mode, host-port reachability from an external n8n instance).
+- Handoff / next: run `make lint && make test`; do live E2E against local n8n (create `RabbitMQ -
+  OpsPilot` credential, sync all 7 workflows, test webform→draft queue→WF-2, delivery retry/DLQ,
+  event topic publishes); then PR, squash-merge, archive change, sync specs.
+
+## [2026-07-09 15:00] build | Claude Code | RabbitMQ messaging live E2E + close-out (add-rabbitmq-messaging)
+- Completed: reverted an unauthorized-direction detour found uncommitted in the tree (a Python
+  worker service under `services/worker/` duplicating WF-2's logic — contradicted ADR-007's
+  "n8n-native consumers, no new worker tier" decision and never ran; user confirmed n8n-native).
+  Deleted the worker, its compose service, `aio-pika`/`python-telegram-bot` deps, stray
+  `wiki/*.new*.md` files, and `scripts/patch_rabbitmq_workflows.py`.
+- Fixed two real execution-time bugs no structural validation caught (gotchas #47/#48): RabbitMQ
+  publish nodes needed `typeVersion: 1.1` (not 1.2) + explicit `"operation": "sendMessage"`;
+  live-workflow PUTs must filter `settings` to the API's allowed keys. WF-1's committed publish
+  node also converted from a management-HTTP-API workaround back to the native `rabbitmq` node.
+- Live E2E all green: webform intake → `q.draft_answer` → WF-2 fires (ticket classified, gate →
+  needs_human, WF-3 posts to ops); delivery retry/DLQ proven with a bogus chat_id (5 retries at
+  ~30s spacing observed on `q.outbound_delivery.retry`, then exactly ONE parked DLQ message with
+  `attempts: 5` + ops alert); event fan-out proven via a probe queue bound `#` to
+  `opspilot.events` (ticket.created / ticket.classified / ticket.status_changed ×2 /
+  message.added, all keyed by event type). `scripts/n8n_sync.py` imports all 7; export
+  round-trips clean (only live position/binaryMode noise).
+- Ops-chat-id live re-patch applied post-sync to WF-1/3/4/6 (now 7 spots — gotcha #49).
+- Files touched: `n8n/workflows/*.json` (7), `scripts/{n8n_sync,export_n8n_workflows}.py`,
+  `db/init/03_event_notify.sql`, `docker-compose.yml`, `Makefile`, `.env.example`,
+  `scripts/rabbitmq_topology.py`, ADR-007, `openspec/changes/add-rabbitmq-messaging/`,
+  `workflows-n8n/*` (re-export), `PROGRESS.md`, `wiki/{map,gotchas}.md`, `README.md`.
+- Tests: `ruff` clean, 33/33 pytest green. `openspec validate add-rabbitmq-messaging` passes.
+- Handoff / next: PR + squash-merge, archive change, sync `async-messaging` +
+  `n8n-workflow-export` delta specs into `openspec/specs/`.

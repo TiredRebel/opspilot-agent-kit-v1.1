@@ -390,31 +390,29 @@
     },
     {
       "parameters": {
-        "source": "database",
-        "workflowId": {
-          "__rl": true,
-          "value": "WF2_WORKFLOW_ID_PLACEHOLDER",
-          "mode": "id"
-        },
-        "mode": "once",
-        "workflowInputs": {
-          "mappingMode": "defineBelow",
-          "value": {
-            "ticket_id": "={{ $('Insert Ticket').item.json.id }}"
-          },
-          "matchingColumns": [],
-          "schema": []
-        },
+        "operation": "sendMessage",
+        "mode": "exchange",
+        "exchange": "opspilot.work",
+        "exchangeType": "direct",
+        "routingKey": "draft",
+        "sendInputData": false,
+        "message": "={{ JSON.stringify({ ticket_id: $('Insert Ticket').item.json.id }) }}",
         "options": {}
       },
       "id": "9c9cf0fc-99d3-4306-bfb4-47708ff74a0a",
-      "name": "Draft Answer (WF-2)",
-      "type": "n8n-nodes-base.executeWorkflow",
-      "typeVersion": 1.3,
+      "name": "Publish Draft Job",
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
       "position": [
         1620,
         160
-      ]
+      ],
+      "credentials": {
+        "rabbitmq": {
+          "id": null,
+          "name": "RabbitMQ - OpsPilot"
+        }
+      }
     }
   ],
   "connections": {
@@ -580,14 +578,14 @@
             "index": 0
           },
           {
-            "node": "Draft Answer (WF-2)",
+            "node": "Publish Draft Job",
             "type": "main",
             "index": 0
           }
         ],
         [
           {
-            "node": "Draft Answer (WF-2)",
+            "node": "Publish Draft Job",
             "type": "main",
             "index": 0
           }

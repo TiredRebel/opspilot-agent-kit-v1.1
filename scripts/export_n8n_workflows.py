@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""CLI entrypoint for a manual, on-demand export of OpsPilot's 5 live n8n workflows into
+"""CLI entrypoint for a manual, on-demand export of OpsPilot's 7 live n8n workflows into
 `workflows-n8n/`, redacted back to the same PLACEHOLDER_* values used in the committed
 `n8n/workflows/*.json` (which never get the real live-patched values — see wiki/gotchas.md #20).
 Redaction is path-diff-based against the committed files, not a hardcoded secret list: nodes are
@@ -21,6 +21,8 @@ WORKFLOW_FILES = {
     "WF-3 Human-in-the-loop": "wf3_hitl.json",
     "WF-4 SLA Watchdog": "wf4_sla_watchdog.json",
     "WF-5 Daily Digest": "wf5_daily_digest.json",
+    "WF-6 Outbound Delivery": "wf6_delivery.json",
+    "WF-7 Event Publisher": "wf7_event_publisher.json",
 }
 
 _PLACEHOLDER_RE = re.compile(r"PLACEHOLDER_\w+|\w+_PLACEHOLDER")
@@ -94,7 +96,7 @@ def _diff(committed: object, live: object, path: str = "root") -> list[str]:
 
 
 def main() -> int:
-    """Export the 5 OpsPilot workflows from the live n8n instance, redacted and diff-reported."""
+    """Export the 7 OpsPilot workflows from the live n8n instance, redacted and diff-reported."""
     EXPORT_DIR.mkdir(exist_ok=True)
     with _client() as client:
         for name, filename in WORKFLOW_FILES.items():
