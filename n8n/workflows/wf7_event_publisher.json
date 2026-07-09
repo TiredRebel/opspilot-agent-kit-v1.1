@@ -1,0 +1,128 @@
+{
+  "name": "WF-7 Event Publisher",
+  "nodes": [
+    {
+      "parameters": {
+        "triggerMode": "listenTrigger",
+        "channelName": "ticket_events",
+        "options": {}
+      },
+      "id": "c1a2b3d4-0001-4b7f-8e00-000000000001",
+      "name": "Postgres Trigger",
+      "type": "n8n-nodes-base.postgresTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "// NOTIFY payload is minimal {id, type, ticket_id} (pg_notify ~8000-byte cap);\n// the full row is selected next. The Postgres Trigger delivers the payload as a\n// JSON string under $json.payload.\nconst payload = typeof $json.payload === 'string' ? JSON.parse($json.payload) : $json.payload;\nreturn { event_id: payload.id };"
+      },
+      "id": "c1a2b3d4-0002-4b7f-8e00-000000000002",
+      "name": "Parse Notify Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT id, seq, ticket_id, type, payload, created_at FROM ticket_events WHERE id = $1",
+        "options": {
+          "queryReplacement": "={{ [$json.event_id] }}"
+        }
+      },
+      "id": "c1a2b3d4-0003-4b7f-8e00-000000000003",
+      "name": "Select Full Event",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        440,
+        0
+      ],
+      "credentials": {
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendMessage",
+        "mode": "exchange",
+        "exchange": "opspilot.events",
+        "exchangeType": "topic",
+        "routingKey": "={{ $json.type }}",
+        "sendInputData": false,
+        "message": "={{ JSON.stringify($json) }}",
+        "options": {}
+      },
+      "id": "c1a2b3d4-0004-4b7f-8e00-000000000004",
+      "name": "Publish Event",
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        0
+      ],
+      "credentials": {
+        "rabbitmq": {
+          "id": null,
+          "name": "RabbitMQ - OpsPilot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Postgres Trigger": {
+      "main": [
+        [
+          {
+            "node": "Parse Notify Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Notify Payload": {
+      "main": [
+        [
+          {
+            "node": "Select Full Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Select Full Event": {
+      "main": [
+        [
+          {
+            "node": "Publish Event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

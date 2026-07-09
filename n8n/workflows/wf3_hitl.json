@@ -2,12 +2,17 @@
   "name": "WF-3 Human-in-the-loop",
   "nodes": [
     {
-      "parameters": { "inputSource": "passthrough" },
+      "parameters": {
+        "inputSource": "passthrough"
+      },
       "id": "77435f99-d059-44d7-9235-38cd7c28028d",
       "name": "Execute Workflow Trigger",
       "type": "n8n-nodes-base.executeWorkflowTrigger",
       "typeVersion": 1.1,
-      "position": [0, 0]
+      "position": [
+        0,
+        0
+      ]
     },
     {
       "parameters": {
@@ -17,12 +22,20 @@
             {
               "outputKey": "post_for_approval",
               "conditions": {
-                "options": { "version": 2, "leftValue": "", "caseSensitive": true, "typeValidation": "strict" },
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
                 "combinator": "and",
                 "conditions": [
                   {
                     "id": "route-mode-1",
-                    "operator": { "type": "string", "operation": "equals" },
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
                     "leftValue": "={{ $json.mode }}",
                     "rightValue": "post_for_approval"
                   }
@@ -33,12 +46,20 @@
             {
               "outputKey": "callback",
               "conditions": {
-                "options": { "version": 2, "leftValue": "", "caseSensitive": true, "typeValidation": "strict" },
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
                 "combinator": "and",
                 "conditions": [
                   {
                     "id": "route-mode-2",
-                    "operator": { "type": "string", "operation": "equals" },
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
                     "leftValue": "={{ $json.mode }}",
                     "rightValue": "callback"
                   }
@@ -49,12 +70,20 @@
             {
               "outputKey": "edit_reply",
               "conditions": {
-                "options": { "version": 2, "leftValue": "", "caseSensitive": true, "typeValidation": "strict" },
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
                 "combinator": "and",
                 "conditions": [
                   {
                     "id": "route-mode-3",
-                    "operator": { "type": "string", "operation": "equals" },
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
                     "leftValue": "={{ $json.mode }}",
                     "rightValue": "edit_reply"
                   }
@@ -70,37 +99,63 @@
       "name": "Route by Mode",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
-      "position": [260, 0]
+      "position": [
+        260,
+        0
+      ]
     },
     {
       "parameters": {
         "resource": "message",
         "operation": "sendMessage",
         "chatId": "PLACEHOLDER_OPS_CHAT_ID",
-        "text": "={{ 'Ticket needs review (confidence: ' + Number($json.confidence).toFixed(2) + ')\\n\\n' + $json.answer + '\\n\\nSources: ' + ($json.sources || []).join(', ') + '\\n\\nTICKET-ID:' + $json.ticket_id }}",
+        "text": "={{ '🎫 <b>Ticket needs review</b> — confidence ' + Math.round(Number($json.confidence) * 100) + '%\\n\\n<i>Answer:</i>\\n' + $json.answer + '\\n\\n<i>Sources:</i>\\n' + ($json.sources || []).map(s => '• ' + s).join('\\n') + '\\n\\nTICKET-ID: ' + $json.ticket_id }}",
         "replyMarkup": "inlineKeyboard",
+        "additionalFields": {
+          "parse_mode": "HTML"
+        },
         "inlineKeyboard": {
           "rows": [
             {
               "row": {
                 "buttons": [
-                  { "text": "✅ Approve", "additionalFields": { "callback_data": "=apr|{{ $json.ticket_id }}" } },
-                  { "text": "✏️ Edit", "additionalFields": { "callback_data": "=edt|{{ $json.ticket_id }}" } },
-                  { "text": "❌ Reject", "additionalFields": { "callback_data": "=rej|{{ $json.ticket_id }}" } }
+                  {
+                    "text": "✅ Approve",
+                    "additionalFields": {
+                      "callback_data": "=apr|{{ $json.ticket_id }}"
+                    }
+                  },
+                  {
+                    "text": "✏️ Edit",
+                    "additionalFields": {
+                      "callback_data": "=edt|{{ $json.ticket_id }}"
+                    }
+                  },
+                  {
+                    "text": "❌ Reject",
+                    "additionalFields": {
+                      "callback_data": "=rej|{{ $json.ticket_id }}"
+                    }
+                  }
                 ]
               }
             }
           ]
-        },
-        "additionalFields": {}
+        }
       },
       "id": "04e70fa8-43fd-46c5-8f0d-1b95885f8bbe",
       "name": "Send Ops Message",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [520, -160],
+      "position": [
+        520,
+        -160
+      ],
       "credentials": {
-        "telegramApi": { "id": null, "name": "Telegram - OpsPilot" }
+        "telegramApi": {
+          "id": null,
+          "name": "Telegram - OpsPilot"
+        }
       }
     },
     {
@@ -111,12 +166,20 @@
             {
               "outputKey": "apr",
               "conditions": {
-                "options": { "version": 2, "leftValue": "", "caseSensitive": true, "typeValidation": "strict" },
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
                 "combinator": "and",
                 "conditions": [
                   {
                     "id": "route-action-1",
-                    "operator": { "type": "string", "operation": "equals" },
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
                     "leftValue": "={{ $json.action }}",
                     "rightValue": "apr"
                   }
@@ -127,12 +190,20 @@
             {
               "outputKey": "edt",
               "conditions": {
-                "options": { "version": 2, "leftValue": "", "caseSensitive": true, "typeValidation": "strict" },
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
                 "combinator": "and",
                 "conditions": [
                   {
                     "id": "route-action-2",
-                    "operator": { "type": "string", "operation": "equals" },
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
                     "leftValue": "={{ $json.action }}",
                     "rightValue": "edt"
                   }
@@ -143,12 +214,20 @@
             {
               "outputKey": "rej",
               "conditions": {
-                "options": { "version": 2, "leftValue": "", "caseSensitive": true, "typeValidation": "strict" },
+                "options": {
+                  "version": 2,
+                  "leftValue": "",
+                  "caseSensitive": true,
+                  "typeValidation": "strict"
+                },
                 "combinator": "and",
                 "conditions": [
                   {
                     "id": "route-action-3",
-                    "operator": { "type": "string", "operation": "equals" },
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
                     "leftValue": "={{ $json.action }}",
                     "rightValue": "rej"
                   }
@@ -164,7 +243,10 @@
       "name": "Route by Action",
       "type": "n8n-nodes-base.switch",
       "typeVersion": 3.4,
-      "position": [520, 160]
+      "position": [
+        520,
+        160
+      ]
     },
     {
       "parameters": {
@@ -178,9 +260,15 @@
       "name": "Select Draft + External Ref",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [780, 0],
+      "position": [
+        780,
+        0
+      ],
       "credentials": {
-        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
       }
     },
     {
@@ -193,23 +281,35 @@
       "name": "Parse Chat Id (Approve)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1000, 0]
+      "position": [
+        1000,
+        0
+      ]
     },
     {
       "parameters": {
-        "resource": "message",
         "operation": "sendMessage",
-        "chatId": "={{ $json.chat_id }}",
-        "text": "={{ $json.answer }}",
-        "additionalFields": {}
+        "mode": "exchange",
+        "exchange": "opspilot.work",
+        "exchangeType": "direct",
+        "routingKey": "deliver",
+        "sendInputData": false,
+        "message": "={{ JSON.stringify({ ticket_id: $('Execute Workflow Trigger').item.json.ticket_id, chat_id: $json.chat_id, text: $json.answer }) }}",
+        "options": {}
       },
       "id": "65c61268-b9db-4c8e-ba9c-216bb66b8fdf",
-      "name": "Reply To Customer (Approve)",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [1220, 0],
+      "name": "Publish Delivery (Approve)",
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
+      "position": [
+        1220,
+        0
+      ],
       "credentials": {
-        "telegramApi": { "id": null, "name": "Telegram - OpsPilot" }
+        "rabbitmq": {
+          "id": null,
+          "name": "RabbitMQ - OpsPilot"
+        }
       }
     },
     {
@@ -224,9 +324,15 @@
       "name": "Update Ticket Answered (Approve)",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [1440, 0],
+      "position": [
+        1440,
+        0
+      ],
       "credentials": {
-        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
       }
     },
     {
@@ -234,15 +340,24 @@
         "resource": "callback",
         "operation": "answerQuery",
         "queryId": "={{ $('Execute Workflow Trigger').item.json.callback_query_id }}",
-        "additionalFields": { "text": "Approved", "show_alert": false }
+        "additionalFields": {
+          "text": "Approved",
+          "show_alert": false
+        }
       },
       "id": "12352bc8-f6d9-4f35-a1c4-5e88335fb902",
       "name": "Answer Callback (Approve)",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1660, 0],
+      "position": [
+        1660,
+        0
+      ],
       "credentials": {
-        "telegramApi": { "id": null, "name": "Telegram - OpsPilot" }
+        "telegramApi": {
+          "id": null,
+          "name": "Telegram - OpsPilot"
+        }
       }
     },
     {
@@ -257,9 +372,15 @@
       "name": "Prompt For Correction",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [780, 160],
+      "position": [
+        780,
+        160
+      ],
       "credentials": {
-        "telegramApi": { "id": null, "name": "Telegram - OpsPilot" }
+        "telegramApi": {
+          "id": null,
+          "name": "Telegram - OpsPilot"
+        }
       }
     },
     {
@@ -267,15 +388,24 @@
         "resource": "callback",
         "operation": "answerQuery",
         "queryId": "={{ $('Execute Workflow Trigger').item.json.callback_query_id }}",
-        "additionalFields": { "text": "Reply with the correction", "show_alert": false }
+        "additionalFields": {
+          "text": "Reply with the correction",
+          "show_alert": false
+        }
       },
       "id": "944170b1-de51-479e-a41f-517226c684ad",
       "name": "Answer Callback (Edit)",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1000, 160],
+      "position": [
+        1000,
+        160
+      ],
       "credentials": {
-        "telegramApi": { "id": null, "name": "Telegram - OpsPilot" }
+        "telegramApi": {
+          "id": null,
+          "name": "Telegram - OpsPilot"
+        }
       }
     },
     {
@@ -290,9 +420,15 @@
       "name": "Update Ticket Escalated",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [780, 320],
+      "position": [
+        780,
+        320
+      ],
       "credentials": {
-        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
       }
     },
     {
@@ -307,9 +443,15 @@
       "name": "Select External Ref (Reject)",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [1000, 320],
+      "position": [
+        1000,
+        320
+      ],
       "credentials": {
-        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
       }
     },
     {
@@ -322,7 +464,10 @@
       "name": "Parse Chat Id (Reject)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1220, 320]
+      "position": [
+        1220,
+        320
+      ]
     },
     {
       "parameters": {
@@ -336,9 +481,15 @@
       "name": "Holding Message To Customer",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1440, 320],
+      "position": [
+        1440,
+        320
+      ],
       "credentials": {
-        "telegramApi": { "id": null, "name": "Telegram - OpsPilot" }
+        "telegramApi": {
+          "id": null,
+          "name": "Telegram - OpsPilot"
+        }
       }
     },
     {
@@ -353,9 +504,15 @@
       "name": "Escalation Notice To Ops",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1660, 320],
+      "position": [
+        1660,
+        320
+      ],
       "credentials": {
-        "telegramApi": { "id": null, "name": "Telegram - OpsPilot" }
+        "telegramApi": {
+          "id": null,
+          "name": "Telegram - OpsPilot"
+        }
       }
     },
     {
@@ -363,15 +520,24 @@
         "resource": "callback",
         "operation": "answerQuery",
         "queryId": "={{ $('Execute Workflow Trigger').item.json.callback_query_id }}",
-        "additionalFields": { "text": "Rejected — escalated", "show_alert": false }
+        "additionalFields": {
+          "text": "Rejected — escalated",
+          "show_alert": false
+        }
       },
       "id": "ce33292e-214c-4f04-8690-bb94491e157f",
       "name": "Answer Callback (Reject)",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
-      "position": [1880, 320],
+      "position": [
+        1880,
+        320
+      ],
       "credentials": {
-        "telegramApi": { "id": null, "name": "Telegram - OpsPilot" }
+        "telegramApi": {
+          "id": null,
+          "name": "Telegram - OpsPilot"
+        }
       }
     },
     {
@@ -386,9 +552,15 @@
       "name": "Insert Operator Message",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [780, 480],
+      "position": [
+        780,
+        480
+      ],
       "credentials": {
-        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
       }
     },
     {
@@ -403,9 +575,15 @@
       "name": "Select External Ref (Edit Reply)",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [1000, 480],
+      "position": [
+        1000,
+        480
+      ],
       "credentials": {
-        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
       }
     },
     {
@@ -418,23 +596,35 @@
       "name": "Parse Chat Id (Edit Reply)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [1220, 480]
+      "position": [
+        1220,
+        480
+      ]
     },
     {
       "parameters": {
-        "resource": "message",
         "operation": "sendMessage",
-        "chatId": "={{ $json.chat_id }}",
-        "text": "={{ $json.corrected_text }}",
-        "additionalFields": {}
+        "mode": "exchange",
+        "exchange": "opspilot.work",
+        "exchangeType": "direct",
+        "routingKey": "deliver",
+        "sendInputData": false,
+        "message": "={{ JSON.stringify({ ticket_id: $('Execute Workflow Trigger').item.json.ticket_id, chat_id: $json.chat_id, text: $json.corrected_text }) }}",
+        "options": {}
       },
       "id": "120c382d-e771-4d95-9954-1eb10a0ea823",
-      "name": "Send To Customer (Edit Reply)",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
-      "position": [1440, 480],
+      "name": "Publish Delivery (Edit Reply)",
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
+      "position": [
+        1440,
+        480
+      ],
       "credentials": {
-        "telegramApi": { "id": null, "name": "Telegram - OpsPilot" }
+        "rabbitmq": {
+          "id": null,
+          "name": "RabbitMQ - OpsPilot"
+        }
       }
     },
     {
@@ -449,71 +639,233 @@
       "name": "Update Ticket Answered (Edit Reply)",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.6,
-      "position": [1660, 480],
+      "position": [
+        1660,
+        480
+      ],
       "credentials": {
-        "postgres": { "id": null, "name": "Postgres - OpsPilot" }
+        "postgres": {
+          "id": null,
+          "name": "Postgres - OpsPilot"
+        }
       }
     }
   ],
   "connections": {
     "Execute Workflow Trigger": {
-      "main": [[{ "node": "Route by Mode", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Route by Mode",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Route by Mode": {
       "main": [
-        [{ "node": "Send Ops Message", "type": "main", "index": 0 }],
-        [{ "node": "Route by Action", "type": "main", "index": 0 }],
-        [{ "node": "Insert Operator Message", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Send Ops Message",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Route by Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Insert Operator Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Route by Action": {
       "main": [
-        [{ "node": "Select Draft + External Ref", "type": "main", "index": 0 }],
-        [{ "node": "Prompt For Correction", "type": "main", "index": 0 }],
-        [{ "node": "Update Ticket Escalated", "type": "main", "index": 0 }]
+        [
+          {
+            "node": "Select Draft + External Ref",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prompt For Correction",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Update Ticket Escalated",
+            "type": "main",
+            "index": 0
+          }
+        ]
       ]
     },
     "Select Draft + External Ref": {
-      "main": [[{ "node": "Parse Chat Id (Approve)", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Parse Chat Id (Approve)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Parse Chat Id (Approve)": {
-      "main": [[{ "node": "Reply To Customer (Approve)", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Publish Delivery (Approve)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
-    "Reply To Customer (Approve)": {
-      "main": [[{ "node": "Update Ticket Answered (Approve)", "type": "main", "index": 0 }]]
+    "Publish Delivery (Approve)": {
+      "main": [
+        [
+          {
+            "node": "Update Ticket Answered (Approve)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Update Ticket Answered (Approve)": {
-      "main": [[{ "node": "Answer Callback (Approve)", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Answer Callback (Approve)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Prompt For Correction": {
-      "main": [[{ "node": "Answer Callback (Edit)", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Answer Callback (Edit)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Update Ticket Escalated": {
-      "main": [[{ "node": "Select External Ref (Reject)", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Select External Ref (Reject)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Select External Ref (Reject)": {
-      "main": [[{ "node": "Parse Chat Id (Reject)", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Parse Chat Id (Reject)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Parse Chat Id (Reject)": {
-      "main": [[{ "node": "Holding Message To Customer", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Holding Message To Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Holding Message To Customer": {
-      "main": [[{ "node": "Escalation Notice To Ops", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Escalation Notice To Ops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Escalation Notice To Ops": {
-      "main": [[{ "node": "Answer Callback (Reject)", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Answer Callback (Reject)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Insert Operator Message": {
-      "main": [[{ "node": "Select External Ref (Edit Reply)", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Select External Ref (Edit Reply)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Select External Ref (Edit Reply)": {
-      "main": [[{ "node": "Parse Chat Id (Edit Reply)", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Parse Chat Id (Edit Reply)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
     "Parse Chat Id (Edit Reply)": {
-      "main": [[{ "node": "Send To Customer (Edit Reply)", "type": "main", "index": 0 }]]
+      "main": [
+        [
+          {
+            "node": "Publish Delivery (Edit Reply)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     },
-    "Send To Customer (Edit Reply)": {
-      "main": [[{ "node": "Update Ticket Answered (Edit Reply)", "type": "main", "index": 0 }]]
+    "Publish Delivery (Edit Reply)": {
+      "main": [
+        [
+          {
+            "node": "Update Ticket Answered (Edit Reply)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "settings": {

@@ -2,8 +2,9 @@
 """CLI entrypoint for `make n8n-sync` — imports/updates + activates n8n/workflows/*.json via
 n8n's Public REST API. Synced in dependency order so each workflow's real n8n-assigned ID can be
 patched into whichever other committed JSON references it as a placeholder (the real ID isn't
-known until n8n creates the workflow): WF-3, WF-4, and WF-5 have no dependencies; WF-2 references
-WF-3; WF-1 references both WF-2 and WF-3."""
+known until n8n creates the workflow): WF-3, WF-4, WF-5, WF-6, and WF-7 have no dependencies;
+WF-2 references WF-3; WF-1 references WF-3. Since ADR-007, WF-1 -> WF-2 is decoupled through
+RabbitMQ (q.draft_answer), so WF-1 no longer needs WF-2's ID patched in."""
 
 import json
 import os
@@ -88,7 +89,7 @@ def _report(result: dict) -> None:
 
 
 def main() -> int:
-    """Sync all 5 workflows in dependency order, patching placeholder IDs as they're created."""
+    """Sync all 7 workflows in dependency order, patching placeholder IDs as they're created."""
     with _client() as client:
         wf3_result = _sync_one(
             client, (WORKFLOWS_DIR / "wf3_hitl.json").read_text(encoding="utf-8")
@@ -105,18 +106,35 @@ def main() -> int:
         )
         _report(wf5_result)
 
+        wf6_result = _sync_one(
+            client, (WORKFLOWS_DIR / "wf6_delivery.json").read_text(encoding="utf-8")
+        )
+        _report(wf6_result)
+
+        wf7_result = _sync_one(
+            client, (WORKFLOWS_DIR / "wf7_event_publisher.json").read_text(encoding="utf-8")
+        )
+        _report(wf7_result)
+
         wf2_raw = (WORKFLOWS_DIR / "wf2_draft_answer.json").read_text(encoding="utf-8")
         wf2_raw = wf2_raw.replace("WF3_WORKFLOW_ID_PLACEHOLDER", wf3_result["id"])
         wf2_result = _sync_one(client, wf2_raw)
         _report(wf2_result)
 
         wf1_raw = (WORKFLOWS_DIR / "wf1_intake_triage.json").read_text(encoding="utf-8")
-        wf1_raw = wf1_raw.replace("WF2_WORKFLOW_ID_PLACEHOLDER", wf2_result["id"])
         wf1_raw = wf1_raw.replace("WF3_WORKFLOW_ID_PLACEHOLDER", wf3_result["id"])
         wf1_result = _sync_one(client, wf1_raw)
         _report(wf1_result)
 
-    results = [wf1_result, wf2_result, wf3_result, wf4_result, wf5_result]
+    results = [
+        wf1_result,
+        wf2_result,
+        wf3_result,
+        wf4_result,
+        wf5_result,
+        wf6_result,
+        wf7_result,
+    ]
     if not all(r["active"] for r in results):
         print("One or more workflows failed to activate.", file=sys.stderr)
         return 1

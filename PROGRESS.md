@@ -175,6 +175,18 @@ deploy documentation and locally-verifiable artifacts; it does not execute again
   justified by a recorded eval comparison); change archived at
   `openspec/changes/archive/2026-07-08-try-gemma4-31b-cloud/`. Full details: gotcha #38 + the
   P5-2 blocker entries below.
+- [x] `add-rabbitmq-messaging` (Claude, 2026-07-09) — async messaging backbone: intake buffering
+  (WF-1→q.draft_answer→WF-2), outbound delivery with retry/DLQ (WF-6), ticket-event fan-out
+  (pg_notify + WF-7→opspilot.events topic). **Approved deviation from `docs/SPEC.md` v1.0**
+  (user-approved via plan): WF-1→WF-2 is no longer direct `Execute Workflow` and customer sends
+  are no longer inline. All three patterns **live E2E-verified 2026-07-09**: intake→queue→WF-2
+  (ticket classified + gated), retry/DLQ (bogus chat_id → 5 retries at ~30s → exactly one parked
+  DLQ message + ops alert), event fan-out (probe queue on `opspilot.events` received all 5 event
+  types for one intake). Two execution-time bugs fixed that structural validation missed
+  (gotchas #47/#48: rabbitmq node `typeVersion` 1.1 + explicit `operation`; PUT settings
+  filtering); ops-chat-id live patch now covers 7 spots across WF-1/3/4/6 (gotcha #49).
+  An uncommitted Python-worker detour (contradicting ADR-007) was reverted with user approval.
+  Lint clean, 33/33 tests green, `openspec validate` passes. ADR-007 final.
 
 ## Blockers / Findings
 _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_

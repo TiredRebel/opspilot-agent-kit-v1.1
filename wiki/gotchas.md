@@ -349,3 +349,45 @@
     `ollama` always means free local compute). This means real spend against the direct cloud
     endpoint is currently invisible to `llm_calls` and the `$2` dev-budget invariant in
     `wiki/map.md`. Needs a follow-up if the cloud-auth path is used again for real spend tracking.
+42. **RabbitMQ topology must NOT use `load_definitions` or a committed `definitions.json` for a
+    default-user broker.** Those paths either replace the seeded default user (risking a broker
+    with no usable login) or require a password hash in a committed file. Declare topology via the
+    management HTTP API (this project's `scripts/rabbitmq_topology.py`, using `httpx` which is
+    already a dependency) and re-run it after broker restarts (`make mq-topology`). All topology
+    calls are idempotent; re-declaring a queue with different `arguments` will fail with a 406
+    precondition error, so delete-and-recreate if retry/DLX args ever change.
+43. **n8n's RabbitMQ trigger nacks failed messages with `requeue=true` (amqplib default), so
+    broker-side `x-death` headers never accumulate.** A retry counter must live in the message
+    body and the consumer must explicitly republish to a retry queue with `x-message-ttl` and a
+    dead-letter exchange — see `n8n/workflows/wf6_delivery.json`. If you rely on `x-death` in n8n
+    code nodes expecting automatic delayed retry + eventual DLX, retries will spin forever.
+44. **`pg_notify` payloads are capped at ~8000 bytes and are fire-and-forget.** The
+    `ticket_events` table is the durable source of truth; the `03_event_notify.sql` trigger only
+    emits `{id, type, ticket_id}` so a single event can never hit the cap, and WF-7 SELECTs the full
+    row before publishing to the `opspilot.events` topic. If WF-7 is stopped, missed events are lost
+    from the channel but recoverable via `GET /tickets/{id}/events`.
+45. **RabbitMQ ports must be published to the host because n8n is outside this project's compose.**
+    `docker-compose.yml` maps `${RABBITMQ_PORT:-5672}:5672` and `${RABBITMQ_MGMT_PORT:-15672}:15672`;
+    the n8n credential (on the existing `n8n-n8n-1` container) must use **Hostname `host.docker.internal`**
+    and port `5672`, not `localhost` (which resolves to the n8n container itself, not the host where
+    the broker is published). If n8n ever moves onto the same Docker network, switch the credential
+    to `amqp://rabbitmq:5672` and drop the host ports.
+46. **n8n auto-names new credentials (e.g. "RabbitMQ account"), and the name cannot be edited after creation.** The committed workflow JSON must reference the credential by its actual live name, not an ideal placeholder. When adding a new credential type, create it in n8n first, note the exact auto-generated name, then update the workflow JSON to match before syncing. Do not rely on being able to rename credentials.
+47. **n8n 2.x's RabbitMQ publish node maxes at `typeVersion` 1.1 and requires an explicit
+    `"operation": "sendMessage"` parameter.** A node authored as `typeVersion: 1.2` (guessed from
+    the trigger node's docs) imports and even *activates* cleanly, then fails at execution time
+    with `Could not get parameter` / `parameterName: "operation"` — structural sync + activation
+    validate nothing here (same class of trap as gotcha #25). Verified against the installed node:
+    `new RabbitMQ().description.version == [1, 1.1]`. All 7 publish nodes in WF-1/2/3/6/7 use
+    `typeVersion: 1.1` + `"operation": "sendMessage"`.
+48. **n8n's `PUT /api/v1/workflows/{id}` rejects the workflow's own `settings` round-tripped from
+    GET** (`request/body/settings must NOT have additional properties` — live workflows carry
+    extra fields like `binaryMode`). Any script that reads-modifies-writes a live workflow must
+    filter `settings` down to the API's allowed keys (executionOrder, timezone, errorWorkflow,
+    save* fields, executionTimeout) before PUT. Also: rapid PUT+activate sequences trip n8n's
+    rate limiter ("too many requests") — space calls by a couple of seconds.
+49. **`make n8n-sync` now reverts SIX+ live-only patches (gotcha #20 grew with ADR-007):** the
+    `PLACEHOLDER_OPS_CHAT_ID` spots are now WF-1 ×2 (urgent alert, Is Ops Reply), WF-3 ×3, WF-4 ×1,
+    and WF-6 ×1 (dead-letter ops alert — new). After every sync, re-apply the chat id to all four
+    workflows and re-activate. The re-patch is scriptable via the API pattern in this session's
+    log (read live → filter settings per gotcha #48 → string-replace → PUT → activate).

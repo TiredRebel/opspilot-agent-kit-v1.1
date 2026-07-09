@@ -1,0 +1,245 @@
+{
+  "name": "WF-6 Outbound Delivery",
+  "nodes": [
+    {
+      "parameters": {
+        "queue": "q.outbound_delivery",
+        "options": {
+          "jsonParseBody": true,
+          "onlyContent": true,
+          "acknowledge": "executionFinishesSuccessfully"
+        }
+      },
+      "id": "b1a2c3d4-0001-4a6e-9f00-000000000001",
+      "name": "RabbitMQ Trigger",
+      "type": "n8n-nodes-base.rabbitmqTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "credentials": {
+        "rabbitmq": {
+          "id": null,
+          "name": "RabbitMQ - OpsPilot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "// Retry attempts ride in the message body, NOT in x-death headers: n8n's RabbitMQ\n// trigger nacks with requeue=true (no DLX path), so the retry hop is a fresh publish\n// to deliver.retry and broker-side death counters never accumulate.\nconst attempts = Number($json.attempts || 0);\nconst deliverable = !!$json.chat_id;\nlet giveUpReason = null;\nif (!deliverable) {\n  giveUpReason = 'no chat_id (webform ticket has no Telegram address)';\n} else if (attempts >= 5) {\n  giveUpReason = 'max delivery attempts (5) exhausted';\n}\nreturn {\n  ticket_id: $json.ticket_id,\n  chat_id: $json.chat_id,\n  text: $json.text,\n  attempts,\n  give_up: giveUpReason !== null,\n  give_up_reason: giveUpReason\n};"
+      },
+      "id": "b1a2c3d4-0002-4a6e-9f00-000000000002",
+      "name": "Assess Delivery",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "cond-giveup-1",
+              "leftValue": "={{ $json.give_up }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "b1a2c3d4-0003-4a6e-9f00-000000000003",
+      "name": "Give Up?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        440,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendMessage",
+        "mode": "exchange",
+        "exchange": "opspilot.dlx",
+        "exchangeType": "fanout",
+        "routingKey": "",
+        "sendInputData": false,
+        "message": "={{ JSON.stringify({ ticket_id: $json.ticket_id, chat_id: $json.chat_id, text: $json.text, attempts: $json.attempts, reason: $json.give_up_reason }) }}",
+        "options": {}
+      },
+      "id": "b1a2c3d4-0004-4a6e-9f00-000000000004",
+      "name": "Park In Dead Letter",
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
+      "position": [
+        660,
+        -120
+      ],
+      "credentials": {
+        "rabbitmq": {
+          "id": null,
+          "name": "RabbitMQ - OpsPilot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "PLACEHOLDER_OPS_CHAT_ID",
+        "text": "={{ 'Delivery parked in dead letter queue\\nTicket: ' + $('Assess Delivery').item.json.ticket_id + '\\nReason: ' + $('Assess Delivery').item.json.give_up_reason + '\\nAttempts: ' + $('Assess Delivery').item.json.attempts }}",
+        "additionalFields": {}
+      },
+      "id": "b1a2c3d4-0005-4a6e-9f00-000000000005",
+      "name": "Alert Ops - Dead Letter",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        -120
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": null,
+          "name": "Telegram - OpsPilot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {}
+      },
+      "id": "b1a2c3d4-0006-4a6e-9f00-000000000006",
+      "name": "Send To Customer",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        660,
+        120
+      ],
+      "onError": "continueErrorOutput",
+      "credentials": {
+        "telegramApi": {
+          "id": null,
+          "name": "Telegram - OpsPilot"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendMessage",
+        "mode": "exchange",
+        "exchange": "opspilot.work",
+        "exchangeType": "direct",
+        "routingKey": "deliver.retry",
+        "sendInputData": false,
+        "message": "={{ JSON.stringify({ ticket_id: $('Assess Delivery').item.json.ticket_id, chat_id: $('Assess Delivery').item.json.chat_id, text: $('Assess Delivery').item.json.text, attempts: $('Assess Delivery').item.json.attempts + 1 }) }}",
+        "options": {}
+      },
+      "id": "b1a2c3d4-0007-4a6e-9f00-000000000007",
+      "name": "Publish Retry",
+      "type": "n8n-nodes-base.rabbitmq",
+      "typeVersion": 1.1,
+      "position": [
+        880,
+        220
+      ],
+      "credentials": {
+        "rabbitmq": {
+          "id": null,
+          "name": "RabbitMQ - OpsPilot"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "RabbitMQ Trigger": {
+      "main": [
+        [
+          {
+            "node": "Assess Delivery",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assess Delivery": {
+      "main": [
+        [
+          {
+            "node": "Give Up?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Give Up?": {
+      "main": [
+        [
+          {
+            "node": "Park In Dead Letter",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Send To Customer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Park In Dead Letter": {
+      "main": [
+        [
+          {
+            "node": "Alert Ops - Dead Letter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send To Customer": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Publish Retry",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  }
+}

@@ -21,9 +21,12 @@ flowchart TD
         WF5[WF-5 Daily Digest cron]
     end
     N8N -->|HTTP| RAG[FastAPI RAG service]
+    N8N -->|AMQP| MQ[(RabbitMQ)]
     RAG --> LLM[Anthropic / OpenAI / Gemini / Ollama]
     RAG --> PG[(Postgres + pgvector)]
     N8N --> PG
+    MQ --> WF2
+    MQ --> WF6[WF-6 Delivery]
     WF3 --> OPS[Ops Telegram channel]
     WF5 --> NOTION[Notion digest page]
 ```
@@ -37,11 +40,13 @@ history in [`docs/decisions/`](docs/decisions/).
 
 ```bash
 cp .env.example .env      # fill in real secrets — never commit .env
-docker compose up -d      # postgres (pgvector) + rag-api
+docker compose up -d      # postgres (pgvector) + rag-api + rabbitmq
+make mq-topology          # declare exchanges/queues/bindings (idempotent)
 make seed                 # ingest kb/seed into pgvector
 ```
 
-`GET http://localhost:8010/health` should return `{"status":"ok","db":true}`. n8n workflows live
+`GET http://localhost:8010/health` should return `{"status":"ok","db":true}`. RabbitMQ's
+management UI is at `http://localhost:15672` (credentials from `.env`). n8n workflows live
 in `n8n/workflows/*.json` and sync via `make n8n-sync` against a running n8n instance (see
 `docs/infrastructure.md` for a full production deploy runbook — not yet executed against a live
 VM as of this writing).
@@ -67,12 +72,13 @@ _(placeholder — paste real numbers here once running against production traffi
 
 Python 3.12 · FastAPI · asyncpg (no ORM — ADR-004) · Postgres + pgvector (ADR-003) · n8n
 (workflow-as-code, imported via REST API, never hand-clicked) · Anthropic / OpenAI / Gemini /
-Ollama (pluggable provider layer — `LLM_PROVIDER`) · Telegram Bot API · Notion API.
+Ollama (pluggable provider layer — `LLM_PROVIDER`) · RabbitMQ (buffering, delivery retry/DLQ,
+event fan-out — ADR-007) · Telegram Bot API · Notion API.
 
 ## Testing
 
 - `make lint` — ruff format + check.
-- `make test` — L1/L2 tests (fake provider, isolated test database) — 18 tests, all pass.
+- `make test` — L1/L2 tests (fake provider, isolated test database) — 33 tests, all pass.
 - `make evals` — L3 eval harness (`evals/`) against a real cheap model: classification accuracy +
   answer groundedness, budget-capped at $0.50/run. See `PROGRESS.md` for current accuracy status
   across providers.
