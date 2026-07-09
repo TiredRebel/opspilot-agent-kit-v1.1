@@ -156,10 +156,14 @@ set -a; . ./.env; set +a
 uv run scripts/n8n_sync.py
 ```
 
-This imports/activates all 5 workflows on the production n8n instance. WF-1's Telegram Trigger
+This imports/activates all 7 workflows on the production n8n instance. WF-1's Telegram Trigger
 node registers its own webhook with Telegram on activation, using n8n's `WEBHOOK_URL` (set in step
 4) — no separate "switch the webhook" step is needed; it happens as a side effect of activating
 WF-1 against an n8n instance that already has the right `WEBHOOK_URL` configured.
+
+If the production VM's public URL ever changes (e.g. moving domains, re-pointing a tunnel), update
+`WEBHOOK_URL` in the n8n compose environment, restart the n8n container, and re-run
+`make n8n-sync`.
 
 ## 8. Verify (docs/TESTPLAN.md § L5 — M7)
 
