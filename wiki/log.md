@@ -653,3 +653,15 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
 - Tests: `ruff` clean, 33/33 pytest green. `openspec validate add-rabbitmq-messaging` passes.
 - Handoff / next: PR + squash-merge, archive change, sync `async-messaging` +
   `n8n-workflow-export` delta specs into `openspec/specs/`.
+
+## [2026-07-09 16:20] build | Claude Code | n8n webhook helper + gotcha #50
+- Completed: added `scripts/set_n8n_webhook_url.py` and `make n8n-set-webhook` to persist
+  `WEBHOOK_URL` from `.env` into the existing `n8n-n8n-1` container's `/home/node/.n8n/.env` and
+  restart it. This fixes the dev-only problem where the Telegram Trigger node appeared broken
+  because n8n's existing container was started without `WEBHOOK_URL`. Production runbook already
+  sets it in compose.
+- Updated `docs/infrastructure.md` (7 workflows, URL-change note), `wiki/gotchas.md` #50,
+  `Makefile`. Lint clean; helper script compiles.
+- Files touched: `scripts/set_n8n_webhook_url.py`, `Makefile`, `docs/infrastructure.md`,
+  `wiki/gotchas.md`, `wiki/log.md`.
+- Handoff / next: commit, PR, merge.

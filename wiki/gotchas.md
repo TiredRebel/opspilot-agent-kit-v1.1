@@ -391,3 +391,12 @@
     and WF-6 ×1 (dead-letter ops alert — new). After every sync, re-apply the chat id to all four
     workflows and re-activate. The re-patch is scriptable via the API pattern in this session's
     log (read live → filter settings per gotcha #48 → string-replace → PUT → activate).
+50. **n8n's Telegram Trigger needs `WEBHOOK_URL` set in the running container when WF-1 is
+    activated, or the node appears broken and activation fails with "Missing or invalid required
+    parameters: updates".** This project's dev setup reuses an existing local `n8n-n8n-1`
+    container that was started without `WEBHOOK_URL`. Do not recreate the container (that would
+    rotate the encryption key and invalidate credentials — gotcha #21). Instead run
+    `make n8n-set-webhook` (`scripts/set_n8n_webhook_url.py`): it writes `WEBHOOK_URL` from this
+    project's `.env` into `/home/node/.n8n/.env` inside the container and restarts it. Then
+    `make n8n-sync` activates WF-1 cleanly. For production, set `WEBHOOK_URL` in the n8n
+    compose environment before first start (see `docs/infrastructure.md` §4).

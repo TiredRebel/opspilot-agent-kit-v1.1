@@ -1,4 +1,4 @@
-.PHONY: up down seed mq-topology n8n-sync lint test evals backup
+.PHONY: up down seed mq-topology n8n-set-webhook n8n-sync lint test evals backup
 
 up:
 	docker compose up -d
@@ -11,6 +11,9 @@ seed:
 
 mq-topology:
 	set -a; . ./.env; set +a; uv run scripts/rabbitmq_topology.py
+
+n8n-set-webhook:
+	set -a; . ./.env; set +a; uv run scripts/set_n8n_webhook_url.py
 
 n8n-sync:
 	set -a; . ./.env; set +a; uv run scripts/n8n_sync.py
