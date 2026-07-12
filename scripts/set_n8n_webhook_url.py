@@ -15,6 +15,12 @@ Reads `WEBHOOK_URL` from the environment — `make n8n-set-webhook` sources `.en
 (`set -a; . ./.env; set +a`) before invoking this script, same as every other
 scripts/ entrypoint. If a tunnel helper (ngrok/cloudflared) is running, the user
 should set `WEBHOOK_URL` in `.env` to its public HTTPS URL before running it.
+
+Mechanism verified live (docs/TESTPLAN.md M8): after writing the file and
+restarting, this deployment's container picks up `WEBHOOK_URL`, WF-1 activates,
+and Telegram `getWebhookInfo` returns the tunnel URL. If the container is ever
+re-created from a stock n8n image, re-verify M8 — stock images are not
+guaranteed to source `~/.n8n/.env`.
 """
 
 import os
@@ -44,16 +50,14 @@ def _update_container_env(value: str) -> None:
     new_lines = [line for line in lines if not line.startswith("WEBHOOK_URL=")]
     new_lines.append(f"WEBHOOK_URL={value}")
     payload = "\n".join(new_lines) + "\n"
-    # Use a heredoc via sh -c so we do not need to quote the whole file for a single echo.
+    # Pipe the payload via stdin rather than a heredoc: interpolating file content
+    # into `sh -c` truncates the file if any env line equals the heredoc delimiter
+    # (#14 review (c)(2)), and stdin needs no quoting or escaping at all.
     subprocess.run(
-        [
-            "docker",
-            "exec",
-            CONTAINER,
-            "sh",
-            "-c",
-            f"cat > {CONTAINER_ENV} <<'EOF'\n{payload}EOF\n",
-        ],
+        ["docker", "exec", "-i", CONTAINER, "sh", "-c", f"cat > {CONTAINER_ENV}"],
+        input=payload,
+        text=True,
+        encoding="utf-8",
         check=True,
     )
 
