@@ -28,7 +28,9 @@ new feature ⇒ new/updated test entry.
 - `test_set_webhook.py` — missing `WEBHOOK_URL` env var fails fast without touching docker;
   `_update_container_env` replaces an existing `WEBHOOK_URL=` line instead of appending a
   duplicate and preserves unrelated lines; `http://` URL warns but proceeds; docker write
-  failure → exit 1, no restart (docker calls mocked). Owed by `fix-wf1-telegram-trigger` #14.
+  failure → exit 1, no restart; a line equal to the old heredoc delimiter (`EOF`) survives the
+  rewrite (regression for #14 review (c)(2), fixed by stdin piping in PR #20). Docker calls
+  mocked. Owed by `fix-wf1-telegram-trigger` #14.
 
 ## L3 — eval harness
 
@@ -63,8 +65,13 @@ new feature ⇒ new/updated test entry.
 HTTPS URL, run `make n8n-set-webhook`, wait for the `n8n-n8n-1` restart.
 *Expect:* WF-1 activates without the "webhook URL missing" error; Telegram `getWebhookInfo`
 returns the URL from `.env`; stored n8n credentials still decrypt (no key rotation).
-This is the runtime verification left pending by #14 — code review flagged that stock n8n
-images may not source `/home/node/.n8n/.env` (gotcha #50); if activation fails, reopen the finding.
+This was the runtime verification left pending by #14 — code review flagged that stock n8n
+images may not source `/home/node/.n8n/.env` (gotcha #50).
+**PASSED 2026-07-12** (Claude, ngrok tunnel): WF-1 `active = true` via the n8n API (all 7 WF-*
+workflows re-activated after the restart, so stored credentials still decrypt); Telegram
+`getWebhookInfo` returned the tunnel URL from `.env` with `pending_update_count = 0` and no
+`last_error_message`. The gotcha #50 concern did not materialize in this deployment — re-run M8
+if the `n8n-n8n-1` container is ever re-created from a stock image.
 
 ## L5 — deploy smoke (M7)
 

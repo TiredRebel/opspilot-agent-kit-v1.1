@@ -194,9 +194,8 @@ deploy documentation and locally-verifiable artifacts; it does not execute again
   avoiding container recreation, which would rotate the n8n encryption key and invalidate
   stored credentials. Docs: `docs/infrastructure.md` (7 workflows + URL-change note),
   `wiki/gotchas.md` #50 (WEBHOOK_URL trap), `wiki/map.md` compose row, `wiki/log.md` entry.
-  Verified: `ruff format --check` + `ruff check` clean, `py_compile` OK. **Not yet
-  live-verified** that WF-1's Telegram Trigger actually activates after the restart (code
-  review flagged that stock n8n images may not source `~/.n8n/.env`) — runtime check pending.
+  Verified: `ruff format --check` + `ruff check` clean, `py_compile` OK. Runtime check
+  (TESTPLAN M8) **passed 2026-07-12** — see the M8 entry below.
 - [x] `fix-wf1-telegram-trigger` review follow-ups (Claude, 2026-07-09) — closed the remaining
   #14 code-review findings: `scripts/set_n8n_webhook_url.py` now reads `WEBHOOK_URL` from the
   environment (`make n8n-set-webhook` already sources `.env`; matches every other scripts/
@@ -206,6 +205,16 @@ deploy documentation and locally-verifiable artifacts; it does not execute again
   The missing-task-ID finding on merged commit `96ef8eb` is unfixable without rewriting
   published history — closed prospectively (this follow-up commit carries the reference).
   Lint clean (pre-existing failures in untracked `side-hustle/` only), 38/38 tests green.
+- [x] TESTPLAN M8 runtime verification + final #14 review fix (Claude, 2026-07-12; merged as
+  PR #20) — **M8 PASSED live** via ngrok: `WEBHOOK_URL` written to `n8n-n8n-1`'s
+  `/home/node/.n8n/.env` by `make n8n-set-webhook`, container restarted healthy, WF-1
+  `active = true` (all 7 WF-* workflows re-activated ⇒ credentials decrypt, no key rotation),
+  Telegram `getWebhookInfo` returned the tunnel URL (`pending = 0`, no last error). Gotcha #50
+  concern (stock images may not source `~/.n8n/.env`) disproven for this deployment. Also fixed
+  the last real #14 review finding (c)(2): `_update_container_env` now pipes the env payload via
+  stdin (`docker exec -i`) instead of a heredoc, which truncated the file at any line equal to
+  the delimiter; regression test added (6 tests in `test_set_webhook.py`, suite 39/39 green).
+  Review findings (a)/(c)(3) were stale (already fixed in #18/#19); (b) items kept deliberately.
 
 ## Blockers / Findings
 _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
