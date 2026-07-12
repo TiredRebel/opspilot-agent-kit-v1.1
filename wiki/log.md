@@ -665,3 +665,18 @@ Last N entries: `grep "^## \[" wiki/log.md | tail -5`
 - Files touched: `scripts/set_n8n_webhook_url.py`, `Makefile`, `docs/infrastructure.md`,
   `wiki/gotchas.md`, `wiki/log.md`.
 - Handoff / next: commit, PR, merge.
+
+## [2026-07-12 22:21] review | Claude Code | fix-wf1-telegram-trigger (#14) review follow-ups
+- Completed: closed remaining #14 code-review findings. (1) `set_n8n_webhook_url.py` now reads
+  `WEBHOOK_URL` from the environment (`make n8n-set-webhook` already sources `.env`; matches
+  `n8n_sync.py`/`rabbitmq_topology.py` and the config-from-env convention) — removed the
+  `_dotenv_value` hand-parser. (2) Wrote the owed `test_set_webhook.py` (5 L1 tests, docker
+  mocked): missing-env fail-fast, happy path, replace-not-duplicate, http warning, write-failure
+  exit. (3) Updated `docs/TESTPLAN.md` L1 entry + M8 traceability row.
+- Decisions: missing task-ID on merged `96ef8eb` closed prospectively — no rewriting of
+  published history; this commit carries the task reference instead.
+- Files touched: `scripts/set_n8n_webhook_url.py`, `services/rag/tests/test_set_webhook.py`,
+  `docs/TESTPLAN.md`, `PROGRESS.md`, `wiki/log.md`.
+- Gotchas added: none.
+- Handoff / next: M8 manual runtime verification (does stock n8n source `~/.n8n/.env`?) is still
+  the open item on #14; untracked `side-hustle/` fails ruff and was left untouched.
