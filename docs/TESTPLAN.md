@@ -25,6 +25,9 @@ new feature ⇒ new/updated test entry.
 - `test_ingest_query_roundtrip.py` (L2) — ingest seed doc → query known fact → answer cites correct source.
 - `test_idempotency.py` (L2) — duplicate `{source, external_ref}` insert does not create a second ticket.
 - `test_stats.py` (L2) — `/stats` aggregates match fixture data.
+- `test_set_webhook.py` — *(planned; owed by `fix-wf1-telegram-trigger` #14, not yet written)* —
+  `_dotenv_value` skips comments and non-matching keys; `_update_container_env` replaces an
+  existing `WEBHOOK_URL=` line instead of appending a duplicate (docker calls mocked).
 
 ## L3 — eval harness
 
@@ -55,6 +58,13 @@ new feature ⇒ new/updated test entry.
 **M6 Digest.** Trigger WF-5 manually.
 *Expect:* digest in ops channel + appended to the Notion page; numbers match `GET /stats`; includes USD spend.
 
+**M8 Webhook persistence (WF-1 Telegram Trigger).** Set `WEBHOOK_URL` in `.env` to the public
+HTTPS URL, run `make n8n-set-webhook`, wait for the `n8n-n8n-1` restart.
+*Expect:* WF-1 activates without the "webhook URL missing" error; Telegram `getWebhookInfo`
+returns the URL from `.env`; stored n8n credentials still decrypt (no key rotation).
+This is the runtime verification left pending by #14 — code review flagged that stock n8n
+images may not source `/home/node/.n8n/.env` (gotcha #50); if activation fails, reopen the finding.
+
 ## L5 — deploy smoke (M7)
 
 1. `curl https://<domain>/health` → 200 with DB ok. 2. M1 against production. 3. TLS valid; n8n UI behind auth.
@@ -69,4 +79,5 @@ new feature ⇒ new/updated test entry.
 | Digest to Telegram + Notion with spend | M6 |
 | Evals ≥ 85%, CI green | L3 + CI badge |
 | Deployed, TLS, backups | M7 |
+| WF-1 Telegram Trigger activates with persisted `WEBHOOK_URL` | M8 (+ `test_set_webhook.py` when written) |
 | Stranger reproduces locally | fresh-clone rehearsal before applying |
