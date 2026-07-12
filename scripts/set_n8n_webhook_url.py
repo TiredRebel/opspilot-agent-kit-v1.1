@@ -38,12 +38,11 @@ def _container_env_lines() -> list[str]:
     return result.stdout.splitlines()
 
 
-def _update_container_env(key: str, value: str) -> None:
-    """Replace or append the key=value line in the container's .env file."""
+def _update_container_env(value: str) -> None:
+    """Replace or append the WEBHOOK_URL= line in the container's .env file."""
     lines = _container_env_lines()
-    prefix = f"{key}="
-    new_lines = [line for line in lines if not line.startswith(prefix)]
-    new_lines.append(f"{key}={value}")
+    new_lines = [line for line in lines if not line.startswith("WEBHOOK_URL=")]
+    new_lines.append(f"WEBHOOK_URL={value}")
     payload = "\n".join(new_lines) + "\n"
     # Use a heredoc via sh -c so we do not need to quote the whole file for a single echo.
     subprocess.run(
@@ -78,7 +77,7 @@ def main() -> int:
         )
 
     try:
-        _update_container_env("WEBHOOK_URL", url)
+        _update_container_env(url)
     except subprocess.CalledProcessError as exc:
         print(f"Could not write {CONTAINER_ENV} in {CONTAINER}: {exc}", file=sys.stderr)
         return 1
