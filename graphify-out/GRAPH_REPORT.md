@@ -1,16 +1,16 @@
-# Graph Report - opspilot-agent-kit-v1.1  (2026-07-08)
+# Graph Report - opspilot-agent-kit-v1.1  (2026-07-09)
 
 ## Corpus Check
-- 142 files · ~81,348 words
+- 156 files · ~89,377 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 1007 nodes · 1084 edges · 120 communities (101 shown, 19 thin omitted)
+- 1089 nodes · 1158 edges · 131 communities (111 shown, 20 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 48 edges (avg confidence: 0.76)
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `6f2d23cb`
+- Built from commit: `8c100aa5`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -123,9 +123,20 @@
 - [[_COMMUNITY_digest|digest.md]]
 - [[_COMMUNITY_self_check|self_check.md]]
 - [[_COMMUNITY_opspilot-rag|opspilot-rag]]
+- [[_COMMUNITY_PROGRESS.md — Build board (single source of what is done)|PROGRESS.md — Build board (single source of "what is done")]]
+- [[_COMMUNITY_Design — add-rabbitmq-messaging|Design — add-rabbitmq-messaging]]
+- [[_COMMUNITY_INDEX|INDEX.md]]
+- [[_COMMUNITY_query|query]]
+- [[_COMMUNITY_Tasks — add-rabbitmq-messaging|Tasks — add-rabbitmq-messaging]]
+- [[_COMMUNITY_Add RabbitMQ async messaging|Add RabbitMQ async messaging]]
+- [[_COMMUNITY_kb_ingest|kb_ingest]]
+- [[_COMMUNITY_INDEX.md — wiki catalog (content-oriented routing file)|INDEX.md — wiki catalog (content-oriented routing file)]]
+- [[_COMMUNITY_ADR-007 — Async message processing with RabbitMQ|ADR-007 — Async message processing with RabbitMQ]]
+- [[_COMMUNITY_Requirement Export SHALL fetch all 7 OpsPilot workflows|Requirement: Export SHALL fetch all 7 OpsPilot workflows]]
+- [[_COMMUNITY_main|main]]
 
 ## God Nodes (most connected - your core abstractions)
-1. `log.md — chronological record (append-only)` - 19 edges
+1. `log.md — chronological record (append-only)` - 21 edges
 2. `LLMResult` - 18 edges
 3. `Ledger` - 17 edges
 4. `complete()` - 11 edges
@@ -151,15 +162,15 @@
 ## Import Cycles
 - None detected.
 
-## Communities (120 total, 19 thin omitted)
+## Communities (131 total, 20 thin omitted)
 
 ### Community 0 - "log.md — chronological record (append-only)"
-Cohesion: 0.04
-Nodes (44): Blockers / Findings, Maintenance (OpenSpec-tracked changes), Metrics to fill before applying, Phase 0 — Foundation, Phase 1 — RAG/LLM service, Phase 2 — Intake & auto-answer, Phase 3 — Human-in-the-loop & SLA, Phase 4 — Digest & Notion (+36 more)
+Cohesion: 0.10
+Nodes (21): [2026-07-05 11:00] build | kit-generator (Claude, chat) | Agent kit authored (pre-P0), [2026-07-05 12:00] ingest | kit-generator (Claude, chat) | karpathy LLM Wiki pattern adopted (v1.1), [2026-07-05 19:00] build | Claude Code | Phase 0 — Foundation (P0-1..P0-4), [2026-07-05 20:30] build | Claude Code | Phase 1 — RAG/LLM service (P1-1..P1-6), [2026-07-05 21:15] build | Claude Code | Phase 2 — Intake & auto-answer (P2-1..P2-4), [2026-07-05 21:30] build | human | Closed ops-alert chatId placeholder blocker, [2026-07-06 00:20] build | human+Claude | n8n instance down — paused, not fixed, [2026-07-06 00:45] build | Claude Code | Phase 3 — HITL & SLA (P3-1..P3-3, authored not verified) (+13 more)
 
 ### Community 1 - "settings.py"
-Cohesion: 0.06
-Nodes (26): AsyncAnthropic, BaseSettings, _anthropic_client(), _call_anthropic(), chat(), embed(), _is_retryable(), Exception (+18 more)
+Cohesion: 0.05
+Nodes (30): AsyncAnthropic, BaseSettings, check_db(), close_pool(), get_pool(), Pool, Module-level asyncpg connection pool (no ORM — ADR-004)., Create the pool on first use and cache it for the lifetime of the current event (+22 more)
 
 ### Community 2 - "main"
 Cohesion: 0.12
@@ -194,8 +205,8 @@ Cohesion: 0.11
 Nodes (17): ADDED Requirements, Requirement: Classification failure SHALL report what failed, Requirement: Degraded and error states SHALL carry specific, actionable messages, Requirement: Empty-retrieval queries SHALL be answered honestly without LLM calls, Requirement: n8n sync output SHALL report per-workflow outcomes, Requirement: The service SHALL emit structured application logs, Scenario: Budget exhausted, Scenario: Every LLM attempt produces a log record (+9 more)
 
 ### Community 10 - "retrieval.py"
-Cohesion: 0.17
-Nodes (14): Record, kb_ingest(), Idempotent by document title: re-ingesting a doc deletes its old chunks/row firs, chunk_text(), Pool, Chunking, pgvector similarity search, and the confidence blend — shared by inges, Word-count-based chunking (~500 words, 50 overlap). No empty chunks; stable orde, Render an embedding as a pgvector input literal, e.g. '[0.1,0.2,...]'. (+6 more)
+Cohesion: 0.19
+Nodes (11): Record, blend_confidence(), Pool, Chunking, pgvector similarity search, and the confidence blend — shared by inges, Render an embedding as a pgvector input literal, e.g. '[0.1,0.2,...]'., Confidence = 0.5 * mean retrieval similarity + 0.5 * LLM self-check score (SPEC, Top-k chunks by cosine similarity (1 - cosine distance), joined with their docum, to_vector_literal() (+3 more)
 
 ### Community 11 - "gemini.py"
 Cohesion: 0.18
@@ -218,8 +229,8 @@ Cohesion: 0.18
 Nodes (13): _budget_assertion(), _localhost_database_url(), _non_fake_provider(), pool(), Shared fixtures for L3 eval tests (`make evals` / `pytest -m evals`).  Unlike `s, Compose maps postgres to the internal hostname `postgres`; local pytest runs out, Point the app's settings at the localhost-rewritten dev database for the whole s, Evals must exercise a real classifier/answerer, not the deterministic fake provi (+5 more)
 
 ### Community 16 - "query"
-Cohesion: 0.16
-Nodes (13): load_prompt(), Prompt loading for the RAG service — prompts live in version-controlled files., Prompts are version-controlled files, never inline strings (AGENTS.md)., kv(), Render `msg` plus `key=value` pairs for structured, greppable log lines. None-va, classify(), _classify_valid(), _parse_score() (+5 more)
+Cohesion: 0.25
+Nodes (7): load_prompt(), Prompt loading for the RAG service — prompts live in version-controlled files., Prompts are version-controlled files, never inline strings (AGENTS.md)., classify(), _classify_valid(), A schema-constrained LLM call can still come back malformed (e.g. a provider tha, One retry on invalid structured output, then a 422 whose detail says what actual
 
 ### Community 17 - "conftest.py"
 Cohesion: 0.22
@@ -238,8 +249,8 @@ Cohesion: 0.15
 Nodes (12): code-documentation-standards, Purpose, Requirement: Application and script modules SHALL have docstrings, Requirement: Public and private functions/classes SHALL have docstrings, Requirement: ruff SHALL enforce docstring presence going forward, Requirement: Test code is exempt from mandatory docstrings, Requirements, Scenario: A docstring exists but is redundant boilerplate (+4 more)
 
 ### Community 21 - "Requirements"
-Cohesion: 0.15
-Nodes (12): n8n-workflow-export, Purpose, Requirement: Export SHALL fetch only OpsPilot's own workflows, Requirement: Exported workflows SHALL be directly re-importable, Requirement: Known secret-bearing values SHALL be redacted before writing, Requirement: The export SHALL report drift beyond known redaction points, Requirements, Scenario: An export is fetched from the live API (+4 more)
+Cohesion: 0.14
+Nodes (13): n8n-workflow-export, Purpose, Requirement: Export SHALL fetch only OpsPilot's own workflows, Requirement: Exported workflows SHALL be directly re-importable, Requirement: Known secret-bearing values SHALL be redacted before writing, Requirement: The export SHALL report drift beyond known redaction points, Requirements, Scenario: An export is fetched from the live API (+5 more)
 
 ### Community 22 - "test_ticket_events.py"
 Cohesion: 0.32
@@ -322,8 +333,8 @@ Cohesion: 0.22
 Nodes (8): Acceptance Criteria, Context, Objective, Phase 5 — Evals & CI (paste into Claude Code or Codex; can run in parallel with P3/P4 in Mode C), Prerequisite: P1-3 (/classify) and P1-4 (/query) merged., Scope, Stop Conditions, Target State (task IDs P5-1..P5-3)
 
 ### Community 42 - "db.py"
-Cohesion: 0.25
-Nodes (8): check_db(), close_pool(), get_pool(), Pool, Module-level asyncpg connection pool (no ORM — ADR-004)., Create the pool on first use and cache it for the lifetime of the current event, Called from the FastAPI lifespan shutdown hook so the pool doesn't leak connecti, Liveness check used by GET /health. Returns `(ok, error_class_name)` — the excep
+Cohesion: 0.11
+Nodes (17): ADDED Requirements, async-messaging, Constraints, Purpose, Requirement: Broker topology SHALL be declared idempotently without embedded secrets, Requirement: Customer-facing sends SHALL be retried with a dead-letter queue, Requirement: The events fan-out SHALL be durable but not lossless over listener downtime, Requirement: Ticket lifecycle events SHALL be published to a topic exchange (+9 more)
 
 ### Community 43 - "test_provider_no_db.py"
 Cohesion: 0.25
@@ -490,8 +501,8 @@ Cohesion: 0.50
 Nodes (4): _cost(), Decimal, Model-name constants, the per-token pricing table, and cost computation., Compute USD cost for a call from `PRICING`, treating any unlisted model as free.
 
 ### Community 84 - "blend_confidence"
-Cohesion: 0.50
-Nodes (4): blend_confidence(), Confidence = 0.5 * mean retrieval similarity + 0.5 * LLM self-check score (SPEC, test_blend_formula(), test_gate_boundary_exactly_070_passes_0699_escalates()
+Cohesion: 0.11
+Nodes (17): async-messaging, Constraints, Purpose, Requirement: Broker topology SHALL be declared idempotently without embedded secrets, Requirement: Customer-facing sends SHALL be retried with a dead-letter queue, Requirement: The events fan-out SHALL be durable but not lossless over listener downtime, Requirement: Ticket lifecycle events SHALL be published to a topic exchange, Requirement: WF-1 SHALL hand off new tickets to WF-2 via a queue (+9 more)
 
 ### Community 85 - "test_health.py"
 Cohesion: 0.60
@@ -509,20 +520,60 @@ Nodes (3): 1. Run the eval, 2. Apply the decision rule, 3. Record the result
 Cohesion: 0.83
 Nodes (3): _result(), test_invalid_json_retries_exactly_once_then_422(), test_valid_json_passes()
 
+### Community 120 - "PROGRESS.md — Build board (single source of "what is done")"
+Cohesion: 0.17
+Nodes (12): Blockers / Findings, Maintenance (OpenSpec-tracked changes), Metrics to fill before applying, Phase 0 — Foundation, Phase 1 — RAG/LLM service, Phase 2 — Intake & auto-answer, Phase 3 — Human-in-the-loop & SLA, Phase 4 — Digest & Notion (+4 more)
+
+### Community 121 - "Design — add-rabbitmq-messaging"
+Cohesion: 0.18
+Nodes (10): `deliver` / `deliver.retry` → `q.outbound_delivery`, Delivery semantics, Design — add-rabbitmq-messaging, `draft` → `q.draft_answer`, events topic → `opspilot.events`, Message contracts, Open questions resolved, Topology (+2 more)
+
+### Community 122 - "INDEX.md"
+Cohesion: 0.18
+Nodes (6): Gotchas (numbered, append-only), Component matrix, Invariants (violating any of these is a defect), Key decisions (details in docs/decisions/), map.md — OpsPilot project map (zero-hop entry point), System in one paragraph
+
+### Community 123 - "query"
+Cohesion: 0.20
+Nodes (10): kv(), Structured logging for the RAG service — stdlib only, single-line key=value reco, Configure the `app` logger namespace. Idempotent — the FastAPI lifespan runs onc, Render `msg` plus `key=value` pairs for structured, greppable log lines. None-va, setup_logging(), _parse_score(), query(), The self-check prompt asks for a bare 0-1 number but LLMs sometimes wrap it in a (+2 more)
+
+### Community 124 - "Tasks — add-rabbitmq-messaging"
+Cohesion: 0.22
+Nodes (8): 1. Infrastructure, 2. Intake buffering (WF-1 → WF-2), 3. Outbound delivery with retry/DLQ, 4. Ticket-event fan-out, 5. Tooling update, 6. Documentation and tracking, 7. Verification, Tasks — add-rabbitmq-messaging
+
+### Community 125 - "Add RabbitMQ async messaging"
+Cohesion: 0.25
+Nodes (7): Add RabbitMQ async messaging, Capabilities, Impact, Modified Capabilities, New Capabilities, What Changes, Why
+
+### Community 126 - "kb_ingest"
+Cohesion: 0.32
+Nodes (7): kb_ingest(), Idempotent by document title: re-ingesting a doc deletes its old chunks/row firs, chunk_text(), Word-count-based chunking (~500 words, 50 overlap). No empty chunks; stable orde, test_chunk_500_overlap_50_stable_ordering(), test_chunk_empty_text_returns_no_chunks(), test_chunk_short_text_returns_single_chunk()
+
+### Community 127 - "INDEX.md — wiki catalog (content-oriented routing file)"
+Cohesion: 0.29
+Nodes (7): ADR (docs/decisions/ADR-NNN-slug.md), Decisions, INDEX.md — wiki catalog (content-oriented routing file), Knowledge pages (created by agents as the build progresses), log.md entry, Navigation & state, Templates
+
+### Community 128 - "ADR-007 — Async message processing with RabbitMQ"
+Cohesion: 0.33
+Nodes (5): ADR-007 — Async message processing with RabbitMQ, Consequences, Context, Decision, What this rules out
+
+### Community 129 - "Requirement: Export SHALL fetch all 7 OpsPilot workflows"
+Cohesion: 0.33
+Nodes (5): MODIFIED Requirements, n8n-workflow-export — delta, Requirement: Export SHALL fetch all 7 OpsPilot workflows, Scenario: Export includes a RabbitMQ credential reference, Scenario: The shared n8n instance has unrelated workflows
+
 ## Knowledge Gaps
-- **447 isolated node(s):** `opspilot-rag`, `backup.sh script`, `check_intake_idempotency.sh script`, `test_backup_restore.sh script`, `The Stance` (+442 more)
+- **494 isolated node(s):** `opspilot-rag`, `backup.sh script`, `check_intake_idempotency.sh script`, `test_backup_restore.sh script`, `The Stance` (+489 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **19 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **20 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `LLMResult` connect `LLMResult` to `settings.py`, `_fake_result`, `gemini.py`, `base.py`, `ollama.py`, `openai.py`, `_complete_openai_compatible`, `_result`, `complete`?**
-  _High betweenness centrality (0.015) - this node is a cross-community bridge._
+  _High betweenness centrality (0.016) - this node is a cross-community bridge._
 - **Why does `Ledger` connect `LLMResult` to `settings.py`, `BudgetExceeded`, `gemini.py`, `ollama.py`, `openai.py`, `_complete_openai_compatible`?**
-  _High betweenness centrality (0.013) - this node is a cross-community bridge._
-- **Why does `complete()` connect `complete` to `_fake_result`, `retrieval.py`, `LLMResult`, `summarize`, `query`?**
-  _High betweenness centrality (0.009) - this node is a cross-community bridge._
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
+- **Why does `complete()` connect `complete` to `_fake_result`, `LLMResult`, `summarize`, `query`, `query`, `kb_ingest`?**
+  _High betweenness centrality (0.008) - this node is a cross-community bridge._
 - **Are the 3 inferred relationships involving `Ledger` (e.g. with `BudgetExceeded` and `LLMResult`) actually correct?**
   _`Ledger` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **Are the 5 inferred relationships involving `complete()` (e.g. with `_fake_result()` and `classify()`) actually correct?**
@@ -530,4 +581,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Are the 3 inferred relationships involving `chat()` (e.g. with `_parse_json()` and `_cost()`) actually correct?**
   _`chat()` has 3 INFERRED edges - model-reasoned connections that need verification._
 - **What connects `Shared fixtures for L3 eval tests (`make evals` / `pytest -m evals`).  Unlike `s`, `Compose maps postgres to the internal hostname `postgres`; local pytest runs out`, `Point the app's settings at the localhost-rewritten dev database for the whole s` to the rest of the system?**
-  _570 weakly-connected nodes found - possible documentation gaps or missing edges._
+  _618 weakly-connected nodes found - possible documentation gaps or missing edges._

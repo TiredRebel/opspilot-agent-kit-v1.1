@@ -1,7 +1,7 @@
 {
   ".claude/settings.local.json": {
-    "mtime": 1783493673.7559602,
-    "ast_hash": "f7f5fbd535f17b3a2a7c2fa23b26b702",
+    "mtime": 1783598078.817545,
+    "ast_hash": "e1271ce68630a38986425ac973658d5c",
     "semantic_hash": ""
   },
   "db/init/01_schema.sql": {
@@ -30,18 +30,18 @@
     "semantic_hash": ""
   },
   "n8n/workflows/wf1_intake_triage.json": {
-    "mtime": 1783291535.217309,
-    "ast_hash": "44dceefeb148ab4115f4ba912a5c6b35",
+    "mtime": 1783600142.1605675,
+    "ast_hash": "ca464e7f081f805246dc755871e8fc98",
     "semantic_hash": ""
   },
   "n8n/workflows/wf2_draft_answer.json": {
-    "mtime": 1783286317.2795703,
-    "ast_hash": "81bab1d167f42fe4ebe9bbda7cac024f",
+    "mtime": 1783600142.1625662,
+    "ast_hash": "76b8c5abf0251ff3de396f387f6641b4",
     "semantic_hash": ""
   },
   "n8n/workflows/wf3_hitl.json": {
-    "mtime": 1783290539.9170213,
-    "ast_hash": "f470f339fdf89031a57ef7c40036fbb2",
+    "mtime": 1783600142.1645703,
+    "ast_hash": "e70cf3e96775f0fb612e672ef1a54b84",
     "semantic_hash": ""
   },
   "n8n/workflows/wf4_sla_watchdog.json": {
@@ -55,7 +55,7 @@
     "semantic_hash": ""
   },
   "pyproject.toml": {
-    "mtime": 1783357505.8854008,
+    "mtime": 1783598030.1312165,
     "ast_hash": "9c747bf609339b882fbd4c8d036f0736",
     "semantic_hash": ""
   },
@@ -70,8 +70,8 @@
     "semantic_hash": ""
   },
   "scripts/export_n8n_workflows.py": {
-    "mtime": 1783357505.8954384,
-    "ast_hash": "d0a36db63d8bd7b0749513b33ec91ab4",
+    "mtime": 1783600142.1845853,
+    "ast_hash": "ec81673cc3d55a4bd2a0f8b419589dac",
     "semantic_hash": ""
   },
   "scripts/ingest.py": {
@@ -80,8 +80,8 @@
     "semantic_hash": ""
   },
   "scripts/n8n_sync.py": {
-    "mtime": 1783501803.3263192,
-    "ast_hash": "fc0850f86724c3379dfc798029cbb50d",
+    "mtime": 1783600142.1875677,
+    "ast_hash": "b6bcd8b24be75a4f7d8afa0d83466494",
     "semantic_hash": ""
   },
   "scripts/test_backup_restore.sh": {
@@ -260,28 +260,28 @@
     "semantic_hash": ""
   },
   "workflows-n8n/wf1_intake_triage.json": {
-    "mtime": 1783357505.9891815,
-    "ast_hash": "78bd16720352893b5731ce55b55166d3",
+    "mtime": 1783600142.213588,
+    "ast_hash": "f1f5b181d18fa5a2cc219c48ef3940b0",
     "semantic_hash": ""
   },
   "workflows-n8n/wf2_draft_answer.json": {
-    "mtime": 1783357505.9989836,
-    "ast_hash": "2f1176c6178e202e04cf3b9dfb386281",
+    "mtime": 1783600142.2185676,
+    "ast_hash": "76b8c5abf0251ff3de396f387f6641b4",
     "semantic_hash": ""
   },
   "workflows-n8n/wf3_hitl.json": {
-    "mtime": 1783357506.0079825,
-    "ast_hash": "7131913637edee415139fd72f5001e27",
+    "mtime": 1783600142.222572,
+    "ast_hash": "9c79363fc94d9785e92acbb6c39f4ae0",
     "semantic_hash": ""
   },
   "workflows-n8n/wf4_sla_watchdog.json": {
-    "mtime": 1783357506.01689,
-    "ast_hash": "846e273524a869ba60056901af4192f5",
+    "mtime": 1783599819.4694135,
+    "ast_hash": "a2b7183522bff1783b623ca18a1d2248",
     "semantic_hash": ""
   },
   "workflows-n8n/wf5_daily_digest.json": {
-    "mtime": 1783357506.0258918,
-    "ast_hash": "2614eef1dd9ad5b969a4df9bbd03bff9",
+    "mtime": 1783599819.4928176,
+    "ast_hash": "6ee91206885267a5b21aaecec98863bb",
     "semantic_hash": ""
   },
   ".claude/commands/opsx/apply.md": {
@@ -350,18 +350,18 @@
     "semantic_hash": ""
   },
   "PROGRESS.md": {
-    "mtime": 1783512574.3085256,
-    "ast_hash": "31794babe8408265de3e9f3d827ff28e",
+    "mtime": 1783600142.148585,
+    "ast_hash": "48341945f473b4b549656f9e224a515d",
     "semantic_hash": ""
   },
   "README.md": {
-    "mtime": 1783357505.6389616,
-    "ast_hash": "4aab7098fc8cc40dcbff75256e497f62",
+    "mtime": 1783600142.1535854,
+    "ast_hash": "a972f349c09aba2c2beeadc14c33e60b",
     "semantic_hash": ""
   },
   "docker-compose.yml": {
-    "mtime": 1783501803.305141,
-    "ast_hash": "6f650d62617e3cf822886a9c5ce0e678",
+    "mtime": 1783600142.156567,
+    "ast_hash": "0e510ff598ecebe5273b7e5b923b4ac3",
     "semantic_hash": ""
   },
   "docs/SPEC.md": {
@@ -650,8 +650,8 @@
     "semantic_hash": ""
   },
   "openspec/specs/n8n-workflow-export/spec.md": {
-    "mtime": 1783357505.8803852,
-    "ast_hash": "87db6a5056f045299fbb880f5d84792f",
+    "mtime": 1783600329.4205885,
+    "ast_hash": "26704d21561dee1a64f7439b558c4be6",
     "semantic_hash": ""
   },
   "openspec/specs/service-observability/spec.md": {
@@ -745,18 +745,93 @@
     "semantic_hash": ""
   },
   "wiki/gotchas.md": {
-    "mtime": 1783414893.0603032,
-    "ast_hash": "e0dd9446b34f2f0d3fc6966dd229d1c0",
+    "mtime": 1783600142.1975844,
+    "ast_hash": "cee148c8111ea0ee9d33e803232a5698",
     "semantic_hash": ""
   },
   "wiki/log.md": {
-    "mtime": 1783512585.5539024,
-    "ast_hash": "fadd2bf761549485efb5e3dc7a586b51",
+    "mtime": 1783600142.2035887,
+    "ast_hash": "4b5624af78cdd61c79b40ba5c9e9cc77",
     "semantic_hash": ""
   },
   "wiki/map.md": {
-    "mtime": 1783501803.3826256,
-    "ast_hash": "c8f7b040759c88920be72062071670b3",
+    "mtime": 1783600142.2085674,
+    "ast_hash": "44a243a717928fdc1552171c36036775",
+    "semantic_hash": ""
+  },
+  ".vscode/settings.json": {
+    "mtime": 1783515611.3169098,
+    "ast_hash": "98c7017661b1bbb298a2a01d5b316604",
+    "semantic_hash": ""
+  },
+  "db/init/03_event_notify.sql": {
+    "mtime": 1783600142.154585,
+    "ast_hash": "5edbba5826b5f3ba6b7abe65df4bb6e3",
+    "semantic_hash": ""
+  },
+  "n8n/workflows/wf6_delivery.json": {
+    "mtime": 1783600142.1665864,
+    "ast_hash": "51b3e6e5e751bbe84aa496e5b5392475",
+    "semantic_hash": ""
+  },
+  "n8n/workflows/wf7_event_publisher.json": {
+    "mtime": 1783600142.1685672,
+    "ast_hash": "9adb7f7b33a0058726ac5c8aa9498609",
+    "semantic_hash": ""
+  },
+  "scripts/rabbitmq_topology.py": {
+    "mtime": 1783600142.1905856,
+    "ast_hash": "3e641000ddfe90eb070e568f226e7628",
+    "semantic_hash": ""
+  },
+  "workflows-n8n/wf6_delivery.json": {
+    "mtime": 1783600142.2285652,
+    "ast_hash": "51b3e6e5e751bbe84aa496e5b5392475",
+    "semantic_hash": ""
+  },
+  "workflows-n8n/wf7_event_publisher.json": {
+    "mtime": 1783600142.2305655,
+    "ast_hash": "9adb7f7b33a0058726ac5c8aa9498609",
+    "semantic_hash": ""
+  },
+  "docs/decisions/ADR-007-rabbitmq-async-messaging.md": {
+    "mtime": 1783600142.1585898,
+    "ast_hash": "3fb90b251e092da7b0a19ea0ee85bf57",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/.openspec.yaml": {
+    "mtime": 1783600329.3975859,
+    "ast_hash": "b7171e48d4d70bf16bcd4a6e95ec1fbe",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md": {
+    "mtime": 1783600329.4005861,
+    "ast_hash": "92eb657584f519e78c175601693934bf",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md": {
+    "mtime": 1783600329.4035692,
+    "ast_hash": "afeffcd48369e196d5d5c36d575f3c53",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md": {
+    "mtime": 1783600329.4075665,
+    "ast_hash": "78a910a6c549dab364d73df67f723135",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/n8n-workflow-export/spec.md": {
+    "mtime": 1783600329.4115674,
+    "ast_hash": "999fe20164ef2a6ff50cc70bb088b310",
+    "semantic_hash": ""
+  },
+  "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md": {
+    "mtime": 1783600329.4135962,
+    "ast_hash": "7d774d7aa836954115ba4bd7b8b96914",
+    "semantic_hash": ""
+  },
+  "openspec/specs/async-messaging/spec.md": {
+    "mtime": 1783600329.4175699,
+    "ast_hash": "561330ca73a25f3a1468fea768e3f2d7",
     "semantic_hash": ""
   }
 }

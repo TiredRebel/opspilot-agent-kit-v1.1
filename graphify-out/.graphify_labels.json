@@ -118,5 +118,16 @@
   "116": "SKILL.md",
   "117": "SKILL.md",
   "118": "opspilot-rag",
-  "119": "__init__.py"
+  "119": "__init__.py",
+  "120": "PROGRESS.md — Build board (single source of \"what is done\")",
+  "121": "Design — add-rabbitmq-messaging",
+  "122": "INDEX.md",
+  "123": "query",
+  "124": "Tasks — add-rabbitmq-messaging",
+  "125": "Add RabbitMQ async messaging",
+  "126": "kb_ingest",
+  "127": "INDEX.md — wiki catalog (content-oriented routing file)",
+  "128": "ADR-007 — Async message processing with RabbitMQ",
+  "129": "Requirement: Export SHALL fetch all 7 OpsPilot workflows",
+  "130": "main"
 }
