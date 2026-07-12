@@ -187,6 +187,16 @@ deploy documentation and locally-verifiable artifacts; it does not execute again
   filtering); ops-chat-id live patch now covers 7 spots across WF-1/3/4/6 (gotcha #49).
   An uncommitted Python-worker detour (contradicting ADR-007) was reverted with user approval.
   Lint clean, 33/33 tests green, `openspec validate` passes. ADR-007 final.
+- [x] `fix-wf1-telegram-trigger` (Claude, 2026-07-09; merged as PR #14) — helper to persist n8n
+  `WEBHOOK_URL` for WF-1's Telegram Trigger: `scripts/set_n8n_webhook_url.py` (wired as
+  `make n8n-set-webhook`) reads `WEBHOOK_URL` from this project's `.env` and writes it into the
+  existing `n8n-n8n-1` container's `/home/node/.n8n/.env`, then restarts the container —
+  avoiding container recreation, which would rotate the n8n encryption key and invalidate
+  stored credentials. Docs: `docs/infrastructure.md` (7 workflows + URL-change note),
+  `wiki/gotchas.md` #50 (WEBHOOK_URL trap), `wiki/map.md` compose row, `wiki/log.md` entry.
+  Verified: `ruff format --check` + `ruff check` clean, `py_compile` OK. **Not yet
+  live-verified** that WF-1's Telegram Trigger actually activates after the restart (code
+  review flagged that stock n8n images may not source `~/.n8n/.env`) — runtime check pending.
 
 ## Blockers / Findings
 _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
