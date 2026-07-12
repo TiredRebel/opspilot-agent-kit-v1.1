@@ -326,7 +326,7 @@
       "label": "_has_placeholder()",
       "file_type": "code",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L29",
+      "source_location": "L31",
       "_origin": "ast",
       "id": "scripts_export_n8n_workflows_has_placeholder",
       "community": 2,
@@ -336,7 +336,7 @@
       "label": "_redact()",
       "file_type": "code",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L36",
+      "source_location": "L38",
       "_origin": "ast",
       "id": "scripts_export_n8n_workflows_redact",
       "community": 2,
@@ -346,7 +346,7 @@
       "label": "_redact_nodes()",
       "file_type": "code",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L47",
+      "source_location": "L49",
       "_origin": "ast",
       "id": "scripts_export_n8n_workflows_redact_nodes",
       "community": 2,
@@ -356,7 +356,7 @@
       "label": "_null_credential_ids()",
       "file_type": "code",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L58",
+      "source_location": "L60",
       "_origin": "ast",
       "id": "scripts_export_n8n_workflows_null_credential_ids",
       "community": 2,
@@ -366,7 +366,7 @@
       "label": "_strip_webhook_ids()",
       "file_type": "code",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L66",
+      "source_location": "L68",
       "_origin": "ast",
       "id": "scripts_export_n8n_workflows_strip_webhook_ids",
       "community": 2,
@@ -376,7 +376,7 @@
       "label": "_diff()",
       "file_type": "code",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L74",
+      "source_location": "L76",
       "_origin": "ast",
       "id": "scripts_export_n8n_workflows_diff",
       "community": 2,
@@ -386,7 +386,7 @@
       "label": "main()",
       "file_type": "code",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L96",
+      "source_location": "L98",
       "_origin": "ast",
       "id": "scripts_export_n8n_workflows_main",
       "community": 2,
@@ -396,9 +396,9 @@
       "label": "True if a committed value contains one of this project's PLACEHOLDER_* redaction",
       "file_type": "rationale",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L30",
+      "source_location": "L32",
       "_origin": "ast",
-      "id": "scripts_export_n8n_workflows_rationale_30",
+      "id": "scripts_export_n8n_workflows_rationale_32",
       "community": 2,
       "norm_label": "true if a committed value contains one of this project's placeholder_* redaction"
     },
@@ -406,9 +406,9 @@
       "label": "Return `live` with any leaf overwritten by the committed placeholder at that sam",
       "file_type": "rationale",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L37",
+      "source_location": "L39",
       "_origin": "ast",
-      "id": "scripts_export_n8n_workflows_rationale_37",
+      "id": "scripts_export_n8n_workflows_rationale_39",
       "community": 2,
       "norm_label": "return `live` with any leaf overwritten by the committed placeholder at that sam"
     },
@@ -416,9 +416,9 @@
       "label": "Redact each live node against its committed counterpart matched by node `name`,",
       "file_type": "rationale",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L48",
+      "source_location": "L50",
       "_origin": "ast",
-      "id": "scripts_export_n8n_workflows_rationale_48",
+      "id": "scripts_export_n8n_workflows_rationale_50",
       "community": 2,
       "norm_label": "redact each live node against its committed counterpart matched by node `name`,"
     },
@@ -426,9 +426,9 @@
       "label": "Null every node's credential `.id` in place \u2014 instance-specific, n8n re-matches",
       "file_type": "rationale",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L59",
+      "source_location": "L61",
       "_origin": "ast",
-      "id": "scripts_export_n8n_workflows_rationale_59",
+      "id": "scripts_export_n8n_workflows_rationale_61",
       "community": 2,
       "norm_label": "null every node's credential `.id` in place \u2014 instance-specific, n8n re-matches"
     },
@@ -436,9 +436,9 @@
       "label": "Remove n8n's auto-assigned `webhookId` (present on live Webhook/Telegram-trigger",
       "file_type": "rationale",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L67",
+      "source_location": "L69",
       "_origin": "ast",
-      "id": "scripts_export_n8n_workflows_rationale_67",
+      "id": "scripts_export_n8n_workflows_rationale_69",
       "community": 2,
       "norm_label": "remove n8n's auto-assigned `webhookid` (present on live webhook/telegram-trigger"
     },
@@ -446,21 +446,21 @@
       "label": "Recursively collect human-readable differences between the committed and final e",
       "file_type": "rationale",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L75",
+      "source_location": "L77",
       "_origin": "ast",
-      "id": "scripts_export_n8n_workflows_rationale_75",
+      "id": "scripts_export_n8n_workflows_rationale_77",
       "community": 2,
       "norm_label": "recursively collect human-readable differences between the committed and final e"
     },
     {
-      "label": "Export the 5 OpsPilot workflows from the live n8n instance, redacted and diff-re",
+      "label": "Export the 7 OpsPilot workflows from the live n8n instance, redacted and diff-re",
       "file_type": "rationale",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L97",
+      "source_location": "L99",
       "_origin": "ast",
-      "id": "scripts_export_n8n_workflows_rationale_97",
+      "id": "scripts_export_n8n_workflows_rationale_99",
       "community": 2,
-      "norm_label": "export the 5 opspilot workflows from the live n8n instance, redacted and diff-re"
+      "norm_label": "export the 7 opspilot workflows from the live n8n instance, redacted and diff-re"
     },
     {
       "label": "ingest.py",
@@ -506,7 +506,7 @@
       "label": "_client()",
       "file_type": "code",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L19",
+      "source_location": "L20",
       "_origin": "ast",
       "id": "scripts_n8n_sync_client",
       "community": 2,
@@ -516,7 +516,7 @@
       "label": "_find_by_name()",
       "file_type": "code",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L33",
+      "source_location": "L34",
       "_origin": "ast",
       "id": "scripts_n8n_sync_find_by_name",
       "community": 2,
@@ -526,7 +526,7 @@
       "label": "_sync_one()",
       "file_type": "code",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L51",
+      "source_location": "L52",
       "_origin": "ast",
       "id": "scripts_n8n_sync_sync_one",
       "community": 2,
@@ -536,7 +536,7 @@
       "label": "_report()",
       "file_type": "code",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L80",
+      "source_location": "L81",
       "_origin": "ast",
       "id": "scripts_n8n_sync_report",
       "community": 2,
@@ -546,7 +546,7 @@
       "label": "main()",
       "file_type": "code",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L90",
+      "source_location": "L91",
       "_origin": "ast",
       "id": "scripts_n8n_sync_main",
       "community": 2,
@@ -556,9 +556,9 @@
       "label": "Build an httpx client authenticated against n8n's Public REST API.",
       "file_type": "rationale",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L20",
+      "source_location": "L21",
       "_origin": "ast",
-      "id": "scripts_n8n_sync_rationale_20",
+      "id": "scripts_n8n_sync_rationale_21",
       "community": 2,
       "norm_label": "build an httpx client authenticated against n8n's public rest api."
     },
@@ -566,9 +566,9 @@
       "label": "Page through n8n's /workflows list to find an existing workflow by exact name.",
       "file_type": "rationale",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L34",
+      "source_location": "L35",
       "_origin": "ast",
-      "id": "scripts_n8n_sync_rationale_34",
+      "id": "scripts_n8n_sync_rationale_35",
       "community": 2,
       "norm_label": "page through n8n's /workflows list to find an existing workflow by exact name."
     },
@@ -576,9 +576,9 @@
       "label": "Create-or-update one workflow from its JSON text, then attempt to activate it.",
       "file_type": "rationale",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L52",
+      "source_location": "L53",
       "_origin": "ast",
-      "id": "scripts_n8n_sync_rationale_52",
+      "id": "scripts_n8n_sync_rationale_53",
       "community": 2,
       "norm_label": "create-or-update one workflow from its json text, then attempt to activate it."
     },
@@ -586,21 +586,51 @@
       "label": "One human-readable line per workflow; the raw n8n response detail only on failur",
       "file_type": "rationale",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L81",
+      "source_location": "L82",
       "_origin": "ast",
-      "id": "scripts_n8n_sync_rationale_81",
+      "id": "scripts_n8n_sync_rationale_82",
       "community": 2,
       "norm_label": "one human-readable line per workflow; the raw n8n response detail only on failur"
     },
     {
-      "label": "Sync all 5 workflows in dependency order, patching placeholder IDs as they're cr",
+      "label": "Sync all 7 workflows in dependency order, patching placeholder IDs as they're cr",
       "file_type": "rationale",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L91",
+      "source_location": "L92",
       "_origin": "ast",
-      "id": "scripts_n8n_sync_rationale_91",
+      "id": "scripts_n8n_sync_rationale_92",
       "community": 2,
-      "norm_label": "sync all 5 workflows in dependency order, patching placeholder ids as they're cr"
+      "norm_label": "sync all 7 workflows in dependency order, patching placeholder ids as they're cr"
+    },
+    {
+      "label": "rabbitmq_topology.py",
+      "file_type": "code",
+      "source_file": "scripts/rabbitmq_topology.py",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "scripts_rabbitmq_topology",
+      "community": 130,
+      "norm_label": "rabbitmq_topology.py"
+    },
+    {
+      "label": "main()",
+      "file_type": "code",
+      "source_file": "scripts/rabbitmq_topology.py",
+      "source_location": "L59",
+      "_origin": "ast",
+      "id": "scripts_rabbitmq_topology_main",
+      "community": 130,
+      "norm_label": "main()"
+    },
+    {
+      "label": "Declare the full topology against the running broker and print what was ensured.",
+      "file_type": "rationale",
+      "source_file": "scripts/rabbitmq_topology.py",
+      "source_location": "L60",
+      "_origin": "ast",
+      "id": "scripts_rabbitmq_topology_rationale_60",
+      "community": 130,
+      "norm_label": "declare the full topology against the running broker and print what was ensured."
     },
     {
       "label": "test_backup_restore.sh",
@@ -671,7 +701,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_rag_app_db",
-      "community": 42,
+      "community": 1,
       "norm_label": "db.py"
     },
     {
@@ -681,7 +711,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "services_rag_app_db_get_pool",
-      "community": 42,
+      "community": 1,
       "norm_label": "get_pool()"
     },
     {
@@ -691,7 +721,7 @@
       "source_location": "",
       "_origin": "ast",
       "id": "services_rag_app_db_py_pool",
-      "community": 42,
+      "community": 1,
       "norm_label": "pool"
     },
     {
@@ -701,7 +731,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "services_rag_app_db_close_pool",
-      "community": 42,
+      "community": 1,
       "norm_label": "close_pool()"
     },
     {
@@ -711,7 +741,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "services_rag_app_db_check_db",
-      "community": 42,
+      "community": 1,
       "norm_label": "check_db()"
     },
     {
@@ -721,7 +751,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_rag_app_db_rationale_1",
-      "community": 42,
+      "community": 1,
       "norm_label": "module-level asyncpg connection pool (no orm \u2014 adr-004)."
     },
     {
@@ -731,7 +761,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "services_rag_app_db_rationale_19",
-      "community": 42,
+      "community": 1,
       "norm_label": "create the pool on first use and cache it for the lifetime of the current event"
     },
     {
@@ -741,7 +771,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "services_rag_app_db_rationale_27",
-      "community": 42,
+      "community": 1,
       "norm_label": "called from the fastapi lifespan shutdown hook so the pool doesn't leak connecti"
     },
     {
@@ -751,7 +781,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "services_rag_app_db_rationale_35",
-      "community": 42,
+      "community": 1,
       "norm_label": "liveness check used by get /health. returns `(ok, error_class_name)` \u2014 the excep"
     },
     {
@@ -2071,7 +2101,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_rag_app_logging_setup",
-      "community": 1,
+      "community": 123,
       "norm_label": "logging_setup.py"
     },
     {
@@ -2081,7 +2111,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "services_rag_app_logging_setup_setup_logging",
-      "community": 1,
+      "community": 123,
       "norm_label": "setup_logging()"
     },
     {
@@ -2091,7 +2121,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "services_rag_app_logging_setup_kv",
-      "community": 16,
+      "community": 123,
       "norm_label": "kv()"
     },
     {
@@ -2101,7 +2131,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_rag_app_logging_setup_rationale_1",
-      "community": 1,
+      "community": 123,
       "norm_label": "structured logging for the rag service \u2014 stdlib only, single-line key=value reco"
     },
     {
@@ -2111,7 +2141,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "services_rag_app_logging_setup_rationale_15",
-      "community": 1,
+      "community": 123,
       "norm_label": "configure the `app` logger namespace. idempotent \u2014 the fastapi lifespan runs onc"
     },
     {
@@ -2121,7 +2151,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "services_rag_app_logging_setup_rationale_28",
-      "community": 16,
+      "community": 123,
       "norm_label": "render `msg` plus `key=value` pairs for structured, greppable log lines. none-va"
     },
     {
@@ -2201,7 +2231,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "services_rag_app_main_kb_ingest",
-      "community": 10,
+      "community": 126,
       "norm_label": "kb_ingest()"
     },
     {
@@ -2231,7 +2261,7 @@
       "source_location": "L156",
       "_origin": "ast",
       "id": "services_rag_app_main_parse_score",
-      "community": 16,
+      "community": 123,
       "norm_label": "_parse_score()"
     },
     {
@@ -2241,7 +2271,7 @@
       "source_location": "L175",
       "_origin": "ast",
       "id": "services_rag_app_main_query",
-      "community": 16,
+      "community": 123,
       "norm_label": "query()"
     },
     {
@@ -2331,7 +2361,7 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "services_rag_app_main_rationale_73",
-      "community": 10,
+      "community": 126,
       "norm_label": "idempotent by document title: re-ingesting a doc deletes its old chunks/row firs"
     },
     {
@@ -2361,7 +2391,7 @@
       "source_location": "L157",
       "_origin": "ast",
       "id": "services_rag_app_main_rationale_157",
-      "community": 16,
+      "community": 123,
       "norm_label": "the self-check prompt asks for a bare 0-1 number but llms sometimes wrap it in a"
     },
     {
@@ -2371,7 +2401,7 @@
       "source_location": "L176",
       "_origin": "ast",
       "id": "services_rag_app_main_rationale_176",
-      "community": 16,
+      "community": 123,
       "norm_label": "rag pipeline: embed the question, retrieve top-k chunks, draft an answer grounde"
     },
     {
@@ -2421,7 +2451,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "services_rag_app_retrieval_chunk_text",
-      "community": 10,
+      "community": 126,
       "norm_label": "chunk_text()"
     },
     {
@@ -2441,7 +2471,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "services_rag_app_retrieval_blend_confidence",
-      "community": 84,
+      "community": 10,
       "norm_label": "blend_confidence()"
     },
     {
@@ -2491,7 +2521,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "services_rag_app_retrieval_rationale_13",
-      "community": 10,
+      "community": 126,
       "norm_label": "word-count-based chunking (~500 words, 50 overlap). no empty chunks; stable orde"
     },
     {
@@ -2511,7 +2541,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "services_rag_app_retrieval_rationale_33",
-      "community": 84,
+      "community": 10,
       "norm_label": "confidence = 0.5 * mean retrieval similarity + 0.5 * llm self-check score (spec"
     },
     {
@@ -3001,7 +3031,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_rag_tests_test_chunking",
-      "community": 10,
+      "community": 126,
       "norm_label": "test_chunking.py"
     },
     {
@@ -3011,7 +3041,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "services_rag_tests_test_chunking_test_chunk_500_overlap_50_stable_ordering",
-      "community": 10,
+      "community": 126,
       "norm_label": "test_chunk_500_overlap_50_stable_ordering()"
     },
     {
@@ -3021,7 +3051,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "services_rag_tests_test_chunking_test_chunk_empty_text_returns_no_chunks",
-      "community": 10,
+      "community": 126,
       "norm_label": "test_chunk_empty_text_returns_no_chunks()"
     },
     {
@@ -3031,7 +3061,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "services_rag_tests_test_chunking_test_chunk_short_text_returns_single_chunk",
-      "community": 10,
+      "community": 126,
       "norm_label": "test_chunk_short_text_returns_single_chunk()"
     },
     {
@@ -3081,7 +3111,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_rag_tests_test_confidence",
-      "community": 84,
+      "community": 10,
       "norm_label": "test_confidence.py"
     },
     {
@@ -3091,7 +3121,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "services_rag_tests_test_confidence_test_blend_formula",
-      "community": 84,
+      "community": 10,
       "norm_label": "test_blend_formula()"
     },
     {
@@ -3101,7 +3131,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "services_rag_tests_test_confidence_test_gate_boundary_exactly_070_passes_0699_escalates",
-      "community": 84,
+      "community": 10,
       "norm_label": "test_gate_boundary_exactly_070_passes_0699_escalates()"
     },
     {
@@ -3271,7 +3301,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "services_rag_tests_test_observability_capture_app_logs",
-      "community": 1,
+      "community": 123,
       "norm_label": "_capture_app_logs()"
     },
     {
@@ -4071,7 +4101,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "progress",
-      "community": 0,
+      "community": 122,
       "norm_label": "progress.md"
     },
     {
@@ -4081,7 +4111,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "progress_progress_md_build_board_single_source_of_what_is_done",
-      "community": 0,
+      "community": 120,
       "norm_label": "progress.md \u2014 build board (single source of \"what is done\")"
     },
     {
@@ -4091,7 +4121,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "progress_phase_0_foundation",
-      "community": 0,
+      "community": 120,
       "norm_label": "phase 0 \u2014 foundation"
     },
     {
@@ -4101,7 +4131,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "progress_phase_1_rag_llm_service",
-      "community": 0,
+      "community": 120,
       "norm_label": "phase 1 \u2014 rag/llm service"
     },
     {
@@ -4111,7 +4141,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "progress_phase_2_intake_auto_answer",
-      "community": 0,
+      "community": 120,
       "norm_label": "phase 2 \u2014 intake & auto-answer"
     },
     {
@@ -4121,7 +4151,7 @@
       "source_location": "L31",
       "_origin": "ast",
       "id": "progress_phase_3_human_in_the_loop_sla",
-      "community": 0,
+      "community": 120,
       "norm_label": "phase 3 \u2014 human-in-the-loop & sla"
     },
     {
@@ -4131,7 +4161,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "progress_phase_4_digest_notion",
-      "community": 0,
+      "community": 120,
       "norm_label": "phase 4 \u2014 digest & notion"
     },
     {
@@ -4141,7 +4171,7 @@
       "source_location": "L73",
       "_origin": "ast",
       "id": "progress_phase_5_evals_ci",
-      "community": 0,
+      "community": 120,
       "norm_label": "phase 5 \u2014 evals & ci"
     },
     {
@@ -4151,7 +4181,7 @@
       "source_location": "L95",
       "_origin": "ast",
       "id": "progress_unplanned_addition_this_phase_multi_provider_llm_py_ollama_gemini",
-      "community": 0,
+      "community": 120,
       "norm_label": "unplanned addition this phase: multi-provider `llm.py` (ollama + gemini)"
     },
     {
@@ -4161,7 +4191,7 @@
       "source_location": "L106",
       "_origin": "ast",
       "id": "progress_phase_6_deploy_packaging",
-      "community": 0,
+      "community": 120,
       "norm_label": "phase 6 \u2014 deploy & packaging"
     },
     {
@@ -4171,27 +4201,27 @@
       "source_location": "L133",
       "_origin": "ast",
       "id": "progress_maintenance_openspec_tracked_changes",
-      "community": 0,
+      "community": 120,
       "norm_label": "maintenance (openspec-tracked changes)"
     },
     {
       "label": "Blockers / Findings",
       "file_type": "document",
       "source_file": "PROGRESS.md",
-      "source_location": "L179",
+      "source_location": "L191",
       "_origin": "ast",
       "id": "progress_blockers_findings",
-      "community": 0,
+      "community": 120,
       "norm_label": "blockers / findings"
     },
     {
       "label": "Metrics to fill before applying",
       "file_type": "document",
       "source_file": "PROGRESS.md",
-      "source_location": "L341",
+      "source_location": "L353",
       "_origin": "ast",
       "id": "progress_metrics_to_fill_before_applying",
-      "community": 0,
+      "community": 120,
       "norm_label": "metrics to fill before applying"
     },
     {
@@ -4228,7 +4258,7 @@
       "label": "Quickstart",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L36",
+      "source_location": "L39",
       "_origin": "ast",
       "id": "readme_quickstart",
       "community": 38,
@@ -4238,7 +4268,7 @@
       "label": "Live demo",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L49",
+      "source_location": "L54",
       "_origin": "ast",
       "id": "readme_live_demo",
       "community": 38,
@@ -4248,7 +4278,7 @@
       "label": "Metrics (from production `GET /stats`)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L54",
+      "source_location": "L59",
       "_origin": "ast",
       "id": "readme_metrics_from_production_get_stats",
       "community": 38,
@@ -4258,7 +4288,7 @@
       "label": "Tech stack",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L66",
+      "source_location": "L71",
       "_origin": "ast",
       "id": "readme_tech_stack",
       "community": 38,
@@ -4268,7 +4298,7 @@
       "label": "Testing",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L72",
+      "source_location": "L78",
       "_origin": "ast",
       "id": "readme_testing",
       "community": 38,
@@ -4278,7 +4308,7 @@
       "label": "Out of scope (by design)",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L82",
+      "source_location": "L88",
       "_origin": "ast",
       "id": "readme_out_of_scope_by_design",
       "community": 38,
@@ -4288,7 +4318,7 @@
       "label": "License",
       "file_type": "document",
       "source_file": "README.md",
-      "source_location": "L87",
+      "source_location": "L93",
       "_origin": "ast",
       "id": "readme_license",
       "community": 38,
@@ -4623,6 +4653,66 @@
       "id": "docs_decisions_adr_006_additive_schema_changes_adr_006_additive_only_schema_changes_trigger_captured_ticket_event_log",
       "community": 98,
       "norm_label": "adr-006 \u2014 additive-only schema changes; trigger-captured ticket event log"
+    },
+    {
+      "label": "ADR-007-rabbitmq-async-messaging.md",
+      "file_type": "document",
+      "source_file": "docs/decisions/ADR-007-rabbitmq-async-messaging.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_decisions_adr_007_rabbitmq_async_messaging",
+      "community": 128,
+      "norm_label": "adr-007-rabbitmq-async-messaging.md"
+    },
+    {
+      "label": "ADR-007 \u2014 Async message processing with RabbitMQ",
+      "file_type": "document",
+      "source_file": "docs/decisions/ADR-007-rabbitmq-async-messaging.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "docs_decisions_adr_007_rabbitmq_async_messaging_adr_007_async_message_processing_with_rabbitmq",
+      "community": 128,
+      "norm_label": "adr-007 \u2014 async message processing with rabbitmq"
+    },
+    {
+      "label": "Context",
+      "file_type": "document",
+      "source_file": "docs/decisions/ADR-007-rabbitmq-async-messaging.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "docs_decisions_adr_007_rabbitmq_async_messaging_context",
+      "community": 128,
+      "norm_label": "context"
+    },
+    {
+      "label": "Decision",
+      "file_type": "document",
+      "source_file": "docs/decisions/ADR-007-rabbitmq-async-messaging.md",
+      "source_location": "L16",
+      "_origin": "ast",
+      "id": "docs_decisions_adr_007_rabbitmq_async_messaging_decision",
+      "community": 128,
+      "norm_label": "decision"
+    },
+    {
+      "label": "Consequences",
+      "file_type": "document",
+      "source_file": "docs/decisions/ADR-007-rabbitmq-async-messaging.md",
+      "source_location": "L31",
+      "_origin": "ast",
+      "id": "docs_decisions_adr_007_rabbitmq_async_messaging_consequences",
+      "community": 128,
+      "norm_label": "consequences"
+    },
+    {
+      "label": "What this rules out",
+      "file_type": "document",
+      "source_file": "docs/decisions/ADR-007-rabbitmq-async-messaging.md",
+      "source_location": "L52",
+      "_origin": "ast",
+      "id": "docs_decisions_adr_007_rabbitmq_async_messaging_what_this_rules_out",
+      "community": 128,
+      "norm_label": "what this rules out"
     },
     {
       "label": "infrastructure.md",
@@ -7835,6 +7925,706 @@
       "norm_label": "3. record the result"
     },
     {
+      "label": "design.md",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design",
+      "community": 121,
+      "norm_label": "design.md"
+    },
+    {
+      "label": "Design \u2014 add-rabbitmq-messaging",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_design_add_rabbitmq_messaging",
+      "community": 121,
+      "norm_label": "design \u2014 add-rabbitmq-messaging"
+    },
+    {
+      "label": "Topology",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_topology",
+      "community": 121,
+      "norm_label": "topology"
+    },
+    {
+      "label": "Message contracts",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L28",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_message_contracts",
+      "community": 121,
+      "norm_label": "message contracts"
+    },
+    {
+      "label": "`draft` \u2192 `q.draft_answer`",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L30",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_draft_q_draft_answer",
+      "community": 121,
+      "norm_label": "`draft` \u2192 `q.draft_answer`"
+    },
+    {
+      "label": "`deliver` / `deliver.retry` \u2192 `q.outbound_delivery`",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L39",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_deliver_deliver_retry_q_outbound_delivery",
+      "community": 121,
+      "norm_label": "`deliver` / `deliver.retry` \u2192 `q.outbound_delivery`"
+    },
+    {
+      "label": "events topic \u2192 `opspilot.events`",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L53",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_events_topic_opspilot_events",
+      "community": 121,
+      "norm_label": "events topic \u2192 `opspilot.events`"
+    },
+    {
+      "label": "WF-6 Outbound Delivery detail",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L73",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_wf_6_outbound_delivery_detail",
+      "community": 121,
+      "norm_label": "wf-6 outbound delivery detail"
+    },
+    {
+      "label": "WF-7 Event Publisher detail",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L84",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_wf_7_event_publisher_detail",
+      "community": 121,
+      "norm_label": "wf-7 event publisher detail"
+    },
+    {
+      "label": "Delivery semantics",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L96",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_delivery_semantics",
+      "community": 121,
+      "norm_label": "delivery semantics"
+    },
+    {
+      "label": "Open questions resolved",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L105",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_open_questions_resolved",
+      "community": 121,
+      "norm_label": "open questions resolved"
+    },
+    {
+      "label": "proposal.md",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal",
+      "community": 125,
+      "norm_label": "proposal.md"
+    },
+    {
+      "label": "Add RabbitMQ async messaging",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_add_rabbitmq_async_messaging",
+      "community": 125,
+      "norm_label": "add rabbitmq async messaging"
+    },
+    {
+      "label": "Why",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_why",
+      "community": 125,
+      "norm_label": "why"
+    },
+    {
+      "label": "What Changes",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_what_changes",
+      "community": 125,
+      "norm_label": "what changes"
+    },
+    {
+      "label": "Capabilities",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L34",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_capabilities",
+      "community": 125,
+      "norm_label": "capabilities"
+    },
+    {
+      "label": "New Capabilities",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L36",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_new_capabilities",
+      "community": 125,
+      "norm_label": "new capabilities"
+    },
+    {
+      "label": "Modified Capabilities",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L42",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_modified_capabilities",
+      "community": 125,
+      "norm_label": "modified capabilities"
+    },
+    {
+      "label": "Impact",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L46",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_impact",
+      "community": 125,
+      "norm_label": "impact"
+    },
+    {
+      "label": "spec.md",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec",
+      "community": 42,
+      "norm_label": "spec.md"
+    },
+    {
+      "label": "async-messaging",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_async_messaging",
+      "community": 42,
+      "norm_label": "async-messaging"
+    },
+    {
+      "label": "Purpose",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_purpose",
+      "community": 42,
+      "norm_label": "purpose"
+    },
+    {
+      "label": "ADDED Requirements",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_added_requirements",
+      "community": 42,
+      "norm_label": "added requirements"
+    },
+    {
+      "label": "Requirement: Broker topology SHALL be declared idempotently without embedded secrets",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_broker_topology_shall_be_declared_idempotently_without_embedded_secrets",
+      "community": 42,
+      "norm_label": "requirement: broker topology shall be declared idempotently without embedded secrets"
+    },
+    {
+      "label": "Scenario: Re-declaring after the broker restarts",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_scenario_re_declaring_after_the_broker_restarts",
+      "community": 42,
+      "norm_label": "scenario: re-declaring after the broker restarts"
+    },
+    {
+      "label": "Requirement: WF-1 SHALL hand off new tickets to WF-2 via a queue",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_wf_1_shall_hand_off_new_tickets_to_wf_2_via_a_queue",
+      "community": 42,
+      "norm_label": "requirement: wf-1 shall hand off new tickets to wf-2 via a queue"
+    },
+    {
+      "label": "Scenario: WF-1 finishes triage",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L29",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_scenario_wf_1_finishes_triage",
+      "community": 42,
+      "norm_label": "scenario: wf-1 finishes triage"
+    },
+    {
+      "label": "Requirement: WF-2 SHALL draft answers on buffered intake jobs",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L34",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_wf_2_shall_draft_answers_on_buffered_intake_jobs",
+      "community": 42,
+      "norm_label": "requirement: wf-2 shall draft answers on buffered intake jobs"
+    },
+    {
+      "label": "Scenario: A draft job arrives while WF-2 was briefly unavailable",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L38",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_scenario_a_draft_job_arrives_while_wf_2_was_briefly_unavailable",
+      "community": 42,
+      "norm_label": "scenario: a draft job arrives while wf-2 was briefly unavailable"
+    },
+    {
+      "label": "Requirement: Customer-facing sends SHALL be retried with a dead-letter queue",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L43",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_customer_facing_sends_shall_be_retried_with_a_dead_letter_queue",
+      "community": 42,
+      "norm_label": "requirement: customer-facing sends shall be retried with a dead-letter queue"
+    },
+    {
+      "label": "Scenario: Telegram API is temporarily down",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_scenario_telegram_api_is_temporarily_down",
+      "community": 42,
+      "norm_label": "scenario: telegram api is temporarily down"
+    },
+    {
+      "label": "Scenario: A ticket has no resolvable Telegram chat ID",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L56",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_scenario_a_ticket_has_no_resolvable_telegram_chat_id",
+      "community": 42,
+      "norm_label": "scenario: a ticket has no resolvable telegram chat id"
+    },
+    {
+      "label": "Requirement: Ticket lifecycle events SHALL be published to a topic exchange",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L61",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_ticket_lifecycle_events_shall_be_published_to_a_topic_exchange",
+      "community": 42,
+      "norm_label": "requirement: ticket lifecycle events shall be published to a topic exchange"
+    },
+    {
+      "label": "Scenario: A ticket status changes",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L67",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_scenario_a_ticket_status_changes",
+      "community": 42,
+      "norm_label": "scenario: a ticket status changes"
+    },
+    {
+      "label": "Requirement: The events fan-out SHALL be durable but not lossless over listener downtime",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L72",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_the_events_fan_out_shall_be_durable_but_not_lossless_over_listener_downtime",
+      "community": 42,
+      "norm_label": "requirement: the events fan-out shall be durable but not lossless over listener downtime"
+    },
+    {
+      "label": "Scenario: WF-7 is not running when an event fires",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L77",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_scenario_wf_7_is_not_running_when_an_event_fires",
+      "community": 42,
+      "norm_label": "scenario: wf-7 is not running when an event fires"
+    },
+    {
+      "label": "Constraints",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L82",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_constraints",
+      "community": 42,
+      "norm_label": "constraints"
+    },
+    {
+      "label": "spec.md",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/n8n-workflow-export/spec.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec",
+      "community": 129,
+      "norm_label": "spec.md"
+    },
+    {
+      "label": "n8n-workflow-export \u2014 delta",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/n8n-workflow-export/spec.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec_n8n_workflow_export_delta",
+      "community": 129,
+      "norm_label": "n8n-workflow-export \u2014 delta"
+    },
+    {
+      "label": "MODIFIED Requirements",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/n8n-workflow-export/spec.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec_modified_requirements",
+      "community": 129,
+      "norm_label": "modified requirements"
+    },
+    {
+      "label": "Requirement: Export SHALL fetch all 7 OpsPilot workflows",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/n8n-workflow-export/spec.md",
+      "source_location": "L5",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec_requirement_export_shall_fetch_all_7_opspilot_workflows",
+      "community": 129,
+      "norm_label": "requirement: export shall fetch all 7 opspilot workflows"
+    },
+    {
+      "label": "Scenario: The shared n8n instance has unrelated workflows",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/n8n-workflow-export/spec.md",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec_scenario_the_shared_n8n_instance_has_unrelated_workflows",
+      "community": 129,
+      "norm_label": "scenario: the shared n8n instance has unrelated workflows"
+    },
+    {
+      "label": "Scenario: Export includes a RabbitMQ credential reference",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/n8n-workflow-export/spec.md",
+      "source_location": "L18",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec_scenario_export_includes_a_rabbitmq_credential_reference",
+      "community": 129,
+      "norm_label": "scenario: export includes a rabbitmq credential reference"
+    },
+    {
+      "label": "tasks.md",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks",
+      "community": 124,
+      "norm_label": "tasks.md"
+    },
+    {
+      "label": "Tasks \u2014 add-rabbitmq-messaging",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_tasks_add_rabbitmq_messaging",
+      "community": 124,
+      "norm_label": "tasks \u2014 add-rabbitmq-messaging"
+    },
+    {
+      "label": "1. Infrastructure",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_1_infrastructure",
+      "community": 124,
+      "norm_label": "1. infrastructure"
+    },
+    {
+      "label": "2. Intake buffering (WF-1 \u2192 WF-2)",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L13",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_2_intake_buffering_wf_1_wf_2",
+      "community": 124,
+      "norm_label": "2. intake buffering (wf-1 \u2192 wf-2)"
+    },
+    {
+      "label": "3. Outbound delivery with retry/DLQ",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L22",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_3_outbound_delivery_with_retry_dlq",
+      "community": 124,
+      "norm_label": "3. outbound delivery with retry/dlq"
+    },
+    {
+      "label": "4. Ticket-event fan-out",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L32",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_4_ticket_event_fan_out",
+      "community": 124,
+      "norm_label": "4. ticket-event fan-out"
+    },
+    {
+      "label": "5. Tooling update",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L40",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_5_tooling_update",
+      "community": 124,
+      "norm_label": "5. tooling update"
+    },
+    {
+      "label": "6. Documentation and tracking",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L45",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_6_documentation_and_tracking",
+      "community": 124,
+      "norm_label": "6. documentation and tracking"
+    },
+    {
+      "label": "7. Verification",
+      "file_type": "document",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L58",
+      "_origin": "ast",
+      "id": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_7_verification",
+      "community": 124,
+      "norm_label": "7. verification"
+    },
+    {
+      "label": "spec.md",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec",
+      "community": 84,
+      "norm_label": "spec.md"
+    },
+    {
+      "label": "async-messaging",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L1",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_async_messaging",
+      "community": 84,
+      "norm_label": "async-messaging"
+    },
+    {
+      "label": "Purpose",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L3",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_purpose",
+      "community": 84,
+      "norm_label": "purpose"
+    },
+    {
+      "label": "Requirements",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L10",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_requirements",
+      "community": 84,
+      "norm_label": "requirements"
+    },
+    {
+      "label": "Requirement: Broker topology SHALL be declared idempotently without embedded secrets",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L12",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_requirement_broker_topology_shall_be_declared_idempotently_without_embedded_secrets",
+      "community": 84,
+      "norm_label": "requirement: broker topology shall be declared idempotently without embedded secrets"
+    },
+    {
+      "label": "Scenario: Re-declaring after the broker restarts",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L17",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_scenario_re_declaring_after_the_broker_restarts",
+      "community": 84,
+      "norm_label": "scenario: re-declaring after the broker restarts"
+    },
+    {
+      "label": "Requirement: WF-1 SHALL hand off new tickets to WF-2 via a queue",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L24",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_requirement_wf_1_shall_hand_off_new_tickets_to_wf_2_via_a_queue",
+      "community": 84,
+      "norm_label": "requirement: wf-1 shall hand off new tickets to wf-2 via a queue"
+    },
+    {
+      "label": "Scenario: WF-1 finishes triage",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L29",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_scenario_wf_1_finishes_triage",
+      "community": 84,
+      "norm_label": "scenario: wf-1 finishes triage"
+    },
+    {
+      "label": "Requirement: WF-2 SHALL draft answers on buffered intake jobs",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L34",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_requirement_wf_2_shall_draft_answers_on_buffered_intake_jobs",
+      "community": 84,
+      "norm_label": "requirement: wf-2 shall draft answers on buffered intake jobs"
+    },
+    {
+      "label": "Scenario: A draft job arrives while WF-2 was briefly unavailable",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L38",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_scenario_a_draft_job_arrives_while_wf_2_was_briefly_unavailable",
+      "community": 84,
+      "norm_label": "scenario: a draft job arrives while wf-2 was briefly unavailable"
+    },
+    {
+      "label": "Requirement: Customer-facing sends SHALL be retried with a dead-letter queue",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L43",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_requirement_customer_facing_sends_shall_be_retried_with_a_dead_letter_queue",
+      "community": 84,
+      "norm_label": "requirement: customer-facing sends shall be retried with a dead-letter queue"
+    },
+    {
+      "label": "Scenario: Telegram API is temporarily down",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L51",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_scenario_telegram_api_is_temporarily_down",
+      "community": 84,
+      "norm_label": "scenario: telegram api is temporarily down"
+    },
+    {
+      "label": "Scenario: A ticket has no resolvable Telegram chat ID",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L56",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_scenario_a_ticket_has_no_resolvable_telegram_chat_id",
+      "community": 84,
+      "norm_label": "scenario: a ticket has no resolvable telegram chat id"
+    },
+    {
+      "label": "Requirement: Ticket lifecycle events SHALL be published to a topic exchange",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L61",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_requirement_ticket_lifecycle_events_shall_be_published_to_a_topic_exchange",
+      "community": 84,
+      "norm_label": "requirement: ticket lifecycle events shall be published to a topic exchange"
+    },
+    {
+      "label": "Scenario: A ticket status changes",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L67",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_scenario_a_ticket_status_changes",
+      "community": 84,
+      "norm_label": "scenario: a ticket status changes"
+    },
+    {
+      "label": "Requirement: The events fan-out SHALL be durable but not lossless over listener downtime",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L72",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_requirement_the_events_fan_out_shall_be_durable_but_not_lossless_over_listener_downtime",
+      "community": 84,
+      "norm_label": "requirement: the events fan-out shall be durable but not lossless over listener downtime"
+    },
+    {
+      "label": "Scenario: WF-7 is not running when an event fires",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L77",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_scenario_wf_7_is_not_running_when_an_event_fires",
+      "community": 84,
+      "norm_label": "scenario: wf-7 is not running when an event fires"
+    },
+    {
+      "label": "Constraints",
+      "file_type": "document",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L82",
+      "_origin": "ast",
+      "id": "openspec_specs_async_messaging_spec_constraints",
+      "community": 84,
+      "norm_label": "constraints"
+    },
+    {
       "label": "spec.md",
       "file_type": "document",
       "source_file": "openspec/specs/code-documentation-standards/spec.md",
@@ -8255,10 +9045,20 @@
       "norm_label": "scenario: the shared n8n instance has unrelated workflows"
     },
     {
-      "label": "Requirement: Exported workflows SHALL be directly re-importable",
+      "label": "Scenario: Export includes a RabbitMQ credential reference",
       "file_type": "document",
       "source_file": "openspec/specs/n8n-workflow-export/spec.md",
       "source_location": "L23",
+      "_origin": "ast",
+      "id": "openspec_specs_n8n_workflow_export_spec_scenario_export_includes_a_rabbitmq_credential_reference",
+      "community": 21,
+      "norm_label": "scenario: export includes a rabbitmq credential reference"
+    },
+    {
+      "label": "Requirement: Exported workflows SHALL be directly re-importable",
+      "file_type": "document",
+      "source_file": "openspec/specs/n8n-workflow-export/spec.md",
+      "source_location": "L28",
       "_origin": "ast",
       "id": "openspec_specs_n8n_workflow_export_spec_requirement_exported_workflows_shall_be_directly_re_importable",
       "community": 21,
@@ -8268,7 +9068,7 @@
       "label": "Scenario: An export is fetched from the live API",
       "file_type": "document",
       "source_file": "openspec/specs/n8n-workflow-export/spec.md",
-      "source_location": "L27",
+      "source_location": "L32",
       "_origin": "ast",
       "id": "openspec_specs_n8n_workflow_export_spec_scenario_an_export_is_fetched_from_the_live_api",
       "community": 21,
@@ -8278,7 +9078,7 @@
       "label": "Requirement: Known secret-bearing values SHALL be redacted before writing",
       "file_type": "document",
       "source_file": "openspec/specs/n8n-workflow-export/spec.md",
-      "source_location": "L33",
+      "source_location": "L38",
       "_origin": "ast",
       "id": "openspec_specs_n8n_workflow_export_spec_requirement_known_secret_bearing_values_shall_be_redacted_before_writing",
       "community": 21,
@@ -8288,7 +9088,7 @@
       "label": "Scenario: Export includes a live-patched ops chat ID",
       "file_type": "document",
       "source_file": "openspec/specs/n8n-workflow-export/spec.md",
-      "source_location": "L36",
+      "source_location": "L41",
       "_origin": "ast",
       "id": "openspec_specs_n8n_workflow_export_spec_scenario_export_includes_a_live_patched_ops_chat_id",
       "community": 21,
@@ -8298,7 +9098,7 @@
       "label": "Scenario: Export includes a credential reference",
       "file_type": "document",
       "source_file": "openspec/specs/n8n-workflow-export/spec.md",
-      "source_location": "L42",
+      "source_location": "L47",
       "_origin": "ast",
       "id": "openspec_specs_n8n_workflow_export_spec_scenario_export_includes_a_credential_reference",
       "community": 21,
@@ -8308,7 +9108,7 @@
       "label": "Requirement: The export SHALL report drift beyond known redaction points",
       "file_type": "document",
       "source_file": "openspec/specs/n8n-workflow-export/spec.md",
-      "source_location": "L47",
+      "source_location": "L52",
       "_origin": "ast",
       "id": "openspec_specs_n8n_workflow_export_spec_requirement_the_export_shall_report_drift_beyond_known_redaction_points",
       "community": 21,
@@ -8318,7 +9118,7 @@
       "label": "Scenario: Live workflow has diverged from the committed version",
       "file_type": "document",
       "source_file": "openspec/specs/n8n-workflow-export/spec.md",
-      "source_location": "L51",
+      "source_location": "L56",
       "_origin": "ast",
       "id": "openspec_specs_n8n_workflow_export_spec_scenario_live_workflow_has_diverged_from_the_committed_version",
       "community": 21,
@@ -9751,7 +10551,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "wiki_index",
-      "community": 0,
+      "community": 122,
       "norm_label": "index.md"
     },
     {
@@ -9761,7 +10561,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "wiki_index_index_md_wiki_catalog_content_oriented_routing_file",
-      "community": 0,
+      "community": 127,
       "norm_label": "index.md \u2014 wiki catalog (content-oriented routing file)"
     },
     {
@@ -9771,7 +10571,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "wiki_index_navigation_state",
-      "community": 0,
+      "community": 127,
       "norm_label": "navigation & state"
     },
     {
@@ -9781,7 +10581,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "wiki_index_knowledge_pages_created_by_agents_as_the_build_progresses",
-      "community": 0,
+      "community": 127,
       "norm_label": "knowledge pages (created by agents as the build progresses)"
     },
     {
@@ -9791,7 +10591,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "wiki_index_decisions",
-      "community": 0,
+      "community": 127,
       "norm_label": "decisions"
     },
     {
@@ -9801,7 +10601,7 @@
       "source_location": "L18",
       "_origin": "ast",
       "id": "wiki_index_templates",
-      "community": 0,
+      "community": 127,
       "norm_label": "templates"
     },
     {
@@ -9811,7 +10611,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "wiki_index_log_md_entry",
-      "community": 0,
+      "community": 127,
       "norm_label": "log.md entry"
     },
     {
@@ -9821,7 +10621,7 @@
       "source_location": "L30",
       "_origin": "ast",
       "id": "wiki_index_adr_docs_decisions_adr_nnn_slug_md",
-      "community": 0,
+      "community": 127,
       "norm_label": "adr (docs/decisions/adr-nnn-slug.md)"
     },
     {
@@ -9831,7 +10631,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "wiki_gotchas",
-      "community": 0,
+      "community": 122,
       "norm_label": "gotchas.md"
     },
     {
@@ -9841,7 +10641,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "wiki_gotchas_gotchas_numbered_append_only",
-      "community": 0,
+      "community": 122,
       "norm_label": "gotchas (numbered, append-only)"
     },
     {
@@ -9851,7 +10651,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "wiki_log",
-      "community": 0,
+      "community": 122,
       "norm_label": "log.md"
     },
     {
@@ -10045,13 +10845,33 @@
       "norm_label": "[2026-07-08 13:00] build | claude code | archived try-gemma4-31b-cloud + spec sync (pr #11)"
     },
     {
+      "label": "[2026-07-08 16:15] build | Claude Code | RabbitMQ async messaging (add-rabbitmq-messaging)",
+      "file_type": "document",
+      "source_file": "wiki/log.md",
+      "source_location": "L610",
+      "_origin": "ast",
+      "id": "wiki_log_2026_07_08_16_15_build_claude_code_rabbitmq_async_messaging_add_rabbitmq_messaging",
+      "community": 0,
+      "norm_label": "[2026-07-08 16:15] build | claude code | rabbitmq async messaging (add-rabbitmq-messaging)"
+    },
+    {
+      "label": "[2026-07-09 15:00] build | Claude Code | RabbitMQ messaging live E2E + close-out (add-rabbitmq-messaging)",
+      "file_type": "document",
+      "source_file": "wiki/log.md",
+      "source_location": "L631",
+      "_origin": "ast",
+      "id": "wiki_log_2026_07_09_15_00_build_claude_code_rabbitmq_messaging_live_e2e_close_out_add_rabbitmq_messaging",
+      "community": 0,
+      "norm_label": "[2026-07-09 15:00] build | claude code | rabbitmq messaging live e2e + close-out (add-rabbitmq-messaging)"
+    },
+    {
       "label": "map.md",
       "file_type": "document",
       "source_file": "wiki/map.md",
       "source_location": "L1",
       "_origin": "ast",
       "id": "wiki_map",
-      "community": 0,
+      "community": 122,
       "norm_label": "map.md"
     },
     {
@@ -10061,7 +10881,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "wiki_map_map_md_opspilot_project_map_zero_hop_entry_point",
-      "community": 0,
+      "community": 122,
       "norm_label": "map.md \u2014 opspilot project map (zero-hop entry point)"
     },
     {
@@ -10071,7 +10891,7 @@
       "source_location": "L7",
       "_origin": "ast",
       "id": "wiki_map_system_in_one_paragraph",
-      "community": 0,
+      "community": 122,
       "norm_label": "system in one paragraph"
     },
     {
@@ -10081,27 +10901,27 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "wiki_map_component_matrix",
-      "community": 0,
+      "community": 122,
       "norm_label": "component matrix"
     },
     {
       "label": "Invariants (violating any of these is a defect)",
       "file_type": "document",
       "source_file": "wiki/map.md",
-      "source_location": "L35",
+      "source_location": "L41",
       "_origin": "ast",
       "id": "wiki_map_invariants_violating_any_of_these_is_a_defect",
-      "community": 0,
+      "community": 122,
       "norm_label": "invariants (violating any of these is a defect)"
     },
     {
       "label": "Key decisions (details in docs/decisions/)",
       "file_type": "document",
       "source_file": "wiki/map.md",
-      "source_location": "L40",
+      "source_location": "L46",
       "_origin": "ast",
       "id": "wiki_map_key_decisions_details_in_docs_decisions",
-      "community": 0,
+      "community": 122,
       "norm_label": "key decisions (details in docs/decisions/)"
     }
   ],
@@ -10417,7 +11237,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L74",
+      "source_location": "L76",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows",
       "target": "scripts_export_n8n_workflows_diff",
@@ -10427,7 +11247,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L29",
+      "source_location": "L31",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows",
       "target": "scripts_export_n8n_workflows_has_placeholder",
@@ -10437,7 +11257,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L96",
+      "source_location": "L98",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows",
       "target": "scripts_export_n8n_workflows_main",
@@ -10447,7 +11267,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L58",
+      "source_location": "L60",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows",
       "target": "scripts_export_n8n_workflows_null_credential_ids",
@@ -10457,7 +11277,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L36",
+      "source_location": "L38",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows",
       "target": "scripts_export_n8n_workflows_redact",
@@ -10467,7 +11287,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L47",
+      "source_location": "L49",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows",
       "target": "scripts_export_n8n_workflows_redact_nodes",
@@ -10477,7 +11297,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L66",
+      "source_location": "L68",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows",
       "target": "scripts_export_n8n_workflows_strip_webhook_ids",
@@ -10487,9 +11307,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L30",
+      "source_location": "L32",
       "weight": 1.0,
-      "source": "scripts_export_n8n_workflows_rationale_30",
+      "source": "scripts_export_n8n_workflows_rationale_32",
       "target": "scripts_export_n8n_workflows_has_placeholder",
       "confidence_score": 1.0
     },
@@ -10498,7 +11318,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L38",
+      "source_location": "L40",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows_redact",
       "target": "scripts_export_n8n_workflows_has_placeholder",
@@ -10509,7 +11329,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L111",
+      "source_location": "L113",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows_main",
       "target": "scripts_export_n8n_workflows_redact",
@@ -10519,9 +11339,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L37",
+      "source_location": "L39",
       "weight": 1.0,
-      "source": "scripts_export_n8n_workflows_rationale_37",
+      "source": "scripts_export_n8n_workflows_rationale_39",
       "target": "scripts_export_n8n_workflows_redact",
       "confidence_score": 1.0
     },
@@ -10530,7 +11350,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L53",
+      "source_location": "L55",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows_redact_nodes",
       "target": "scripts_export_n8n_workflows_redact",
@@ -10541,7 +11361,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L110",
+      "source_location": "L112",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows_main",
       "target": "scripts_export_n8n_workflows_redact_nodes",
@@ -10551,9 +11371,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L48",
+      "source_location": "L50",
       "weight": 1.0,
-      "source": "scripts_export_n8n_workflows_rationale_48",
+      "source": "scripts_export_n8n_workflows_rationale_50",
       "target": "scripts_export_n8n_workflows_redact_nodes",
       "confidence_score": 1.0
     },
@@ -10562,7 +11382,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L113",
+      "source_location": "L115",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows_main",
       "target": "scripts_export_n8n_workflows_null_credential_ids",
@@ -10572,9 +11392,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L59",
+      "source_location": "L61",
       "weight": 1.0,
-      "source": "scripts_export_n8n_workflows_rationale_59",
+      "source": "scripts_export_n8n_workflows_rationale_61",
       "target": "scripts_export_n8n_workflows_null_credential_ids",
       "confidence_score": 1.0
     },
@@ -10583,7 +11403,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L114",
+      "source_location": "L116",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows_main",
       "target": "scripts_export_n8n_workflows_strip_webhook_ids",
@@ -10593,9 +11413,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L67",
+      "source_location": "L69",
       "weight": 1.0,
-      "source": "scripts_export_n8n_workflows_rationale_67",
+      "source": "scripts_export_n8n_workflows_rationale_69",
       "target": "scripts_export_n8n_workflows_strip_webhook_ids",
       "confidence_score": 1.0
     },
@@ -10604,7 +11424,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L121",
+      "source_location": "L123",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows_main",
       "target": "scripts_export_n8n_workflows_diff",
@@ -10614,22 +11434,11 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L75",
+      "source_location": "L77",
       "weight": 1.0,
-      "source": "scripts_export_n8n_workflows_rationale_75",
+      "source": "scripts_export_n8n_workflows_rationale_77",
       "target": "scripts_export_n8n_workflows_diff",
       "confidence_score": 1.0
-    },
-    {
-      "relation": "calls",
-      "context": "call",
-      "confidence": "INFERRED",
-      "confidence_score": 0.8,
-      "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L99",
-      "weight": 1.0,
-      "source": "scripts_export_n8n_workflows_main",
-      "target": "scripts_n8n_sync_client"
     },
     {
       "relation": "calls",
@@ -10640,15 +11449,26 @@
       "source_location": "L101",
       "weight": 1.0,
       "source": "scripts_export_n8n_workflows_main",
+      "target": "scripts_n8n_sync_client"
+    },
+    {
+      "relation": "calls",
+      "context": "call",
+      "confidence": "INFERRED",
+      "confidence_score": 0.8,
+      "source_file": "scripts/export_n8n_workflows.py",
+      "source_location": "L103",
+      "weight": 1.0,
+      "source": "scripts_export_n8n_workflows_main",
       "target": "scripts_n8n_sync_find_by_name"
     },
     {
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/export_n8n_workflows.py",
-      "source_location": "L97",
+      "source_location": "L99",
       "weight": 1.0,
-      "source": "scripts_export_n8n_workflows_rationale_97",
+      "source": "scripts_export_n8n_workflows_rationale_99",
       "target": "scripts_export_n8n_workflows_main",
       "confidence_score": 1.0
     },
@@ -10676,7 +11496,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L19",
+      "source_location": "L20",
       "weight": 1.0,
       "source": "scripts_n8n_sync",
       "target": "scripts_n8n_sync_client",
@@ -10686,7 +11506,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L33",
+      "source_location": "L34",
       "weight": 1.0,
       "source": "scripts_n8n_sync",
       "target": "scripts_n8n_sync_find_by_name",
@@ -10696,7 +11516,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L90",
+      "source_location": "L91",
       "weight": 1.0,
       "source": "scripts_n8n_sync",
       "target": "scripts_n8n_sync_main",
@@ -10706,7 +11526,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L80",
+      "source_location": "L81",
       "weight": 1.0,
       "source": "scripts_n8n_sync",
       "target": "scripts_n8n_sync_report",
@@ -10716,7 +11536,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L51",
+      "source_location": "L52",
       "weight": 1.0,
       "source": "scripts_n8n_sync",
       "target": "scripts_n8n_sync_sync_one",
@@ -10727,7 +11547,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L33",
+      "source_location": "L34",
       "weight": 1.0,
       "source": "scripts_n8n_sync_find_by_name",
       "target": "scripts_n8n_sync_client",
@@ -10738,7 +11558,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L92",
+      "source_location": "L93",
       "weight": 1.0,
       "source": "scripts_n8n_sync_main",
       "target": "scripts_n8n_sync_client",
@@ -10748,9 +11568,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L20",
+      "source_location": "L21",
       "weight": 1.0,
-      "source": "scripts_n8n_sync_rationale_20",
+      "source": "scripts_n8n_sync_rationale_21",
       "target": "scripts_n8n_sync_client",
       "confidence_score": 1.0
     },
@@ -10759,7 +11579,7 @@
       "context": "parameter_type",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L51",
+      "source_location": "L52",
       "weight": 1.0,
       "source": "scripts_n8n_sync_sync_one",
       "target": "scripts_n8n_sync_client",
@@ -10769,9 +11589,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L34",
+      "source_location": "L35",
       "weight": 1.0,
-      "source": "scripts_n8n_sync_rationale_34",
+      "source": "scripts_n8n_sync_rationale_35",
       "target": "scripts_n8n_sync_find_by_name",
       "confidence_score": 1.0
     },
@@ -10780,7 +11600,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L56",
+      "source_location": "L57",
       "weight": 1.0,
       "source": "scripts_n8n_sync_sync_one",
       "target": "scripts_n8n_sync_find_by_name",
@@ -10791,7 +11611,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L93",
+      "source_location": "L94",
       "weight": 1.0,
       "source": "scripts_n8n_sync_main",
       "target": "scripts_n8n_sync_sync_one",
@@ -10801,9 +11621,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L52",
+      "source_location": "L53",
       "weight": 1.0,
-      "source": "scripts_n8n_sync_rationale_52",
+      "source": "scripts_n8n_sync_rationale_53",
       "target": "scripts_n8n_sync_sync_one",
       "confidence_score": 1.0
     },
@@ -10812,7 +11632,7 @@
       "context": "call",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L96",
+      "source_location": "L97",
       "weight": 1.0,
       "source": "scripts_n8n_sync_main",
       "target": "scripts_n8n_sync_report",
@@ -10822,9 +11642,9 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L81",
+      "source_location": "L82",
       "weight": 1.0,
-      "source": "scripts_n8n_sync_rationale_81",
+      "source": "scripts_n8n_sync_rationale_82",
       "target": "scripts_n8n_sync_report",
       "confidence_score": 1.0
     },
@@ -10832,10 +11652,30 @@
       "relation": "rationale_for",
       "confidence": "EXTRACTED",
       "source_file": "scripts/n8n_sync.py",
-      "source_location": "L91",
+      "source_location": "L92",
       "weight": 1.0,
-      "source": "scripts_n8n_sync_rationale_91",
+      "source": "scripts_n8n_sync_rationale_92",
       "target": "scripts_n8n_sync_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/rabbitmq_topology.py",
+      "source_location": "L59",
+      "weight": 1.0,
+      "source": "scripts_rabbitmq_topology",
+      "target": "scripts_rabbitmq_topology_main",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "rationale_for",
+      "confidence": "EXTRACTED",
+      "source_file": "scripts/rabbitmq_topology.py",
+      "source_location": "L60",
+      "weight": 1.0,
+      "source": "scripts_rabbitmq_topology_rationale_60",
+      "target": "scripts_rabbitmq_topology_main",
       "confidence_score": 1.0
     },
     {
@@ -15838,7 +16678,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "PROGRESS.md",
-      "source_location": "L179",
+      "source_location": "L191",
       "weight": 1.0,
       "source": "progress_progress_md_build_board_single_source_of_what_is_done",
       "target": "progress_blockers_findings",
@@ -15858,7 +16698,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "PROGRESS.md",
-      "source_location": "L341",
+      "source_location": "L353",
       "weight": 1.0,
       "source": "progress_progress_md_build_board_single_source_of_what_is_done",
       "target": "progress_metrics_to_fill_before_applying",
@@ -15968,7 +16808,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L87",
+      "source_location": "L93",
       "weight": 1.0,
       "source": "readme_opspilot",
       "target": "readme_license",
@@ -15978,7 +16818,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L49",
+      "source_location": "L54",
       "weight": 1.0,
       "source": "readme_opspilot",
       "target": "readme_live_demo",
@@ -15988,7 +16828,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L54",
+      "source_location": "L59",
       "weight": 1.0,
       "source": "readme_opspilot",
       "target": "readme_metrics_from_production_get_stats",
@@ -15998,7 +16838,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L82",
+      "source_location": "L88",
       "weight": 1.0,
       "source": "readme_opspilot",
       "target": "readme_out_of_scope_by_design",
@@ -16008,7 +16848,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L36",
+      "source_location": "L39",
       "weight": 1.0,
       "source": "readme_opspilot",
       "target": "readme_quickstart",
@@ -16018,7 +16858,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L66",
+      "source_location": "L71",
       "weight": 1.0,
       "source": "readme_opspilot",
       "target": "readme_tech_stack",
@@ -16028,7 +16868,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "README.md",
-      "source_location": "L72",
+      "source_location": "L78",
       "weight": 1.0,
       "source": "readme_opspilot",
       "target": "readme_testing",
@@ -16282,6 +17122,56 @@
       "weight": 1.0,
       "source": "docs_decisions_adr_006_additive_schema_changes",
       "target": "docs_decisions_adr_006_additive_schema_changes_adr_006_additive_only_schema_changes_trigger_captured_ticket_event_log",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/decisions/ADR-007-rabbitmq-async-messaging.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "docs_decisions_adr_007_rabbitmq_async_messaging",
+      "target": "docs_decisions_adr_007_rabbitmq_async_messaging_adr_007_async_message_processing_with_rabbitmq",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/decisions/ADR-007-rabbitmq-async-messaging.md",
+      "source_location": "L31",
+      "weight": 1.0,
+      "source": "docs_decisions_adr_007_rabbitmq_async_messaging_adr_007_async_message_processing_with_rabbitmq",
+      "target": "docs_decisions_adr_007_rabbitmq_async_messaging_consequences",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/decisions/ADR-007-rabbitmq-async-messaging.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "docs_decisions_adr_007_rabbitmq_async_messaging_adr_007_async_message_processing_with_rabbitmq",
+      "target": "docs_decisions_adr_007_rabbitmq_async_messaging_context",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/decisions/ADR-007-rabbitmq-async-messaging.md",
+      "source_location": "L16",
+      "weight": 1.0,
+      "source": "docs_decisions_adr_007_rabbitmq_async_messaging_adr_007_async_message_processing_with_rabbitmq",
+      "target": "docs_decisions_adr_007_rabbitmq_async_messaging_decision",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "docs/decisions/ADR-007-rabbitmq-async-messaging.md",
+      "source_location": "L52",
+      "weight": 1.0,
+      "source": "docs_decisions_adr_007_rabbitmq_async_messaging_adr_007_async_message_processing_with_rabbitmq",
+      "target": "docs_decisions_adr_007_rabbitmq_async_messaging_what_this_rules_out",
       "confidence_score": 1.0
     },
     {
@@ -19107,6 +19997,646 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_design_add_rabbitmq_messaging",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L96",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_design_add_rabbitmq_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_delivery_semantics",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L28",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_design_add_rabbitmq_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_message_contracts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L105",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_design_add_rabbitmq_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_open_questions_resolved",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_design_add_rabbitmq_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_topology",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L73",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_design_add_rabbitmq_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_wf_6_outbound_delivery_detail",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L84",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_design_add_rabbitmq_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_wf_7_event_publisher_detail",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L39",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_message_contracts",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_deliver_deliver_retry_q_outbound_delivery",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L30",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_message_contracts",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_draft_q_draft_answer",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/design.md",
+      "source_location": "L53",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_message_contracts",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_design_events_topic_opspilot_events",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_add_rabbitmq_async_messaging",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_add_rabbitmq_async_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_capabilities",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L46",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_add_rabbitmq_async_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_impact",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_add_rabbitmq_async_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_what_changes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_add_rabbitmq_async_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_why",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L42",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_capabilities",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_modified_capabilities",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/proposal.md",
+      "source_location": "L36",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_capabilities",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_proposal_new_capabilities",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_async_messaging",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_async_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_added_requirements",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L82",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_async_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_constraints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_async_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_purpose",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_added_requirements",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_broker_topology_shall_be_declared_idempotently_without_embedded_secrets",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_added_requirements",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_customer_facing_sends_shall_be_retried_with_a_dead_letter_queue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_added_requirements",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_the_events_fan_out_shall_be_durable_but_not_lossless_over_listener_downtime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L61",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_added_requirements",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_ticket_lifecycle_events_shall_be_published_to_a_topic_exchange",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_added_requirements",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_wf_1_shall_hand_off_new_tickets_to_wf_2_via_a_queue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_added_requirements",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_wf_2_shall_draft_answers_on_buffered_intake_jobs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_broker_topology_shall_be_declared_idempotently_without_embedded_secrets",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_scenario_re_declaring_after_the_broker_restarts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_wf_1_shall_hand_off_new_tickets_to_wf_2_via_a_queue",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_scenario_wf_1_finishes_triage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_wf_2_shall_draft_answers_on_buffered_intake_jobs",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_scenario_a_draft_job_arrives_while_wf_2_was_briefly_unavailable",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_customer_facing_sends_shall_be_retried_with_a_dead_letter_queue",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_scenario_a_ticket_has_no_resolvable_telegram_chat_id",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_customer_facing_sends_shall_be_retried_with_a_dead_letter_queue",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_scenario_telegram_api_is_temporarily_down",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_ticket_lifecycle_events_shall_be_published_to_a_topic_exchange",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_scenario_a_ticket_status_changes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/async-messaging/spec.md",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_requirement_the_events_fan_out_shall_be_durable_but_not_lossless_over_listener_downtime",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_async_messaging_spec_scenario_wf_7_is_not_running_when_an_event_fires",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/n8n-workflow-export/spec.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec_n8n_workflow_export_delta",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/n8n-workflow-export/spec.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec_n8n_workflow_export_delta",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec_modified_requirements",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/n8n-workflow-export/spec.md",
+      "source_location": "L5",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec_modified_requirements",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec_requirement_export_shall_fetch_all_7_opspilot_workflows",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/n8n-workflow-export/spec.md",
+      "source_location": "L18",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec_requirement_export_shall_fetch_all_7_opspilot_workflows",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec_scenario_export_includes_a_rabbitmq_credential_reference",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/specs/n8n-workflow-export/spec.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec_requirement_export_shall_fetch_all_7_opspilot_workflows",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_specs_n8n_workflow_export_spec_scenario_the_shared_n8n_instance_has_unrelated_workflows",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_tasks_add_rabbitmq_messaging",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_tasks_add_rabbitmq_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_1_infrastructure",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L13",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_tasks_add_rabbitmq_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_2_intake_buffering_wf_1_wf_2",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L22",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_tasks_add_rabbitmq_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_3_outbound_delivery_with_retry_dlq",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L32",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_tasks_add_rabbitmq_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_4_ticket_event_fan_out",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L40",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_tasks_add_rabbitmq_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_5_tooling_update",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L45",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_tasks_add_rabbitmq_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_6_documentation_and_tracking",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/changes/archive/2026-07-09-add-rabbitmq-messaging/tasks.md",
+      "source_location": "L58",
+      "weight": 1.0,
+      "source": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_tasks_add_rabbitmq_messaging",
+      "target": "openspec_changes_archive_2026_07_09_add_rabbitmq_messaging_tasks_7_verification",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L1",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec",
+      "target": "openspec_specs_async_messaging_spec_async_messaging",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L82",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_async_messaging",
+      "target": "openspec_specs_async_messaging_spec_constraints",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L3",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_async_messaging",
+      "target": "openspec_specs_async_messaging_spec_purpose",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L10",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_async_messaging",
+      "target": "openspec_specs_async_messaging_spec_requirements",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L12",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_requirements",
+      "target": "openspec_specs_async_messaging_spec_requirement_broker_topology_shall_be_declared_idempotently_without_embedded_secrets",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L43",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_requirements",
+      "target": "openspec_specs_async_messaging_spec_requirement_customer_facing_sends_shall_be_retried_with_a_dead_letter_queue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L72",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_requirements",
+      "target": "openspec_specs_async_messaging_spec_requirement_the_events_fan_out_shall_be_durable_but_not_lossless_over_listener_downtime",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L61",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_requirements",
+      "target": "openspec_specs_async_messaging_spec_requirement_ticket_lifecycle_events_shall_be_published_to_a_topic_exchange",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L24",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_requirements",
+      "target": "openspec_specs_async_messaging_spec_requirement_wf_1_shall_hand_off_new_tickets_to_wf_2_via_a_queue",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L34",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_requirements",
+      "target": "openspec_specs_async_messaging_spec_requirement_wf_2_shall_draft_answers_on_buffered_intake_jobs",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L17",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_requirement_broker_topology_shall_be_declared_idempotently_without_embedded_secrets",
+      "target": "openspec_specs_async_messaging_spec_scenario_re_declaring_after_the_broker_restarts",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L29",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_requirement_wf_1_shall_hand_off_new_tickets_to_wf_2_via_a_queue",
+      "target": "openspec_specs_async_messaging_spec_scenario_wf_1_finishes_triage",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L38",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_requirement_wf_2_shall_draft_answers_on_buffered_intake_jobs",
+      "target": "openspec_specs_async_messaging_spec_scenario_a_draft_job_arrives_while_wf_2_was_briefly_unavailable",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L56",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_requirement_customer_facing_sends_shall_be_retried_with_a_dead_letter_queue",
+      "target": "openspec_specs_async_messaging_spec_scenario_a_ticket_has_no_resolvable_telegram_chat_id",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L51",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_requirement_customer_facing_sends_shall_be_retried_with_a_dead_letter_queue",
+      "target": "openspec_specs_async_messaging_spec_scenario_telegram_api_is_temporarily_down",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L67",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_requirement_ticket_lifecycle_events_shall_be_published_to_a_topic_exchange",
+      "target": "openspec_specs_async_messaging_spec_scenario_a_ticket_status_changes",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/async-messaging/spec.md",
+      "source_location": "L77",
+      "weight": 1.0,
+      "source": "openspec_specs_async_messaging_spec_requirement_the_events_fan_out_shall_be_durable_but_not_lossless_over_listener_downtime",
+      "target": "openspec_specs_async_messaging_spec_scenario_wf_7_is_not_running_when_an_event_fires",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "openspec/specs/code-documentation-standards/spec.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -19488,7 +21018,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "openspec/specs/n8n-workflow-export/spec.md",
-      "source_location": "L23",
+      "source_location": "L28",
       "weight": 1.0,
       "source": "openspec_specs_n8n_workflow_export_spec_requirements",
       "target": "openspec_specs_n8n_workflow_export_spec_requirement_exported_workflows_shall_be_directly_re_importable",
@@ -19498,7 +21028,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "openspec/specs/n8n-workflow-export/spec.md",
-      "source_location": "L33",
+      "source_location": "L38",
       "weight": 1.0,
       "source": "openspec_specs_n8n_workflow_export_spec_requirements",
       "target": "openspec_specs_n8n_workflow_export_spec_requirement_known_secret_bearing_values_shall_be_redacted_before_writing",
@@ -19508,10 +21038,20 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "openspec/specs/n8n-workflow-export/spec.md",
-      "source_location": "L47",
+      "source_location": "L52",
       "weight": 1.0,
       "source": "openspec_specs_n8n_workflow_export_spec_requirements",
       "target": "openspec_specs_n8n_workflow_export_spec_requirement_the_export_shall_report_drift_beyond_known_redaction_points",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "openspec/specs/n8n-workflow-export/spec.md",
+      "source_location": "L23",
+      "weight": 1.0,
+      "source": "openspec_specs_n8n_workflow_export_spec_requirement_export_shall_fetch_only_opspilot_s_own_workflows",
+      "target": "openspec_specs_n8n_workflow_export_spec_scenario_export_includes_a_rabbitmq_credential_reference",
       "confidence_score": 1.0
     },
     {
@@ -19528,7 +21068,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "openspec/specs/n8n-workflow-export/spec.md",
-      "source_location": "L27",
+      "source_location": "L32",
       "weight": 1.0,
       "source": "openspec_specs_n8n_workflow_export_spec_requirement_exported_workflows_shall_be_directly_re_importable",
       "target": "openspec_specs_n8n_workflow_export_spec_scenario_an_export_is_fetched_from_the_live_api",
@@ -19538,7 +21078,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "openspec/specs/n8n-workflow-export/spec.md",
-      "source_location": "L42",
+      "source_location": "L47",
       "weight": 1.0,
       "source": "openspec_specs_n8n_workflow_export_spec_requirement_known_secret_bearing_values_shall_be_redacted_before_writing",
       "target": "openspec_specs_n8n_workflow_export_spec_scenario_export_includes_a_credential_reference",
@@ -19548,7 +21088,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "openspec/specs/n8n-workflow-export/spec.md",
-      "source_location": "L36",
+      "source_location": "L41",
       "weight": 1.0,
       "source": "openspec_specs_n8n_workflow_export_spec_requirement_known_secret_bearing_values_shall_be_redacted_before_writing",
       "target": "openspec_specs_n8n_workflow_export_spec_scenario_export_includes_a_live_patched_ops_chat_id",
@@ -19558,7 +21098,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "openspec/specs/n8n-workflow-export/spec.md",
-      "source_location": "L51",
+      "source_location": "L56",
       "weight": 1.0,
       "source": "openspec_specs_n8n_workflow_export_spec_requirement_the_export_shall_report_drift_beyond_known_redaction_points",
       "target": "openspec_specs_n8n_workflow_export_spec_scenario_live_workflow_has_diverged_from_the_committed_version",
@@ -21117,6 +22657,26 @@
     {
       "relation": "contains",
       "confidence": "EXTRACTED",
+      "source_file": "wiki/log.md",
+      "source_location": "L610",
+      "weight": 1.0,
+      "source": "wiki_log_log_md_chronological_record_append_only",
+      "target": "wiki_log_2026_07_08_16_15_build_claude_code_rabbitmq_async_messaging_add_rabbitmq_messaging",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
+      "source_file": "wiki/log.md",
+      "source_location": "L631",
+      "weight": 1.0,
+      "source": "wiki_log_log_md_chronological_record_append_only",
+      "target": "wiki_log_2026_07_09_15_00_build_claude_code_rabbitmq_messaging_live_e2e_close_out_add_rabbitmq_messaging",
+      "confidence_score": 1.0
+    },
+    {
+      "relation": "contains",
+      "confidence": "EXTRACTED",
       "source_file": "wiki/map.md",
       "source_location": "L1",
       "weight": 1.0,
@@ -21138,7 +22698,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "wiki/map.md",
-      "source_location": "L35",
+      "source_location": "L41",
       "weight": 1.0,
       "source": "wiki_map_map_md_opspilot_project_map_zero_hop_entry_point",
       "target": "wiki_map_invariants_violating_any_of_these_is_a_defect",
@@ -21148,7 +22708,7 @@
       "relation": "contains",
       "confidence": "EXTRACTED",
       "source_file": "wiki/map.md",
-      "source_location": "L40",
+      "source_location": "L46",
       "weight": 1.0,
       "source": "wiki_map_map_md_opspilot_project_map_zero_hop_entry_point",
       "target": "wiki_map_key_decisions_details_in_docs_decisions",
@@ -21166,5 +22726,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "6f2d23cb3ca207fe6f2c2f4457c179042099b91d"
+  "built_at_commit": "8c100aa53d9490d2f1203a8d328988b327625bb8"
 }
