@@ -12,7 +12,7 @@
       "id": "33c7fcb7-7498-4014-a4c1-4873d60b594e",
       "name": "Telegram Trigger",
       "type": "n8n-nodes-base.telegramTrigger",
-      "typeVersion": 1.4,
+      "typeVersion": 1.2,
       "position": [
         0,
         0
