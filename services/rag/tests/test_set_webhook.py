@@ -26,10 +26,10 @@ class FakeDocker:
     def run(self, cmd, **kwargs):
         if cmd[:2] == ["docker", "exec"] and cmd[3:] == ["cat", set_webhook.CONTAINER_ENV]:
             return subprocess.CompletedProcess(cmd, 0, stdout=self.existing, stderr="")
-        if cmd[:2] == ["docker", "exec"] and cmd[3] == "sh":
+        if cmd[:3] == ["docker", "exec", "-i"] and cmd[4] == "sh":
             if self.fail_write:
                 raise subprocess.CalledProcessError(1, cmd)
-            self.written = cmd[5]
+            self.written = kwargs.get("input")
             return subprocess.CompletedProcess(cmd, 0, stdout="", stderr="")
         if cmd[:2] == ["docker", "restart"]:
             self.restarted = True
@@ -68,6 +68,19 @@ def test_existing_key_is_replaced_and_other_lines_survive(monkeypatch):
     assert "WEBHOOK_URL=https://new.ngrok.app" in fake.written
     assert "https://old.ngrok.app" not in fake.written
     assert "N8N_HOST=localhost" in fake.written
+
+
+def test_line_equal_to_heredoc_delimiter_survives(monkeypatch):
+    """Regression for #14 review (c)(2): the old heredoc write truncated the file
+    at any line equal to the delimiter. Stdin piping must preserve it verbatim."""
+    monkeypatch.setenv("WEBHOOK_URL", "https://example.ngrok.app")
+    fake = FakeDocker(existing="N8N_HOST=localhost\nEOF\nMARKER=after\n")
+    monkeypatch.setattr(set_webhook.subprocess, "run", fake.run)
+
+    assert set_webhook.main() == 0
+    assert "EOF\n" in fake.written
+    assert "MARKER=after" in fake.written
+    assert fake.written.endswith("WEBHOOK_URL=https://example.ngrok.app\n")
 
 
 def test_http_url_warns_but_proceeds(monkeypatch, capsys):
