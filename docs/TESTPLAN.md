@@ -25,9 +25,10 @@ new feature ⇒ new/updated test entry.
 - `test_ingest_query_roundtrip.py` (L2) — ingest seed doc → query known fact → answer cites correct source.
 - `test_idempotency.py` (L2) — duplicate `{source, external_ref}` insert does not create a second ticket.
 - `test_stats.py` (L2) — `/stats` aggregates match fixture data.
-- `test_set_webhook.py` — *(planned; owed by `fix-wf1-telegram-trigger` #14, not yet written)* —
-  `_dotenv_value` skips comments and non-matching keys; `_update_container_env` replaces an
-  existing `WEBHOOK_URL=` line instead of appending a duplicate (docker calls mocked).
+- `test_set_webhook.py` — missing `WEBHOOK_URL` env var fails fast without touching docker;
+  `_update_container_env` replaces an existing `WEBHOOK_URL=` line instead of appending a
+  duplicate and preserves unrelated lines; `http://` URL warns but proceeds; docker write
+  failure → exit 1, no restart (docker calls mocked). Owed by `fix-wf1-telegram-trigger` #14.
 
 ## L3 — eval harness
 
@@ -79,5 +80,5 @@ images may not source `/home/node/.n8n/.env` (gotcha #50); if activation fails, 
 | Digest to Telegram + Notion with spend | M6 |
 | Evals ≥ 85%, CI green | L3 + CI badge |
 | Deployed, TLS, backups | M7 |
-| WF-1 Telegram Trigger activates with persisted `WEBHOOK_URL` | M8 (+ `test_set_webhook.py` when written) |
+| WF-1 Telegram Trigger activates with persisted `WEBHOOK_URL` | M8 + `test_set_webhook.py` |
 | Stranger reproduces locally | fresh-clone rehearsal before applying |

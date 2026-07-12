@@ -197,6 +197,15 @@ deploy documentation and locally-verifiable artifacts; it does not execute again
   Verified: `ruff format --check` + `ruff check` clean, `py_compile` OK. **Not yet
   live-verified** that WF-1's Telegram Trigger actually activates after the restart (code
   review flagged that stock n8n images may not source `~/.n8n/.env`) — runtime check pending.
+- [x] `fix-wf1-telegram-trigger` review follow-ups (Claude, 2026-07-09) — closed the remaining
+  #14 code-review findings: `scripts/set_n8n_webhook_url.py` now reads `WEBHOOK_URL` from the
+  environment (`make n8n-set-webhook` already sources `.env`; matches every other scripts/
+  entrypoint and the "config only from env" convention) instead of hand-parsing `.env` via
+  `_dotenv_value` (removed); wrote the owed `services/rag/tests/test_set_webhook.py` (5 L1
+  tests, docker mocked) and updated `docs/TESTPLAN.md` (L1 entry + M8 traceability row).
+  The missing-task-ID finding on merged commit `96ef8eb` is unfixable without rewriting
+  published history — closed prospectively (this follow-up commit carries the reference).
+  Lint clean (pre-existing failures in untracked `side-hustle/` only), 38/38 tests green.
 
 ## Blockers / Findings
 _(agents append here; format: `- [OPEN|CLOSED] YYYY-MM-DD agent: description`)_
